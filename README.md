@@ -1,43 +1,53 @@
 # XamXam Révisions
 
-Application de révision (répétition espacée, fiches syndromes) pour la L3 de médecine, semestre 5.
+Application de révision pour la L3 de médecine (semestre 5) : cartes en répétition espacée,
+cours, annales d'examen corrigées, fiches syndromes.
 Tout est dans `index.html`. Aucun serveur, aucune compilation.
 
-- Les cartes sont enregistrées dans le navigateur du téléphone (localStorage).
+- Les données sont enregistrées dans le navigateur de l'appareil (localStorage, IndexedDB pour les fichiers).
 - `sw.js` rend l'appli utilisable sans internet.
 - Hébergement : GitHub Pages, branche `main`, dossier racine.
 
-## Importer des leçons et des annales
+## Apparence
 
-Onglet **Créer → Importer → Leçon ou épreuve d'examen** (ou bouton « Importer » dans les notes d'un chapitre).
+Style « Cahier » : papier crème, encre noire, stylo bleu pour les liens, surligneur jaune pour ce qui est choisi
+ou important. En mode sombre : tableau noir et craie. Titres en Fraunces, texte en Nunito.
+Les autres thèmes, couleurs et polices restent dans **Moi → Apparence**.
 
-- Fichiers acceptés : PDF, Word (.docx), PowerPoint (.pptx), texte, ou photos du sujet papier.
-- PDF scannés et photos : lecture automatique du texte sur le téléphone (Tesseract, en français).
-  La première fois, environ 4 Mo sont téléchargés, ensuite ça marche hors ligne.
-- **Leçon** : le texte est rangé dans les notes du chapitre ; Claude peut en tirer des cartes.
-- **Annale** : les questions numérotées (1., 2.…) et les propositions (A., B.…) deviennent des QCM.
-  Le corrigé est repris s'il est dans le document (« Corrigé : 1-AC 2-BD… » ou « Réponse : AC »).
-  Sinon, on touche les bonnes réponses, ou on demande à Claude.
-- Réviser une annale : onglet **Réviser → Quoi réviser → Annales d'examen**.
+## Créer
+
+- **Écrire** : une carte (question / réponse, texte à trous, QCM), ou plusieurs cartes collées
+  (`question :: réponse :: astuce`, une par ligne).
+- **Importer** : une leçon ou une annale (PDF, Word .docx, PowerPoint .pptx, texte, photos),
+  ou un fichier XamXam `.json` (sauvegarde, questions partagées).
+  - PDF scannés et photos : lecture automatique du texte sur l'appareil (Tesseract, en français).
+    La première fois, environ 4 Mo sont téléchargés, ensuite ça marche hors ligne.
+  - Leçon : le texte est rangé dans les notes du chapitre.
+  - Annale : les questions numérotées (1., 2.…) et les propositions (A., B.…) deviennent des QCM.
+    Le corrigé est repris s'il est dans le document (« Corrigé : 1-AC 2-BD… » ou « Réponse : AC »).
+- **Avec Claude** (facultatif) : une consigne à copier dans Claude, puis sa réponse à coller.
 
 Bibliothèques incluses dans `lib/` : pdf.js 4.10.38 (Apache-2.0) et Tesseract.js 5.1.1 (Apache-2.0).
 
-## Documents de cours et examens par module
+## Cours et examens
 
-- **Chapitre → Mes documents de cours → Ajouter** : n'importe quel fichier (PDF, Word, PowerPoint, photos…).
-  Gardé sur le téléphone (IndexedDB). Lecture dans l'appli pour PDF, photos, Word, PowerPoint et texte ;
-  « Ouvrir ailleurs » pour les autres. « Texte → mes notes » copie le contenu dans les notes.
-- **Programme → un module → Examens → Ajouter un examen** : nom, date, sujet (fichier ou photos).
-  Questions et corrigé repérés automatiquement, modifiables.
-- **Faire l'examen** : une question à la fois, puis correction avec note sur 20.
-  Sans corrigé, on touche les bonnes réponses pendant la correction (gardées pour la fois suivante).
-- Les fichiers ne sont pas dans la sauvegarde .json (seulement les questions et les résultats).
+- **Programme → un chapitre** : documents de cours (tout type de fichier, gardé sur l'appareil), notes, cartes.
+- **Programme → un module → Examens**, ou **Accueil → Mes examens** : ajouter une épreuve datée
+  (fichier ou photos). Questions et corrigé repérés automatiquement, modifiables.
+- **Faire l'examen** : chronomètre (durée limite facultative), liste des questions pour naviguer,
+  reprise si l'appli se ferme. Puis correction avec note sur 20.
+  - Sans corrigé, on touche les bonnes réponses pendant la correction (gardées pour la fois suivante).
+  - « Refaire mes erreurs » repose seulement les questions ratées ; « Les ajouter aux révisions » en fait des cartes.
+- Les fichiers ne sont pas dans la sauvegarde `.json` (seulement les questions et les résultats).
 
 ## Synchroniser ses appareils et partager
 
 - **Moi → Synchroniser mes appareils** : une clé GitHub (droit « gist » seulement) collée sur chaque appareil.
   Les données (cartes, notes, examens, résultats) sont fusionnées dans un gist secret `xamxam-sync.json`.
   Les fichiers (PDF, photos) restent sur chaque appareil.
-- **Partager** (examen, chapitre, ou sélection dans Réviser) : crée un fichier `.json` avec seulement les questions,
-  envoyé par WhatsApp ou autre. Pour le recevoir : Créer → Importer → « Importer un fichier .json »,
-  ou Partager → XamXam depuis WhatsApp (Android, appli installée).
+- **Partager** (examen, chapitre, ou sélection dans Réviser) : crée un fichier `.json` avec seulement les questions.
+  Pour le recevoir : Créer → Importer → Fichier XamXam, ou Partager → XamXam depuis WhatsApp (Android, appli installée).
+
+## Mettre à jour
+
+Changer `VERSION` dans `sw.js` à chaque modification, sinon les appareils gardent l'ancienne version en mémoire.

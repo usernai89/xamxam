@@ -1,6 +1,10 @@
 // XamXam : fonctionnement hors ligne.
 // Changer VERSION à chaque mise à jour de l'appli pour rafraîchir le cache.
-const VERSION = 'xamxam-v4';
+const VERSION = 'xamxam-v5';
+// Ces caches-là sont gardés d'une version à l'autre : les bibliothèques (lecture des PDF et des photos, environ 10 Mo)
+// et les polices ne sont pas retéléchargées à chaque mise à jour.
+const LIB = 'xamxam-lib-1', FONTS = 'xamxam-fonts-1', SHARE = 'xamxam-share';
+const KEEP = [VERSION, LIB, FONTS, SHARE];
 const SHELL = [
   './',
   'index.html',
@@ -10,53 +14,76 @@ const SHELL = [
   'icons/icon-512-maskable.png',
   'icons/apple-touch-icon.png'
 ];
+const isFont = u => u.hostname === 'fonts.googleapis.com' || u.hostname === 'fonts.gstatic.com';
+const isLib = u => u.origin === self.location.origin && u.pathname.includes('/lib/');
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== VERSION && k !== 'xamxam-share').map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
+  e.waitUntil((async () => {
+    for (const k of await caches.keys()) {
+      if (KEEP.includes(k)) continue;
+      try { // on récupère les bibliothèques et les polices des anciennes versions avant de les effacer
+        const old = await caches.open(k);
+        for (const req of await old.keys()) {
+          const u = new URL(req.url);
+          const to = isFont(u) ? FONTS : isLib(u) ? LIB : null;
+          if (!to) continue;
+          const res = await old.match(req);
+          if (res) await (await caches.open(to)).put(req, res);
+        }
+      } catch (err) {}
+      await caches.delete(k);
+    }
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', e => {
   const req = e.request;
-  const url0 = new URL(req.url);
+  const url = new URL(req.url);
   // Fichier partagé vers XamXam (WhatsApp → Partager → XamXam) : on le garde, puis on ouvre l'appli.
-  if (req.method === 'POST' && url0.pathname.endsWith('/share-target')) {
+  if (req.method === 'POST' && url.pathname.endsWith('/share-target')) {
     e.respondWith((async () => {
       try {
         const fd = await req.formData(); const f = fd.get('file');
-        if (f) { const c = await caches.open('xamxam-share'); await c.put('shared-file', new Response(f)); }
+        if (f) { const c = await caches.open(SHARE); await c.put('shared-file', new Response(f)); }
       } catch (err) {}
       return Response.redirect(new URL('./?shared=1', self.registration.scope).href, 303);
     })());
     return;
   }
   if (req.method !== 'GET') return;
-  const url = new URL(req.url);
 
-  // Pages : réseau d'abord (pour avoir la dernière version), sinon le cache.
+  // Page de l'appli : réseau d'abord pour avoir la dernière version, mais sans attendre plus de 3 secondes.
+  // Réseau lent ou absent : on ouvre la version gardée sur l'appareil.
   if (req.mode === 'navigate') {
-    e.respondWith(
-      fetch(req)
-        .then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put('index.html', copy)); return res; })
-        .catch(() => caches.match('index.html'))
-    );
+    e.respondWith((async () => {
+      const cache = await caches.open(VERSION);
+      const net = fetch(req).then(res => {
+        if (res.ok && !res.redirected && new URL(res.url).origin === self.location.origin) cache.put('index.html', res.clone());
+        return res;
+      });
+      try {
+        return await Promise.race([net, new Promise((_, no) => setTimeout(() => no(new Error('lent')), 3000))]);
+      } catch (err) {
+        const hit = await cache.match('index.html');
+        if (hit) { net.catch(() => {}); return hit; }
+        return net;
+      }
+    })());
     return;
   }
 
-  // Fichiers de l'appli et polices Google : cache d'abord, puis réseau.
+  // Fichiers de l'appli, bibliothèques et polices : cache d'abord, puis réseau.
   const sameOrigin = url.origin === self.location.origin;
-  const fonts = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
-  if (!sameOrigin && !fonts) return;
+  if (!sameOrigin && !isFont(url)) return;
+  const name = isFont(url) ? FONTS : isLib(url) ? LIB : VERSION;
   e.respondWith(
     caches.match(req).then(hit => hit || fetch(req).then(res => {
-      if (res.ok || res.type === 'opaque') { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); }
+      if (res.ok || res.type === 'opaque') { const copy = res.clone(); caches.open(name).then(c => c.put(req, copy)); }
       return res;
     }))
   );
