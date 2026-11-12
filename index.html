@@ -347,6 +347,7 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 <div id="sheet" class="layer" hidden><div class="layer-in" id="sheetIn"></div></div>
 <div id="toast" role="status" hidden></div>
 <input type="file" id="fileImg" accept="image/*" hidden>
+<input type="file" id="fileDoc" accept=".pdf,.docx,.pptx,.txt,.md,.doc,.ppt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
 <input type="file" id="fileJson" accept=".json,application/json,text/plain" hidden>
 
 <script>
@@ -722,6 +723,8 @@ const isLearning = c => c.srs.state==='learning'||c.srs.state==='relearning';
 function inScope(c, scope){
   if(!scope||scope==='all') return true;
   if(scope==='syn') return !!c.syn;
+  if(scope==='exam') return !!c.exam;
+  if(scope.startsWith('e:')) return c.exam===scope.slice(2);
   const [k,v]=scope.split(':'); const ch=CH[c.chap];
   if(k==='y') return !!c.syn && !!SYN_BY[c.syn] && SYN_BY[c.syn].sys===v;
   if(k==='c') return c.chap===v;
@@ -733,6 +736,8 @@ function inScope(c, scope){
 function scopeLabel(scope){
   if(!scope||scope==='all') return 'Tout le programme';
   if(scope==='syn') return 'Fiches syndromes';
+  if(scope==='exam') return 'Annales';
+  if(scope.startsWith('e:')) return 'Annale '+scope.slice(2);
   const [k,v]=scope.split(':');
   if(k==='y') return 'Syndromes · '+(SYN_SYS[v]||'');
   if(k==='m') return MODS[v]?MODS[v].name:'Module';
@@ -943,6 +948,7 @@ function parseLoose(text){
 const UI = { tab:(lsGet('xamxam.tab')||'home'), progFilter:'all', progQuery:'', open:new Set(['semio']),
   rev:{mode:'srs', scope:'all', q:''},
   gen:{chap:'', source:'focus', focus:'', text:'', photos:[], n:10, types:['qa','cloze','qcm'], level:'l3', hint:true, busy:false, err:'', stream:'', results:null, paste:''},
+  imp:{kind:'lesson', chap:'', year:'', text:'', file:'', msg:'', err:'', busy:false, items:null, scanned:null, paste:'', aiOpen:false, aiBusy:false},
   newTab:'ai', sheetStack:[] };
 if(!['home','prog','rev','new','me'].includes(UI.tab)) UI.tab='home';
 
@@ -1107,7 +1113,7 @@ function chapterSheet(id){
      <div id="lessonOut" class="rt" style="margin-top:10px" hidden></div>
      <div class="row" style="margin-top:10px" id="lessonBtns"><button class="btn btn-soft" data-act="lesson" data-id="${id}">${I.spark} ${AI.sample?'Faire la leçon':'Copier la consigne pour Claude'}</button></div>
    </section>
-   <section class="panel"><div class="section-title"><h3>Mes notes</h3><button class="btn btn-ghost" data-act="note-edit" data-id="${id}">${note?'Modifier':'Écrire'}</button></div>
+   <section class="panel"><div class="section-title"><h3>Mes notes</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="imp-lesson" data-id="${id}">Importer</button><button class="btn btn-ghost" data-act="note-edit" data-id="${id}">${note?'Modifier':'Écrire'}</button></div></div>
      <div id="noteView" class="rt">${note?md(note):'<p class="muted small">Colle ici ton résumé ou les points clés du cours. Ils servent aussi à Claude pour créer des cartes fidèles à ton prof.</p>'}</div>
      <textarea id="noteEdit" data-input="note" data-id="${id}" hidden placeholder="## Définition&#10;- …&#10;**Mot-clé** …" style="min-height:220px">${esc(note)}</textarea>
    </section>
@@ -1123,7 +1129,7 @@ function cardRow(c){
   else if(isLearning(c)) when='En apprentissage';
   else when='Revient le '+fmtShort(new Date(s.due));
   const tl={qa:'Q/R',cloze:'Trous',qcm:'QCM'}[c.type]||'Q/R';
-  return `<button class="citem" data-act="edit-card" data-id="${c.id}"><span style="min-width:0"><span class="q">${esc(plain(c.front))}</span><span class="meta"><span class="badge">${tl}</span>${c.example?'<span class="badge ex">Exemple</span>':''}${c.img||c.imgCloud?'<span class="badge">Image</span>':''}<span>${esc(when)}</span></span></span>${I.chev}</button>`;
+  return `<button class="citem" data-act="edit-card" data-id="${c.id}"><span style="min-width:0"><span class="q">${esc(plain(c.front))}</span><span class="meta"><span class="badge">${tl}</span>${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">Annale '+esc(c.exam)+'</span>':''}${c.img||c.imgCloud?'<span class="badge">Image</span>':''}<span>${esc(when)}</span></span></span>${I.chev}</button>`;
 }
 
 // ---------- Vue : Réviser ----------
@@ -1138,6 +1144,8 @@ function scopeOptions(sel, withNone){
     }
     o+='</optgroup>';
   }
+  const exams=withNone?[]:Array.from(new Set(Object.values(S.cards).map(c=>c.exam).filter(Boolean))).sort().reverse();
+  if(exams.length){ o+=`<optgroup label="Annales d'examen"><option value="exam" ${sel==='exam'?'selected':''}>Toutes les annales</option>`; for(const e of exams) o+=`<option value="e:${esc(e)}" ${sel==='e:'+e?'selected':''}>Annale ${esc(e)}</option>`; o+='</optgroup>'; }
   if(!withNone && Object.values(S.cards).some(c=>c.syn)) o+=`<option value="syn" ${sel==='syn'?'selected':''}>Fiches syndromes (toutes)</option>`;
   return o;
 }
@@ -1229,7 +1237,8 @@ function resultsPanel(){
    <button class="btn btn-primary btn-lg" data-act="gen-save" ${on?'':'disabled'}>Ajouter ${plural(on,'carte')}${g.chap&&CH[g.chap]?' à « '+esc(CH[g.chap].title)+' »':''}</button></section>`;
 }
 function importPanel(){
-  return `<section class="panel stack">
+  return docImportPanel()+`<section class="panel stack">
+   <h3>Cartes déjà prêtes</h3>
    <p>Colle des cartes déjà prêtes, une par ligne : <span class="mono small">question :: réponse :: astuce</span>. Le format JSON donné par Claude marche aussi.</p>
    <label class="field">Chapitre<select id="impChap" data-input="imp-chap">${scopeOptions(UI.impChap||'',true)}</select></label>
    <label class="field">Cartes<textarea id="impText" data-input="imp-text" placeholder="Vecteur du paludisme ? :: Anophèle femelle :: Seule la femelle pique">${esc(UI.impText||'')}</textarea></label>
@@ -1438,7 +1447,7 @@ function paintSession(anim){
     : gradeButtons(c);
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}</div>
    <article class="flash ${anim&&S.prefs.anim!=='none'?'anim-'+S.prefs.anim:''}" id="flash">
-     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):'Sans chapitre')}</p>${c.example?'<span class="badge ex">Exemple</span>':''}</div>
+     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):'Sans chapitre')}</p>${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">Annale '+esc(c.exam)+'</span>':''}</div>
      ${img('front')}${front}${back}
    </article>
    ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button></div>`:''}
@@ -1570,6 +1579,306 @@ function importBackup(text){
   writeLocal(); onDataChanged(true); toast('Sauvegarde importée : '+plural(r.fromInc.cards.length,'carte')+' mise'+(r.fromInc.cards.length>1?'s':'')+' à jour');
 }
 
+// ---------- Import de leçons et d'annales ----------
+// Lit un PDF, un Word (.docx), un PowerPoint (.pptx), un texte ou des photos (reconnaissance de texte),
+// puis : leçon -> notes du chapitre ; annale -> QCM / questions prêts à réviser.
+// Les bibliothèques (pdf.js, Tesseract) sont dans lib/ et ne se chargent qu'au premier usage.
+const libUrl = p => new URL(p, location.href).href;
+let pdfLib=null, ocrWorker=null;
+async function loadPdf(){
+  if(!pdfLib){ pdfLib=await import(libUrl('lib/pdf/pdf.min.mjs')); pdfLib.GlobalWorkerOptions.workerSrc=libUrl('lib/pdf/pdf.worker.min.mjs'); }
+  return pdfLib;
+}
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+async function getOcr(onProgress){
+  if(!window.Tesseract) await loadScript(libUrl('lib/ocr/tesseract.min.js'));
+  if(!ocrWorker){
+    ocrWorker=await Tesseract.createWorker('fra', 1, {workerPath:libUrl('lib/ocr/worker.min.js'), corePath:libUrl('lib/ocr'), langPath:libUrl('lib/ocr'), gzip:true,
+      logger:m=>{ if(m.status==='recognizing text' && ocrWorker && ocrWorker._cb) ocrWorker._cb(m.progress); }});
+  }
+  ocrWorker._cb=onProgress; return ocrWorker;
+}
+async function ocrImage(src, onProgress){ const w=await getOcr(onProgress); const r=await w.recognize(src); return r.data.text||''; }
+
+// Petit lecteur de fichiers .zip (docx et pptx sont des zip), sans bibliothèque.
+async function unzipText(buf, want){
+  const dv=new DataView(buf), dec=new TextDecoder();
+  let e=buf.byteLength-22; while(e>=0 && dv.getUint32(e,true)!==0x06054b50) e--;
+  if(e<0) throw new Error('zip');
+  const n=dv.getUint16(e+10,true); let p=dv.getUint32(e+16,true); const out={};
+  for(let i=0;i<n;i++){
+    const method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), xl=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), off=dv.getUint32(p+42,true);
+    const name=dec.decode(new Uint8Array(buf,p+46,nl)); p+=46+nl+xl+cl;
+    if(!want(name)) continue;
+    const data=new Uint8Array(buf, off+30+dv.getUint16(off+26,true)+dv.getUint16(off+28,true), csize);
+    if(method===0) out[name]=dec.decode(data);
+    else if(method===8) out[name]=dec.decode(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  }
+  return out;
+}
+const xmlDoc = s => new DOMParser().parseFromString(s, 'application/xml');
+const wv = (el, attr) => el ? (el.getAttribute('w:'+attr) ?? el.getAttribute(attr)) : null;
+function roman(n){ const t=[[1000,'m'],[900,'cm'],[500,'d'],[400,'cd'],[100,'c'],[90,'xc'],[50,'l'],[40,'xl'],[10,'x'],[9,'ix'],[5,'v'],[4,'iv'],[1,'i']]; let s=''; for(const [v,r] of t){ while(n>=v){ s+=r; n-=v; } } return s; }
+function fmtNum(n, f){
+  if(f==='upperLetter') return String.fromCharCode(64+((n-1)%26)+1);
+  if(f==='lowerLetter') return String.fromCharCode(96+((n-1)%26)+1);
+  if(f==='upperRoman') return roman(n).toUpperCase();
+  if(f==='lowerRoman') return roman(n);
+  if(f==='bullet'||f==='none') return '';
+  return String(n);
+}
+async function docxText(buf){
+  const z=await unzipText(buf, n=>n==='word/document.xml'||n==='word/numbering.xml'||n==='word/styles.xml');
+  if(!z['word/document.xml']) throw new Error('docx');
+  // Numérotation automatique de Word (1. 2. 3. / A. B. C.) : on la recalcule, sinon elle disparaît du texte.
+  const abs={}, nums={};
+  if(z['word/numbering.xml']){
+    const nd=xmlDoc(z['word/numbering.xml']);
+    for(const a of nd.getElementsByTagName('w:abstractNum')){ const lv={}; for(const l of a.getElementsByTagName('w:lvl')){ lv[wv(l,'ilvl')]={fmt:wv(l.getElementsByTagName('w:numFmt')[0],'val')||'decimal', text:wv(l.getElementsByTagName('w:lvlText')[0],'val')||'', start:+(wv(l.getElementsByTagName('w:start')[0],'val')||1)}; } abs[wv(a,'abstractNumId')]=lv; }
+    for(const m of nd.getElementsByTagName('w:num')){ nums[wv(m,'numId')]=abs[wv(m.getElementsByTagName('w:abstractNumId')[0],'val')]||{}; }
+  }
+  const styleNum={}, styleHead={};
+  if(z['word/styles.xml']){ for(const st of xmlDoc(z['word/styles.xml']).getElementsByTagName('w:style')){ const id=wv(st,'styleId'); const np=st.getElementsByTagName('w:numPr')[0];
+    if(np) styleNum[id]={numId:wv(np.getElementsByTagName('w:numId')[0],'val'), ilvl:wv(np.getElementsByTagName('w:ilvl')[0],'val')};
+    const ol=st.getElementsByTagName('w:outlineLvl')[0]; const nm=wv(st.getElementsByTagName('w:name')[0],'val')||'';
+    if(ol || /^(heading|titre)\s*\d/i.test(nm) || /^title$/i.test(nm)) styleHead[id]=true; } }
+  const counters={}; const lines=[];
+  const d=xmlDoc(z['word/document.xml']);
+  for(const p of d.getElementsByTagName('w:p')){
+    let t='';
+    const walk=el=>{ for(const c of el.childNodes){ if(c.nodeType!==1) continue; const tag=c.tagName;
+      if(tag==='w:t') t+=c.textContent; else if(tag==='w:tab') t+='\t'; else if(tag==='w:br'||tag==='w:cr') t+='\n';
+      else if(tag!=='w:pPr' && tag!=='w:instrText' && tag!=='w:del') walk(c); } };
+    walk(p);
+    const pSt=wv(p.getElementsByTagName('w:pStyle')[0],'val');
+    const numPr=p.getElementsByTagName('w:numPr')[0]; const sn=pSt&&styleNum[pSt];
+    if(numPr||sn){
+      const id=(numPr&&wv(numPr.getElementsByTagName('w:numId')[0],'val'))||(sn&&sn.numId), il=+((numPr&&wv(numPr.getElementsByTagName('w:ilvl')[0],'val'))||(sn&&sn.ilvl)||0);
+      const def=nums[id]; if(def && def[il] && id!=='0'){
+        const cs=counters[id]||(counters[id]={});
+        cs[il]=(cs[il]===undefined?def[il].start:cs[il]+1);
+        for(const k of Object.keys(cs)) if(+k>il) delete cs[k];
+        const pre=def[il].text.replace(/%(\d)/g,(_,k)=>{ const L=+k-1; const v=cs[L]===undefined?(def[L]?def[L].start:1):cs[L]; return fmtNum(v, def[L]?def[L].fmt:'decimal'); });
+        if(def[il].fmt!=='bullet' && pre.trim()) t=pre+' '+t; else if(def[il].fmt==='bullet') t='- '+t;
+      }
+    }
+    if(pSt && styleHead[pSt] && t.trim()) t='## '+t.trim();
+    lines.push(t);
+  }
+  return lines.join('\n');
+}
+async function pptxText(buf){
+  const z=await unzipText(buf, n=>/^ppt\/slides\/slide\d+\.xml$/.test(n));
+  const names=Object.keys(z).sort((a,b)=>parseInt(a.match(/\d+/)[0])-parseInt(b.match(/\d+/)[0]));
+  if(!names.length) throw new Error('pptx');
+  return names.map((n,i)=>{ const d=xmlDoc(z[n]); const ps=Array.from(d.getElementsByTagName('a:p')).map(p=>Array.from(p.getElementsByTagName('a:t')).map(t=>t.textContent).join('')).filter(s=>s.trim());
+    return '## Diapo '+(i+1)+'\n'+ps.join('\n'); }).join('\n\n');
+}
+async function pdfText(buf, onProgress){
+  const lib=await loadPdf(); const doc=await lib.getDocument({data:buf}).promise; const pages=[];
+  for(let i=1;i<=doc.numPages;i++){
+    const tc=await (await doc.getPage(i)).getTextContent(); let s='', lastY=null;
+    for(const it of tc.items){ if(!('str' in it)) continue; const y=Math.round(it.transform[5]);
+      if(lastY!==null && Math.abs(y-lastY)>3 && !s.endsWith('\n')) s+='\n';
+      s+=it.str; if(it.hasEOL) s+='\n'; lastY=y; }
+    pages.push(s); onProgress && onProgress(i/doc.numPages);
+  }
+  return {doc, pages};
+}
+async function pdfOcr(doc, onPage){
+  const max=Math.min(doc.numPages, 40); const out=[];
+  for(let i=1;i<=max;i++){
+    const page=await doc.getPage(i); const vp=page.getViewport({scale:2});
+    const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height;
+    await page.render({canvasContext:c.getContext('2d'), viewport:vp}).promise;
+    out.push(await ocrImage(c, p=>onPage(i, max, p)));
+  }
+  return out.join('\n\n');
+}
+function cleanText(s){ return String(s||'').replace(/\r/g,'').replace(/ /g,' ').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim(); }
+
+// Lecture d'une épreuve : questions numérotées, propositions A-E, corrigé éventuel.
+const RE_Q = /^(?:(?:Q(?:uestion)?|QCM|QROC|QRU|QCS)\s*(?:n[°o]\s*)?)?(\d{1,3})\s*[.)\-:–—\/]\s*(.+)$/i;
+const RE_Q2 = /^(?:Q(?:uestion)?|QCM|QROC)\s*(?:n[°o]\s*)?(\d{1,3})\s*$/i;
+const RE_C = /^\(?([A-Ha-h])\s*[.)\-:–—\/]\s*(.+)$/;
+const RE_ANS = /^(?:r[ée]p(?:onses?)?|r[ée]ponses? justes?|bonnes? r[ée]ponses?)\s*[:=\-–]\s*(.+)$/i;
+const RE_KEY = /^(?:corrig[ée]s?|correction|grille(?: de r[ée]ponses| de correction)?|cl[ée]s? de correction|r[ée]ponses(?: aux qcm)?|solutions?)(?![a-zà-ÿ])\s*[:.\-]?\s*(.*)$/i;
+const RE_CASE = /^(?:cas cliniques?|dossier(?: clinique)?|[ée]nonc[ée]|observation)(?![a-zà-ÿ])/i;
+function lettersToIdx(s){ const m=String(s).toUpperCase().match(/[A-H]/g)||[]; return Array.from(new Set(m.map(x=>x.charCodeAt(0)-65))).sort((a,b)=>a-b); }
+function parseKey(text){
+  const key={}; const re=/(?:Q\s*)?(\d{1,3})\s*[-:).=\/–]?\s*((?:[A-Ha-h](?![a-zà-ÿ]{2})[\s,;+\/]*){1,8})/g; let m;
+  while((m=re.exec(text))){ const idx=lettersToIdx(m[2]); if(idx.length && !key[m[1]]) key[m[1]]=idx; }
+  return key;
+}
+function examLines(text){
+  const out=[];
+  for(const raw of cleanText(text).split('\n')){ const l=raw.trim(); if(!l) continue;
+    // propositions écrites sur une seule ligne : « A. … B. … C. … »
+    if(/^\(?A\s*[.)\-]\s/.test(l) || /\s\(?A\s*[.)]\s.+\s\(?B\s*[.)]\s/.test(l)) out.push(...l.split(/\s+(?=\(?[A-H]\s*[.)]\s)/)); else out.push(l); }
+  return out;
+}
+function parseExam(text){
+  const lines=examLines(text);
+  let keyStart=-1;
+  for(let i=0;i<lines.length;i++){ if(RE_KEY.test(lines[i]) && !RE_C.test(lines[i]) && Object.keys(parseKey(lines.slice(i).join('\n'))).length>=2){ keyStart=i; break; } }
+  const key=keyStart>=0?parseKey(lines.slice(keyStart).join('\n')):{};
+  const body=keyStart>=0?lines.slice(0,keyStart):lines;
+  const qs=[]; let q=null, ctx='', inCase=false, last=null;
+  const push=()=>{ if(q) qs.push(q); q=null; };
+  const start=(num, stem)=>{ push(); q={num, stem, choices:[], ans:null, back:'', ctx}; inCase=false; last='stem'; };
+  for(let i=0;i<body.length;i++){
+    const l=body[i], next=body[i+1]||''; let m;
+    if(RE_CASE.test(l)){ push(); ctx=l; inCase=true; last='ctx'; continue; }
+    if((m=l.match(RE_Q2)) && next && !RE_C.test(next)){ start(m[1], next); i++; continue; }
+    if((m=l.match(RE_Q))){ const prev=q?+q.num||0:(qs.length?+qs[qs.length-1].num||0:0);
+      if(!q || +m[1]>prev || m[1]==='1' || inCase){ start(m[1], m[2]); continue; } }
+    if(q && (m=l.match(RE_C))){ const k=m[1].toUpperCase().charCodeAt(0)-65; if(k===q.choices.length && last!=='back'){ q.choices.push(m[2]); last='choice'; continue; } }
+    if(q && (m=l.match(RE_ANS))){ const idx=lettersToIdx(m[1]); if(q.choices.length && idx.length && /^[A-H\s,;+\/]+\.?$/i.test(m[1].replace(/\bet\b/gi,' ').trim())) q.ans=idx; else q.back=(q.back?q.back+'\n':'')+m[1]; last='back'; continue; }
+    // question sans numéro : une ligne qui finit par « ? », ou par « : » juste avant la proposition A
+    const isStem=/\?\s*$/.test(l) || (/:\s*$/.test(l) && /^\(?A\s*[.)\-]/.test(next));
+    if(isStem && (!q || q.choices.length || last==='back' || inCase)){ start('', l); continue; }
+    if(!q && !inCase) continue; // en-tête de l'épreuve (titre, durée…)
+    if(inCase){ ctx=(ctx?ctx+'\n':'')+l; continue; }
+    if(last==='choice') q.choices[q.choices.length-1]+=' '+l;
+    else if(last==='back') q.back+='\n'+l;
+    else q.stem+=(/[:?.]$/.test(q.stem)?'\n':' ')+l;
+  }
+  push();
+  return qs.map(x=>{
+    const cl=x.ctx?x.ctx.split('\n'):[];
+    const front=(cl.length?'**'+cl[0]+'**'+(cl.length>1?'\n'+cl.slice(1).join('\n'):'')+'\n\n':'')+x.stem.trim();
+    if(x.choices.length>=2){ const ans=x.ans||(x.num?key[x.num]:null)||[]; return {type:'qcm', num:x.num, front, choices:x.choices.map(s=>s.trim()), answer:ans.filter(i=>i<x.choices.length), back:x.back.trim(), hint:''}; }
+    return {type:'qa', num:x.num, front, back:x.back.trim(), hint:'', choices:[], answer:[]};
+  });
+}
+function buildExamPrompt(o){
+  const ctx=chapCtx(o.chap);
+  return `Voici le texte d'une épreuve d'examen de médecine (L3, Faculté de médecine de l'UCAD, Dakar)${o.year?' : '+o.year:''}${ctx.sub?', '+ctx.sub:''}. Le texte vient d'un PDF ou d'une photo : il peut contenir des erreurs de lecture.
+
+Transforme CHAQUE question de l'épreuve en carte de révision, dans l'ordre, sans en inventer d'autres :
+- QCM (propositions A, B, C…) : "type":"qcm", "front" = l'énoncé (avec le cas clinique s'il y en a un), "choices" = les propositions sans la lettre, "answer" = indices (à partir de 0) de TOUTES les bonnes propositions.
+- Question rédactionnelle ou QROC : "type":"qa", "front" = la question, "back" = la réponse attendue, courte et structurée (tirets "- ").
+- Si un corrigé figure dans le texte, utilise-le. Sinon, donne la réponse la plus sûre et commence "back" par « Réponse proposée par Claude, à vérifier. », puis justifie en 1 à 3 lignes.
+- Corrige les fautes de lecture évidentes, sans changer le sens.
+
+Réponds uniquement avec un tableau JSON, sans texte autour :
+[{"type":"qcm","front":"…","choices":["…","…","…","…","…"],"answer":[0,2],"back":"…"},{"type":"qa","front":"…","back":"…"}]
+
+Épreuve :
+"""
+${o.text.trim().slice(0,14000)}
+"""`;
+}
+const IMP_MAX=200000;
+function resetImpDoc(){ const m=UI.imp; m.text=''; m.file=''; m.items=null; m.msg=''; m.err=''; m.scanned=null; m.paste=''; }
+async function readDocFile(f){
+  const m=UI.imp; resetImpDoc(); m.file=f.name; m.busy=true; m.msg='Lecture de « '+f.name+' »…'; rerender();
+  const prog=t=>{ const el=$('#impProg'); if(el) el.textContent=t; };
+  try{
+    const name=f.name.toLowerCase(); const buf=await f.arrayBuffer(); let text='';
+    if(name.endsWith('.pdf')||f.type==='application/pdf'){
+      const {doc,pages}=await pdfText(buf, p=>prog(Math.round(p*100)+' %'));
+      text=pages.join('\n\n');
+      if(text.replace(/\s/g,'').length < 40*doc.numPages){ m.scanned=doc; m.msg=`Ce PDF (${plural(doc.numPages,'page')}) semble être un scan : il contient des images, pas du texte.`; }
+    }
+    else if(name.endsWith('.docx')) text=await docxText(buf);
+    else if(name.endsWith('.pptx')) text=await pptxText(buf);
+    else if(name.endsWith('.doc')||name.endsWith('.ppt')){ throw Object.assign(new Error('old'),{old:true}); }
+    else text=new TextDecoder().decode(buf);
+    m.text=cleanText(text).slice(0,IMP_MAX);
+    if(!m.scanned) m.msg=m.text?`${f.name} : ${m.text.length.toLocaleString('fr-FR')} caractères lus.`+(text.length>IMP_MAX?' (Fichier très long : seul le début est gardé.)':''):'';
+    if(!m.text && !m.scanned) m.err="Aucun texte trouvé dans ce fichier.";
+  }catch(e){
+    m.msg=''; m.err=e&&e.old?"Ancien format Word/PowerPoint (.doc, .ppt) : ouvre-le et enregistre-le en .docx, .pptx ou PDF, puis réessaie.":(!navigator.onLine?"Pas de connexion : la première lecture d'un PDF a besoin d'internet. Réessaie une fois connecté.":"Impossible de lire ce fichier. Essaie de l'exporter en PDF, ou colle le texte.");
+  }
+  m.busy=false; if(m.text && m.kind==='exam') m.items=parseExam(m.text); rerender();
+}
+async function runOcr(kind, files){
+  const m=UI.imp; m.busy=true; m.err=''; rerender();
+  const prog=t=>{ const el=$('#impProg'); if(el) el.textContent=t; };
+  try{
+    prog('Préparation de la lecture (la première fois, environ 4 Mo à télécharger)…');
+    let text='';
+    if(kind==='pdf'){ text=await pdfOcr(m.scanned, (i,n,p)=>prog(`Page ${i}/${n} · ${Math.round(p*100)} %`)); if(m.scanned.numPages>40) m.msg='Seules les 40 premières pages ont été lues.'; else m.msg=''; m.scanned=null; }
+    else { resetImpDoc(); m.file=files.length>1?files.length+' photos':'Photo';
+      for(let i=0;i<files.length;i++){ const {canvas}=await toJpegBlob(files[i], 2400, 0.9); text+=(i?'\n\n':'')+await ocrImage(canvas, p=>prog(`Photo ${i+1}/${files.length} · ${Math.round(p*100)} %`)); }
+      m.msg=''; }
+    m.text=cleanText((m.text?m.text+'\n\n':'')+text).slice(0,IMP_MAX);
+    if(!m.text.trim()) m.err="Aucun texte reconnu. Prends la photo bien à plat, nette et éclairée.";
+    else m.msg=(m.msg?m.msg+' ':'')+'Texte reconnu automatiquement : relis-le, il peut y avoir des erreurs.';
+  }catch(e){ m.err="La lecture automatique a échoué. Vérifie ta connexion internet (nécessaire la première fois), puis réessaie."; }
+  m.busy=false; if(m.text && m.kind==='exam') m.items=parseExam(m.text); rerender();
+}
+function examLabel(){ return (UI.imp.year||'').trim() || 'Sans année'; }
+function saveExamItems(){
+  const m=UI.imp; let n=0, skip=0; const label=examLabel();
+  for(const r of m.items){ if(r.off) continue;
+    if(r.type==='qcm' && !r.answer.length){ skip++; continue; }
+    if(r.type==='qa' && !r.back.trim()){ skip++; continue; }
+    saveCard(newCard({chap:m.chap||'', type:r.type, front:r.front.trim(), back:r.back.trim(), hint:r.hint||'', choices:r.type==='qcm'?r.choices:[], answer:r.type==='qcm'?r.answer:[], exam:label})); n++; }
+  if(!n){ toast(skip?'Indique d\'abord les bonnes réponses.':'Aucune question sélectionnée.'); return; }
+  toast(plural(n,'question')+' ajoutée'+(n>1?'s':'')+' (Annale '+label+')'+(skip?' · '+skip+' sans réponse gardée'+(skip>1?'s':'')+' de côté':''), 4200);
+  m.items=m.items.filter(r=>!r.off && ((r.type==='qcm'&&!r.answer.length)||(r.type==='qa'&&!r.back.trim())));
+  if(!m.items.length){ m.items=null; resetImpDoc(); }
+  updateDueDot(); rerender();
+}
+function docImportPanel(){
+  const m=UI.imp; const exam=m.kind==='exam';
+  let html=`<section class="panel stack">
+   <h3>Leçon ou épreuve d'examen</h3>
+   <div class="seg" role="group" aria-label="Type de document"><button data-act="imp-kind" data-k="lesson" aria-pressed="${!exam}">Leçon</button><button data-act="imp-kind" data-k="exam" aria-pressed="${exam}">Annale d'examen</button></div>
+   <p class="small muted">${exam?"Une épreuve des années passées : les QCM et les questions deviennent des cartes à réviser, avec le corrigé s'il est dans le document.":"Ton cours (polycopié, diapos du prof, résumé) : il est rangé dans les notes du chapitre, et Claude peut en tirer des cartes fidèles à ton prof."}</p>
+   <label class="field">Chapitre${exam?' <span class="field-hint">Facultatif.</span>':''}<select data-input="imp2-chap">${scopeOptions(m.chap||'',true)}</select></label>
+   ${exam?`<label class="field">Année ou session <span class="field-hint">Ex. 2023, 2022 rattrapage…</span><input type="text" data-input="imp2-year" value="${esc(m.year)}" placeholder="2023"></label>`:''}
+   <div class="row"><button class="btn btn-soft" style="flex:1" data-act="imp-file" ${m.busy?'disabled':''}>${I.plus} Fichier</button><button class="btn btn-soft" style="flex:1" data-act="imp-photo" ${m.busy?'disabled':''}>${I.img} Photos</button></div>
+   <p class="small muted">PDF, Word (.docx), PowerPoint (.pptx) ou texte. Pour un sujet sur papier : prends-le en photo, page par page.</p>`;
+  if(m.busy) html+=`<div class="notice">${esc(m.msg||'Lecture en cours…')} <span class="mono" id="impProg"></span></div>`;
+  else {
+    if(m.msg) html+=`<div class="notice">${esc(m.msg)}</div>`;
+    if(m.err) html+=`<div class="notice warn">${esc(m.err)}</div>`;
+    if(m.scanned) html+=`<button class="btn btn-primary" data-act="imp-ocr-pdf">Lire les pages scannées</button><p class="small muted">Lecture automatique sur le téléphone. La première fois, il faut internet (environ 4 Mo).</p>`;
+  }
+  html+=`<label class="field">${m.text?'Texte lu':'Ou colle le texte'} <span class="field-hint">${m.text?'Corrige ce qui a été mal lu si besoin.':''}</span><textarea data-input="imp2-text" style="min-height:${m.text?260:110}px" placeholder="${exam?'1. Parmi les signes suivants…&#10;A. …&#10;B. …&#10;&#10;Corrigé : 1-AC 2-BDE':'Colle ici le texte de ta leçon…'}">${esc(m.text)}</textarea></label>`;
+  {
+    if(!exam) html+=`<div class="row"><button class="btn btn-primary" style="flex:1" data-act="imp-lesson-save">Ranger dans mes notes</button><button class="btn btn-soft" style="flex:1" data-act="imp-lesson-cards">${I.spark} Cartes avec Claude</button></div>
+      ${m.text.length>14000?'<p class="small muted">Texte long : pour les cartes, Claude n\'utilise que le début. Colle le reste en plusieurs fois.</p>':''}`;
+    else html+=`<div class="row"><button class="btn btn-primary" style="flex:1" data-act="imp-exam-parse">Trouver les questions</button><button class="btn btn-soft" style="flex:1" data-act="imp-exam-ai">${I.spark} Avec Claude</button></div>`;
+  }
+  if(exam && m.aiOpen){
+    if(AI.sample) html+=m.aiBusy?`<div class="row"><button class="btn btn-primary" style="flex:1" disabled>Claude lit l'épreuve…</button><button class="btn" data-act="gen-stop">Arrêter</button></div>`:'';
+    else html+=`<div class="notice">Copie la consigne, colle-la dans Claude, puis colle sa réponse ci-dessous. Claude complète les réponses s'il n'y a pas de corrigé.</div>
+      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="imp-exam-copy">Copier la consigne</button>${PWA?'<a class="btn" style="flex:1;text-decoration:none" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude</a>':''}</div>
+      <label class="field">Réponse de Claude<textarea data-input="imp2-paste" placeholder="[{&quot;type&quot;:&quot;qcm&quot;, …}]">${esc(m.paste)}</textarea></label>
+      <button class="btn btn-primary" data-act="imp-exam-read">Lire la réponse</button>`;
+  }
+  html+='</section>';
+  if(exam && m.items) html+=examResultsPanel();
+  return html;
+}
+function examResultsPanel(){
+  const m=UI.imp; const items=m.items;
+  if(!items.length) return `<section class="panel"><p>Je n'ai reconnu aucune question numérotée. Vérifie que les questions commencent par un numéro (1., 2.…) et les propositions par une lettre (A., B.…), ou utilise « Avec Claude ».</p></section>`;
+  const on=items.filter(r=>!r.off), missing=on.filter(r=>r.type==='qcm'?!r.answer.length:!r.back.trim()).length;
+  return `<section class="stack" id="impResults"><div class="spread"><h2>${plural(items.length,'question')}</h2><button class="btn btn-ghost" data-act="imp-exam-clear">Effacer</button></div>
+   <p class="small muted">${missing?`<strong>${missing} sans réponse</strong> : touche les bonnes propositions (ou écris la réponse). `:'Toutes les questions ont une réponse. '}Décoche ce qui ne te sert pas.</p>
+   ${items.map((r,i)=>`<div class="gen-card" data-off="${!!r.off}">
+     <div class="spread"><span class="badge">${r.num?'Q'+esc(r.num)+' · ':''}${r.type==='qcm'?'QCM':'Question'}</span><label class="row small" style="gap:6px;font-weight:700">Garder<input type="checkbox" class="toggle" data-input="imp2-keep" data-i="${i}" ${r.off?'':'checked'}></label></div>
+     <textarea data-input="imp2-edit" data-i="${i}" data-f="front" aria-label="Énoncé" style="min-height:${r.front.length>140?150:70}px">${esc(r.front)}</textarea>
+     ${r.type==='qcm'?`<div class="qcm">${r.choices.map((ch,j)=>`<button data-act="imp-ans" data-i="${i}" data-j="${j}" class="${r.answer.includes(j)?'ok':''}" aria-pressed="${r.answer.includes(j)}"><span class="k">${String.fromCharCode(65+j)}</span><span>${esc(ch)}</span></button>`).join('')}</div>
+       <p class="small ${r.answer.length?'muted':''}" style="${r.answer.length?'':'color:var(--hard);font-weight:700'}">${r.answer.length?'Bonnes réponses : '+r.answer.map(j=>String.fromCharCode(65+j)).join(', '):'Touche les bonnes réponses.'}</p>`:''}
+     <textarea data-input="imp2-edit" data-i="${i}" data-f="back" aria-label="${r.type==='qcm'?'Explication':'Réponse'}" placeholder="${r.type==='qcm'?'Explication (facultatif)':'Réponse attendue'}">${esc(r.back)}</textarea>
+   </div>`).join('')}
+   <button class="btn btn-primary btn-lg" data-act="imp-exam-save" ${on.length?'':'disabled'}>Ajouter ${plural(on.length-missing,'question')} · Annale ${esc(examLabel())}</button></section>`;
+}
+async function examWithClaude(){
+  const m=UI.imp; m.aiOpen=true;
+  if(!AI.sample){ rerender(); return; }
+  m.aiBusy=true; m.err=''; rerender(); aiCtl=new AbortController();
+  try{ const data=await AI.sample.json(buildExamPrompt(m), {signal:aiCtl.signal, modelTier:'default'}); const res=normalizeGenerated(data); if(res.length){ m.items=res; m.aiOpen=false; } else m.err="Claude n'a trouvé aucune question."; }
+  catch(e){ if(e&&e.code==='invalid_json'&&e.text){ const res=parseLoose(e.text); if(res.length){ m.items=res; m.aiOpen=false; } else m.err=aiErr(e); } else m.err=aiErr(e); }
+  m.aiBusy=false; rerender(); const el=$('#impResults'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
 // ---------- Événements ----------
 function afterRender(){
   const n=$('#noteEdit'); if(n && !n.hidden) n.focus();
@@ -1638,6 +1947,23 @@ document.addEventListener('click', async e=>{
     case 'imp-go': { const res=parseLoose(UI.impText||''); if(!res.length){ toast('Aucune carte reconnue. Vérifie le format.'); break; }
       res.forEach(r=>saveCard(newCard({chap:UI.impChap||'', ...r}))); UI.impText=''; toast(plural(res.length,'carte')+' importée'+(res.length>1?'s':'')); updateDueDot(); rerender(); break; }
     case 'import-json': $('#fileJson').click(); break;
+    case 'imp-kind': UI.imp.kind=d.k; if(d.k==='exam' && UI.imp.text && !UI.imp.items) UI.imp.items=parseExam(UI.imp.text); rerender(); break;
+    case 'imp-file': $('#fileDoc').click(); break;
+    case 'imp-photo': UI.fileFor='ocr'; $('#fileImg').multiple=true; $('#fileImg').click(); break;
+    case 'imp-ocr-pdf': runOcr('pdf'); break;
+    case 'imp-lesson': UI.imp.kind='lesson'; UI.imp.chap=d.id; UI.newTab='import'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render(); break;
+    case 'imp-lesson-save': { const m=UI.imp; if(!m.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; } if(!m.chap){ toast('Choisis le chapitre de cette leçon.'); break; }
+      const old=(S.notes[m.chap]||{}).text||''; saveNote(m.chap, (old?old.trim()+'\n\n':'')+'## '+(m.file?m.file.replace(/\.[a-z0-9]+$/i,''):'Leçon importée')+'\n\n'+m.text.trim());
+      if(statusOf(m.chap)===0) setStatus(m.chap,1); toast('Leçon rangée dans les notes de « '+CH[m.chap].title+' »', 3600); resetImpDoc(); rerender(); break; }
+    case 'imp-lesson-cards': { const m=UI.imp; if(!m.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; }
+      UI.gen.chap=m.chap; UI.gen.source='text'; UI.gen.text=m.text; UI.gen.results=null; UI.gen.err=''; UI.newTab='ai'; window.scrollTo(0,0); render(); break; }
+    case 'imp-exam-parse': { const m=UI.imp; if(!m.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; } m.items=parseExam(m.text); rerender(); const el=$('#impResults'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); break; }
+    case 'imp-exam-ai': if(!UI.imp.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; } examWithClaude(); break;
+    case 'imp-exam-copy': await copyText(buildExamPrompt(UI.imp)); break;
+    case 'imp-exam-read': { const m=UI.imp; const res=parseLoose(m.paste); if(!res.length){ m.err="Je n'ai trouvé aucune question dans ce texte. Colle toute la réponse de Claude."; } else { m.err=''; m.items=res; m.aiOpen=false; m.paste=''; } rerender(); break; }
+    case 'imp-exam-clear': UI.imp.items=null; rerender(); break;
+    case 'imp-ans': { const r=UI.imp.items[+d.i], j=+d.j; r.answer=r.answer.includes(j)?r.answer.filter(x=>x!==j):r.answer.concat(j).sort((a,b)=>a-b); rerender(); break; }
+    case 'imp-exam-save': saveExamItems(); break;
     case 'export-json': exportJSON(); break;
     case 'export-anki': exportAnki(); break;
     case 'copy-export': copyText($('#exportText').value, $('#exportText')); break;
@@ -1674,6 +2000,10 @@ document.addEventListener('input', e=>{
     case 'gen-paste': UI.gen.paste=el.value; break;
     case 'gen-edit': UI.gen.results[+d.i][d.f]=el.value; break;
     case 'imp-text': UI.impText=el.value; break;
+    case 'imp2-year': UI.imp.year=el.value; break;
+    case 'imp2-text': UI.imp.text=el.value; break;
+    case 'imp2-paste': UI.imp.paste=el.value; break;
+    case 'imp2-edit': UI.imp.items[+d.i][d.f]=el.value; break;
     case 'ed': ED[d.f]=el.value; break;
     case 'ed-choice': ED.choices[+d.i]=el.value; break;
     case 'pref': { let v=el.value; if(el.type==='number'){ v=Math.max(+el.min||0, Math.min(+el.max||99999, parseInt(v||'0',10)||0)); } S.prefs[d.k]=v; savePrefs(); clearTimeout(UI.pt); UI.pt=setTimeout(updateDueDot, 300); break; }
@@ -1685,10 +2015,12 @@ document.addEventListener('change', async e=>{
   const el=e.target; const k=el.dataset&&el.dataset.input; const d=el.dataset||{};
   if(el.id==='fileImg'){
     const files=Array.from(el.files||[]); el.value=''; if(!files.length) return;
+    if(UI.fileFor==='ocr'){ runOcr('photos', files.slice(0,20)); return; }
     if(UI.fileFor==='card'){ try{ ED.img=await compressForCard(files[0]); ED.imgCloud=false; paintSheet(true); }catch{ toast("Impossible de lire cette image."); } }
     else { const max=AI.images?AI.images.maxCount:5; for(const f of files.slice(0, Math.max(0,max-UI.gen.photos.length))){ try{ const {blob}=await toJpegBlob(f,1600,0.8); UI.gen.photos.push({blob, url:URL.createObjectURL(blob)}); }catch{ toast('Une photo est illisible.'); } } rerender(); }
     return;
   }
+  if(el.id==='fileDoc'){ const f=el.files&&el.files[0]; el.value=''; if(f) readDocFile(f); return; }
   if(el.id==='fileJson'){ const f=el.files&&el.files[0]; el.value=''; if(!f) return; const text=await f.text(); if(UI.tab==='new' && UI.newTab==='import' && !/"app"\s*:\s*"xamxam"/.test(text)){ UI.impText=text; rerender(); return; } importBackup(text); return; }
   if(!k) return;
   switch(k){
@@ -1696,6 +2028,8 @@ document.addEventListener('change', async e=>{
     case 'rev-scope': UI.rev.scope=el.value; rerender(); break;
     case 'gen-chap': UI.gen.chap=el.value; rerender(); break;
     case 'imp-chap': UI.impChap=el.value; break;
+    case 'imp2-chap': UI.imp.chap=el.value; break;
+    case 'imp2-keep': UI.imp.items[+d.i].off=!el.checked; rerender(); break;
     case 'gen-hint': UI.gen.hint=el.checked; break;
     case 'gen-keep': UI.gen.results[+d.i].off=!el.checked; rerender(); break;
     case 'ed-ans': { const i=+d.i; ED.answer=ED.answer.filter(x=>x!==i); if(el.checked) ED.answer.push(i); break; }

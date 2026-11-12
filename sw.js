@@ -1,6 +1,6 @@
 // XamXam : fonctionnement hors ligne.
 // Changer VERSION à chaque mise à jour de l'appli pour rafraîchir le cache.
-const VERSION = 'xamxam-v1';
+const VERSION = 'xamxam-v2';
 const SHELL = [
   './',
   'index.html',
