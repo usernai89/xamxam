@@ -32,3 +32,12 @@ Bibliothèques incluses dans `lib/` : pdf.js 4.10.38 (Apache-2.0) et Tesseract.j
 - **Faire l'examen** : une question à la fois, puis correction avec note sur 20.
   Sans corrigé, on touche les bonnes réponses pendant la correction (gardées pour la fois suivante).
 - Les fichiers ne sont pas dans la sauvegarde .json (seulement les questions et les résultats).
+
+## Synchroniser ses appareils et partager
+
+- **Moi → Synchroniser mes appareils** : une clé GitHub (droit « gist » seulement) collée sur chaque appareil.
+  Les données (cartes, notes, examens, résultats) sont fusionnées dans un gist secret `xamxam-sync.json`.
+  Les fichiers (PDF, photos) restent sur chaque appareil.
+- **Partager** (examen, chapitre, ou sélection dans Réviser) : crée un fichier `.json` avec seulement les questions,
+  envoyé par WhatsApp ou autre. Pour le recevoir : Créer → Importer → « Importer un fichier .json »,
+  ou Partager → XamXam depuis WhatsApp (Android, appli installée).

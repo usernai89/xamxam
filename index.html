@@ -526,6 +526,7 @@ function writeLocal(){
     const light={...d, cards:Object.fromEntries(Object.entries(S.cards).map(([k,c])=>[k, c.img?{...c, img:'', imgCloud:true}:c]))};
     lsSet(LS_KEY, JSON.stringify(light));
   }
+  if(typeof gsSchedule==='function') gsSchedule();
 }
 
 // ---------- Sauvegarde en ligne (capacité db) ----------
@@ -1119,7 +1120,7 @@ function chapterSheet(id){
      <div id="noteView" class="rt">${note?md(note):'<p class="muted small">Colle ici ton résumé ou les points clés du cours. Ils servent aussi à Claude pour créer des cartes fidèles à ton prof.</p>'}</div>
      <textarea id="noteEdit" data-input="note" data-id="${id}" hidden placeholder="## Définition&#10;- …&#10;**Mot-clé** …" style="min-height:220px">${esc(note)}</textarea>
    </section>
-   <section class="panel"><div class="section-title"><h3>Cartes</h3><button class="btn btn-ghost" data-act="edit-card" data-chap="${id}">${I.plus} Ajouter</button></div>
+   <section class="panel"><div class="section-title"><h3>Cartes</h3><div class="row" style="gap:4px">${cards.length?`<button class="btn btn-ghost" data-act="share-chap" data-id="${id}">Partager</button>`:''}<button class="btn btn-ghost" data-act="edit-card" data-chap="${id}">${I.plus} Ajouter</button></div></div>
      ${cards.length?`<div class="clist">${cards.map(cardRow).join('')}</div>`:'<p class="muted small">Pas encore de carte pour ce chapitre.</p>'}
    </section>
    ${c.custom?`<button class="btn danger" data-act="del-chap" data-id="${id}">Supprimer ce chapitre</button>`:''}`;
@@ -1169,7 +1170,7 @@ function viewRev(){
     <button class="btn btn-primary btn-lg" data-act="start" data-mode="${r.mode}" data-scope="${esc(r.scope)}" ${n?'':'disabled'}>${n?'Commencer':'Rien à réviser ici'}</button>
     ${r.mode==='srs'&&n>8?`<button class="btn" data-act="start" data-mode="srs" data-scope="${esc(r.scope)}" data-min="${q}">Séance express · ${q} min</button>`:''}
    </section>
-   <section class="panel"><div class="section-title"><h3>Mes cartes</h3><button class="btn btn-ghost" data-act="edit-card">${I.plus} Nouvelle</button></div>
+   <section class="panel"><div class="section-title"><h3>Mes cartes</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="share-scope">Partager</button><button class="btn btn-ghost" data-act="edit-card">${I.plus} Nouvelle</button></div></div>
     <div class="search" style="margin-bottom:8px">${I.search}<input type="search" id="cardSearch" placeholder="Chercher dans mes cartes" value="${esc(r.q)}" data-input="card-q" aria-label="Chercher dans mes cartes"></div>
     <div id="cardResults">${cardResults()}</div></section>`;
   return html;
@@ -1278,6 +1279,7 @@ function viewMe(){
   </section>
   ${appearancePanel()}
   ${layoutPanel()}
+  ${PWA?gsPanel():''}
   <section class="panel stack"><h3>Sauvegarde</h3>${syncHTML()}
    <div class="row"><button class="btn" style="flex:1" data-act="export-json">Exporter une sauvegarde</button><button class="btn" style="flex:1" data-act="export-anki">Exporter pour Anki</button></div>
    <button class="btn" data-act="import-json">Importer une sauvegarde</button>
@@ -1576,6 +1578,7 @@ function exportAnki(){
 function importBackup(text){
   let d; try{ d=JSON.parse(text); }catch{ toast("Ce fichier n'est pas une sauvegarde XamXam."); return; }
   if(!d||d.app!=='xamxam'){ toast("Ce fichier n'est pas une sauvegarde XamXam."); return; }
+  if(d.kind==='share'){ importShare(d); return; }
   const notes=Object.entries(d.notes||{}).map(([id,n])=>({...n, id}));
   const r=mergeData({cards:d.cards||[], notes, progress:{map:d.progress||{}, custom:d.custom||[]}, stats:d.stats||{days:{}}, prefs:d.prefs||null, trash:d.trash||{}});
   r.fromInc.cards.forEach(id=>cloudPut('cards/'+id,200)); r.fromInc.notes.forEach(id=>cloudPut('notes/'+id,200)); r.fromInc.docs.forEach(k=>cloudPut(k,200));
@@ -2018,6 +2021,7 @@ function examSheet(id){
      :`<button class="btn btn-primary btn-lg" data-act="exr-start" ${n?'':'disabled'}>Faire l'examen</button>`}
    ${k<n?`<p class="small muted">Sans corrigé, tu choisiras les bonnes réponses à la fin, pendant la correction.</p>`:''}
    <div class="row"><button class="btn btn-soft" style="flex:1" data-act="exam-edit">Questions et corrigé</button><button class="btn btn-soft" style="flex:1" data-act="exam-cards">Ajouter aux révisions</button></div>
+   <button class="btn" data-act="share-exam">Partager cet examen</button>
    ${(e.files||[]).length?`<section class="panel"><h3>Sujet d'origine</h3><div class="clist">${e.files.map(f=>`<button class="citem" data-act="exam-file" data-id="${f.id}"><span style="min-width:0"><span class="q">${esc(f.name)}</span><span class="meta"><span class="badge">${fileIcon(fileKind(f.name,f.type))}</span><span>${fmtSize(f.size)}</span></span></span>${I.chev}</button>`).join('')}</div></section>`:''}
    ${at.length?`<section class="panel"><h3>Mes résultats</h3><div class="stack" style="gap:6px">${at.map(a=>`<div class="spread small"><span>${fmtD(new Date(a.t),{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><strong>${a.total?Math.round(a.score/a.total*200)/10+'/20':'—'} <span class="muted">(${a.score}/${a.total})</span></strong></div>`).join('')}</div></section>`:''}
    <button class="btn danger" data-act="exam-del">Supprimer cet examen</button>`;
@@ -2080,6 +2084,122 @@ function examToCards(e){
   }
   updateDueDot();
   toast(n?plural(n,'question')+' ajoutée'+(n>1?'s':'')+' à tes révisions'+(skip?' ('+skip+' sans corrigé laissée'+(skip>1?'s':'')+' de côté)':''):(skip?'Complète d\'abord le corrigé.':'Déjà dans tes révisions.'), 3800);
+}
+
+// ---------- Synchronisation entre appareils (gist GitHub secret) ----------
+// Chaque appareil garde ses données ; elles sont fusionnées dans un fichier « xamxam-sync.json »
+// rangé dans un gist secret du compte GitHub de l'étudiant. La clé (jeton « gist ») reste sur l'appareil.
+// Les fichiers (PDF, photos…) ne sont pas synchronisés : seulement le texte (cartes, notes, examens, résultats).
+const GS={ token:lsGet('xamxam.gh')||'', gist:lsGet('xamxam.gist')||'', login:lsGet('xamxam.ghlogin')||'', last:+(lsGet('xamxam.synced')||0), busy:false, err:'', timer:null, applying:false };
+const GS_FILE='xamxam-sync.json';
+async function gh(method, path, body){
+  const r=await fetch('https://api.github.com'+path, {method, headers:{Authorization:'Bearer '+GS.token, Accept:'application/vnd.github+json', ...(body?{'Content-Type':'application/json'}:{})}, body:body?JSON.stringify(body):undefined, cache:'no-store'});
+  if(r.status===401) throw Object.assign(new Error('auth'),{code:'auth'});
+  if(r.status===404) throw Object.assign(new Error('404'),{code:'missing'});
+  if(!r.ok) throw Object.assign(new Error('http'),{code:'http', status:r.status});
+  return r.json();
+}
+function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams}; }
+function applyRemote(d){
+  const before=JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
+  const notes=Object.entries(d.notes||{}).map(([id,n])=>({...n, id}));
+  const r=mergeData({cards:d.cards||[], notes, progress:{map:d.progress||{}, custom:d.custom||[]}, stats:d.stats||{days:{}}, prefs:d.prefs||null, trash:d.trash||{}});
+  let ex=0;
+  for(const e of Object.values(d.exams||{})){ if(!e||!e.id) continue; if(S.trash[e.id] && S.trash[e.id]>=(e.t||0)) continue;
+    const l=S.exams[e.id]; if(!l||(e.t||0)>(l.t||0)){ S.exams[e.id]={...e, files:l?l.files:(e.files||[])}; ex++; } }
+  for(const id of Object.keys(S.exams)){ if(S.trash[id] && S.trash[id]>=(S.exams[id].t||0)) delete S.exams[id]; }
+  return r.fromInc.cards.length || r.fromInc.notes.length || r.fromInc.docs.size || ex || before!==JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
+}
+async function gsSync(manual){
+  if(!GS.token||!GS.gist||GS.busy) return;
+  if(!navigator.onLine){ if(manual){ GS.err='Pas de connexion internet.'; gsPaint(); } return; }
+  GS.busy=true; GS.err=''; gsPaint();
+  try{
+    const g=await gh('GET','/gists/'+GS.gist); const f=g.files&&g.files[GS_FILE];
+    let text=f?(f.truncated?await (await fetch(f.raw_url,{cache:'no-store'})).text():f.content):'';
+    let changed=false;
+    if(text){ const d=JSON.parse(text); if(d&&d.app==='xamxam'){ GS.applying=true; changed=applyRemote(d); writeLocal(); GS.applying=false; } }
+    const mine=JSON.stringify(syncSnapshot());
+    if(mine!==text) await gh('PATCH','/gists/'+GS.gist,{files:{[GS_FILE]:{content:mine}}});
+    GS.last=now(); lsSet('xamxam.synced', String(GS.last));
+    if(changed){ onDataChanged(true); if(manual) toast('Données des autres appareils récupérées'); }
+    else if(manual) toast('Tout est à jour');
+  }catch(e){
+    GS.applying=false;
+    GS.err=e&&e.code==='auth'?'La clé GitHub ne marche plus (expirée ou supprimée). Recrée-en une et relie à nouveau cet appareil.'
+      :e&&e.code==='missing'?'Le fichier de synchronisation a disparu de GitHub. Relie à nouveau cet appareil.'
+      :'Synchronisation impossible pour le moment. Elle reprendra toute seule.';
+  }
+  GS.busy=false; gsPaint();
+}
+function gsSchedule(){ if(!GS.token||!GS.gist||GS.applying) return; clearTimeout(GS.timer); GS.timer=setTimeout(()=>gsSync(false), 15000); }
+async function gsConnect(token){
+  GS.token=token.trim(); GS.err=''; GS.busy=true; gsPaint();
+  try{
+    const u=await gh('GET','/user'); GS.login=u.login||'';
+    let found=null;
+    for(let page=1; page<=5 && !found; page++){ const list=await gh('GET','/gists?per_page=100&page='+page); found=list.find(x=>x.files&&x.files[GS_FILE]); if(list.length<100) break; }
+    if(!found) found=await gh('POST','/gists',{description:'XamXam · synchronisation de mes révisions (ne pas supprimer)', public:false, files:{[GS_FILE]:{content:JSON.stringify(syncSnapshot())}}});
+    GS.gist=found.id; lsSet('xamxam.gh',GS.token); lsSet('xamxam.gist',GS.gist); lsSet('xamxam.ghlogin',GS.login);
+    GS.busy=false; await gsSync(false);
+    toast('Cet appareil est relié. Fais pareil sur tes autres appareils avec la même clé.', 4500);
+  }catch(e){
+    GS.busy=false; GS.token='';
+    GS.err=e&&e.code==='auth'?'Clé refusée par GitHub. Vérifie que tu as copié toute la clé (elle commence par ghp_).':(!navigator.onLine?'Pas de connexion internet.':'Impossible de joindre GitHub. Vérifie que la case « gist » est bien cochée, puis réessaie.');
+  }
+  gsPaint();
+}
+function gsDisconnect(){ GS.token=''; GS.gist=''; GS.login=''; GS.err=''; ['xamxam.gh','xamxam.gist','xamxam.ghlogin','xamxam.synced'].forEach(k=>{ try{ localStorage.removeItem(k); }catch{} }); gsPaint(); toast('Cet appareil n\'est plus synchronisé. Tes données restent dessus.'); }
+function ago(t){ const m=Math.round((now()-t)/MIN); if(m<1) return "à l'instant"; if(m<60) return 'il y a '+m+' min'; const h=Math.round(m/60); if(h<24) return 'il y a '+h+' h'; return 'le '+fmtShort(new Date(t)); }
+function gsPanel(){
+  const on=GS.token&&GS.gist;
+  return `<section class="panel stack" id="gsPanel"><h3>Synchroniser mes appareils</h3>
+   ${on?`<p class="small">Relié au compte GitHub <strong>${esc(GS.login||'?')}</strong>. ${GS.busy?'Synchronisation…':GS.last?'Dernière synchronisation : '+ago(GS.last)+'.':''}</p>
+     <p class="small muted">Tes cartes, notes, examens et résultats sont mis en commun avec tes autres appareils dès qu'il y a internet. Les fichiers (PDF, photos) restent sur chaque appareil.</p>
+     <div class="row"><button class="btn btn-soft" style="flex:1" data-act="gs-now" ${GS.busy?'disabled':''}>Synchroniser maintenant</button><button class="btn" style="flex:1" data-act="gs-off">Déconnecter</button></div>`
+   :`<p class="small">Pour retrouver les mêmes cartes, notes et examens sur ton téléphone et ton ordinateur. Ça passe par ton compte GitHub, une seule fois par appareil :</p>
+     <ol class="small" style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">
+      <li>Touche <strong>Créer ma clé</strong> (connecte-toi à GitHub si besoin).</li>
+      <li>Dans « Expiration », choisis <strong>No expiration</strong>. Laisse la case <strong>gist</strong> cochée.</li>
+      <li>En bas, touche <strong>Generate token</strong>, puis copie la clé (elle commence par <span class="mono">ghp_</span>).</li>
+      <li>Colle-la ici, puis touche <strong>Relier cet appareil</strong>. Refais la même chose sur ton autre appareil, avec la même clé.</li></ol>
+     <a class="btn btn-soft" style="text-decoration:none" href="https://github.com/settings/tokens/new?scopes=gist&description=XamXam%20synchronisation" target="_blank" rel="noopener">Créer ma clé</a>
+     <label class="field">Ma clé GitHub<input type="password" id="gsToken" autocomplete="off" placeholder="ghp_…"></label>
+     <button class="btn btn-primary" data-act="gs-link" ${GS.busy?'disabled':''}>${GS.busy?'Connexion…':'Relier cet appareil'}</button>
+     <p class="small muted">Garde ta clé pour toi : elle donne accès à tes notes GitHub (gists), et rien d'autre.</p>`}
+   ${GS.err?`<div class="notice warn">${esc(GS.err)}</div>`:''}
+  </section>`;
+}
+function gsPaint(){ const el=$('#gsPanel'); if(el) el.outerHTML=gsPanel(); }
+
+// ---------- Partager des questions ----------
+function shareCardData(c){ return {type:c.type, front:c.front, back:c.back, hint:c.hint||'', choices:c.choices||[], answer:c.answer||[], img:c.img||'', imgSide:c.imgSide||'front', exam:c.exam||'', chap:c.chap||'', syn:c.syn||''}; }
+async function shareFile(title, cards, exams){
+  if(!cards.length && !exams.length){ toast('Rien à partager ici.'); return; }
+  const d={app:'xamxam', kind:'share', v:1, title, from:S.prefs.name||'', created:new Date().toISOString(), cards:cards.map(shareCardData), exams:exams.map(e=>({mod:e.mod, title:e.title, date:e.date||'', items:e.items}))};
+  const name='xamxam-'+title.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)+'.json';
+  const text=JSON.stringify(d);
+  try{
+    const file=new File([text], name, {type:'application/json'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'XamXam · '+title, text:'Questions XamXam : '+title+'. Pour les ajouter : ouvre XamXam → Créer → Importer → « Importer un fichier .json ».'}); return; }
+  }catch(e){ if(e&&e.name==='AbortError') return; }
+  offerFile(name, text);
+}
+function importShare(d){
+  const have=new Set(Object.values(S.cards).map(c=>c.type+'|'+c.front+'|'+(c.exam||'')));
+  let n=0, ne=0;
+  for(const c of d.cards||[]){ if(!c||!c.front) continue; const k=(c.type||'qa')+'|'+c.front+'|'+(c.exam||''); if(have.has(k)) continue; have.add(k);
+    saveCard(newCard({type:['qa','cloze','qcm'].includes(c.type)?c.type:'qa', front:String(c.front), back:String(c.back||''), hint:String(c.hint||''), choices:Array.isArray(c.choices)?c.choices:[], answer:Array.isArray(c.answer)?c.answer:[], img:c.img||'', imgSide:c.imgSide||'front', exam:c.exam||'', chap:CH[c.chap]?c.chap:'', syn:c.syn&&SYN_BY[c.syn]?c.syn:''})); n++; }
+  for(const e of d.exams||[]){ if(!e||!Array.isArray(e.items)) continue;
+    if(Object.values(S.exams).some(x=>x.title===e.title && x.date===(e.date||'') && x.items.length===e.items.length)) continue;
+    const id=uid('e'); S.exams[id]={id, mod:MODS[e.mod]?e.mod:PROGRAMME[0].id, title:String(e.title||'Examen'), date:e.date||'', files:[], items:e.items, attempts:[], created:now(), t:now()}; ne++; }
+  saveLocal(); onDataChanged(true);
+  toast(n||ne?'Reçu'+(d.from?' de '+d.from:'')+' : '+[n?plural(n,'carte'):'', ne?plural(ne,'examen'):''].filter(Boolean).join(' et '):'Tu avais déjà tout ce qui est dans ce fichier.', 4200);
+}
+async function handleSharedLaunch(){
+  if(!/[?&]shared=1/.test(location.search)) return;
+  try{ history.replaceState(null,'',location.pathname); }catch{}
+  try{ const c=await caches.open('xamxam-share'); const r=await c.match('shared-file'); if(!r) return; const text=await r.text(); await c.delete('shared-file'); importBackup(text); }catch{ toast("Impossible d'ouvrir le fichier partagé."); }
 }
 
 // ---------- Événements ----------
@@ -2168,12 +2288,18 @@ document.addEventListener('click', async e=>{
     case 'imp-ans': { const r=UI.imp.items[+d.i], j=+d.j; r.answer=r.answer.includes(j)?r.answer.filter(x=>x!==j):r.answer.concat(j).sort((a,b)=>a-b); impRefresh(); break; }
     case 'imp-exam-save': saveExamItems(); break;
     case 'exam-save': saveModuleExam(); break;
+    case 'gs-link': { const t=($('#gsToken')||{}).value||''; if(!/^(ghp_|github_pat_|gho_)/.test(t.trim())){ toast('Colle la clé copiée sur GitHub (elle commence par ghp_).'); break; } gsConnect(t); break; }
+    case 'gs-now': gsSync(true); break;
+    case 'gs-off': armConfirm(a,'Confirmer : déconnecter cet appareil', gsDisconnect); break;
+    case 'share-exam': { const e=S.exams[UI.examId]; shareFile(e.title, [], [e]); break; }
+    case 'share-chap': { const ch=CH[d.id]; shareFile(ch.title, Object.values(S.cards).filter(c=>c.chap===d.id && !c.example), []); break; }
+    case 'share-scope': { const sc=UI.rev.scope; shareFile(scopeLabel(sc), Object.values(S.cards).filter(c=>inScope(c,sc) && !c.example), sc==='all'?Object.values(S.exams):(sc.startsWith('m:')?Object.values(S.exams).filter(e=>e.mod===sc.slice(2)):[])); break; }
     case 'exam-new': startExamImport(d.mod, null); break;
     case 'exam-open': UI.examId=d.id; openSheet(()=>examSheet(UI.examId)); break;
     case 'exam-edit': startExamImport(S.exams[UI.examId].mod, S.exams[UI.examId]); break;
     case 'exam-cards': examToCards(S.exams[UI.examId]); break;
     case 'exam-file': { const f=(S.exams[UI.examId].files||[]).find(x=>x.id===d.id); if(f) openDoc(f, null); break; }
-    case 'exam-del': armConfirm(a,"Confirmer : supprimer l'examen",()=>{ const e=S.exams[UI.examId]; (e.files||[]).forEach(f=>fdel(f.id).catch(()=>{})); delete S.exams[UI.examId]; if(EXR&&EXR.examId===UI.examId) EXR=null; saveExams(); toast('Examen supprimé'); closeSheet(); }); break;
+    case 'exam-del': armConfirm(a,"Confirmer : supprimer l'examen",()=>{ const e=S.exams[UI.examId]; (e.files||[]).forEach(f=>fdel(f.id).catch(()=>{})); delete S.exams[UI.examId]; S.trash[UI.examId]=now(); if(EXR&&EXR.examId===UI.examId) EXR=null; saveExams(); toast('Examen supprimé'); closeSheet(); }); break;
     case 'exr-start': { if(UI.sheetStack[UI.sheetStack.length-1]===examResultSheet) UI.sheetStack.pop(); exrStart(UI.examId); break; }
     case 'exr-resume': UI.sheetStack.push(examRunSheet); paintSheet(); break;
     case 'exr-pick': { const p=EXR.picks[EXR.i], j=+d.j; EXR.picks[EXR.i]=p.includes(j)?p.filter(x=>x!==j):p.concat(j).sort((x,y)=>x-y); a.setAttribute('aria-pressed', EXR.picks[EXR.i].includes(j)); break; }
@@ -2762,6 +2888,8 @@ function synSheet(){
 // ---------- Démarrage ----------
 loadLocal(); buildIndex(); applyTheme(); updateDueDot(); render();
 cloudInit(); aiInit();
+if(PWA){ handleSharedLaunch(); setTimeout(()=>gsSync(false), 1500); window.addEventListener('online', ()=>gsSync(false));
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && now()-GS.last>2*MIN) gsSync(false); else if(document.visibilityState==='hidden'){ clearTimeout(GS.timer); gsSync(false); } }); }
 if(PWA){
   window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); installEvt=e; if(UI.tab==='me') rerender(); });
   window.addEventListener('appinstalled', ()=>{ installEvt=null; toast('XamXam est installée'); });
