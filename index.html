@@ -347,6 +347,7 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 <div id="sheet" class="layer" hidden><div class="layer-in" id="sheetIn"></div></div>
 <div id="toast" role="status" hidden></div>
 <input type="file" id="fileImg" accept="image/*" hidden>
+<input type="file" id="fileAny" multiple hidden>
 <input type="file" id="fileDoc" accept=".pdf,.docx,.pptx,.txt,.md,.doc,.ppt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
 <input type="file" id="fileJson" accept=".json,application/json,text/plain" hidden>
 
@@ -508,19 +509,19 @@ function buildIndex(){
 const allChapters = () => Object.values(CH);
 
 // ---------- État ----------
-const S = { cards:{}, progress:{}, notes:{}, custom:[], stats:{days:{}}, prefs:clone(DEFAULT_PREFS), trash:{} };
+const S = { cards:{}, progress:{}, notes:{}, custom:[], stats:{days:{}}, prefs:clone(DEFAULT_PREFS), trash:{}, docs:{}, exams:{} };
 const LS_KEY='xamxam.v1';
 function loadLocal(){
   const raw=lsGet(LS_KEY); if(!raw) return;
   try{ const d=JSON.parse(raw);
     S.cards=d.cards||{}; S.progress=d.progress||{}; S.notes=d.notes||{}; S.custom=d.custom||[];
-    S.stats=d.stats||{days:{}}; S.prefs={...clone(DEFAULT_PREFS), ...(d.prefs||{})}; S.trash=d.trash||{};
+    S.stats=d.stats||{days:{}}; S.prefs={...clone(DEFAULT_PREFS), ...(d.prefs||{})}; S.trash=d.trash||{}; S.docs=d.docs||{}; S.exams=d.exams||{};
   }catch{}
 }
 let localTimer;
 function saveLocal(){ clearTimeout(localTimer); localTimer=setTimeout(writeLocal, 250); }
 function writeLocal(){
-  const d={cards:S.cards, progress:S.progress, notes:S.notes, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash};
+  const d={cards:S.cards, progress:S.progress, notes:S.notes, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams};
   if(!lsSet(LS_KEY, JSON.stringify(d))){ // trop lourd (images) : on garde le texte sur le téléphone, les images restent dans la sauvegarde en ligne
     const light={...d, cards:Object.fromEntries(Object.entries(S.cards).map(([k,c])=>[k, c.img?{...c, img:'', imgCloud:true}:c]))};
     lsSet(LS_KEY, JSON.stringify(light));
@@ -948,7 +949,7 @@ function parseLoose(text){
 const UI = { tab:(lsGet('xamxam.tab')||'home'), progFilter:'all', progQuery:'', open:new Set(['semio']),
   rev:{mode:'srs', scope:'all', q:''},
   gen:{chap:'', source:'focus', focus:'', text:'', photos:[], n:10, types:['qa','cloze','qcm'], level:'l3', hint:true, busy:false, err:'', stream:'', results:null, paste:''},
-  imp:{kind:'lesson', chap:'', year:'', text:'', file:'', msg:'', err:'', busy:false, items:null, scanned:null, paste:'', aiOpen:false, aiBusy:false},
+  imp:{target:'', mod:'', blobs:[], editId:null, title:'', date:'', kind:'lesson', chap:'', year:'', text:'', file:'', msg:'', err:'', busy:false, items:null, scanned:null, paste:'', aiOpen:false, aiBusy:false},
   newTab:'ai', sheetStack:[] };
 if(!['home','prog','rev','new','me'].includes(UI.tab)) UI.tab='home';
 
@@ -1080,7 +1081,7 @@ function viewProg(){
    <div class="chips" role="group" aria-label="Filtrer">${filters.map(([k,l])=>`<button class="chip" data-act="progf" data-f="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</div>`;
   const cardCount={}; for(const c of Object.values(S.cards)) cardCount[c.chap]=(cardCount[c.chap]||0)+1;
   for(const m of PROGRAMME){
-    let inner=''; let shown=0;
+    let inner=(!q && f==='all')?modExamsBlock(m):''; let shown=0;
     for(const s of m.subs){
       const chs=s.all.filter(c=>(f==='all'||String(statusOf(c.id))===f)&&(!q||c.title.toLowerCase().includes(q)||s.name.toLowerCase().includes(q)));
       if(!chs.length && (q||f!=='all')) continue;
@@ -1108,6 +1109,7 @@ function chapterSheet(id){
      <button class="btn btn-primary" style="flex:1" data-act="start" data-mode="${cnt.rev+cnt.lrn+cnt.nw?'srs':'cram'}" data-scope="c:${id}" ${cards.length?'':'disabled'}>Réviser (${cards.length})</button>
      <button class="btn btn-soft" style="flex:1" data-act="gen-for" data-id="${id}">${I.spark} Générer des cartes</button>
    </div>
+   ${docsSection(id)}
    <section class="panel"><div class="section-title"><h3>Leçon express</h3>${AI.sample?'':'<span class="badge">IA indisponible ici</span>'}</div>
      <p class="small muted" id="lessonHelp">Claude t'explique ce chapitre en 5 minutes : l'essentiel, le pourquoi, le piège d'examen et une astuce pour retenir.${note?' Il s\'appuie sur tes notes.':''}</p>
      <div id="lessonOut" class="rt" style="margin-top:10px" hidden></div>
@@ -1237,6 +1239,7 @@ function resultsPanel(){
    <button class="btn btn-primary btn-lg" data-act="gen-save" ${on?'':'disabled'}>Ajouter ${plural(on,'carte')}${g.chap&&CH[g.chap]?' à « '+esc(CH[g.chap].title)+' »':''}</button></section>`;
 }
 function importPanel(){
+  if(UI.imp.target==='module'){ UI.imp.target=''; UI.imp.editId=null; resetImpDoc(); }
   return docImportPanel()+`<section class="panel stack">
    <h3>Cartes déjà prêtes</h3>
    <p>Colle des cartes déjà prêtes, une par ligne : <span class="mono small">question :: réponse :: astuce</span>. Le format JSON donné par Claude marche aussi.</p>
@@ -1553,7 +1556,7 @@ async function offerFile(filename, text){
   openSheet(()=>sheetTop(filename)+`<p class="small">Le téléchargement direct n'est pas disponible ici. Copie ce texte et enregistre-le dans un fichier.</p><textarea id="exportText" style="min-height:50vh" readonly>${esc(text)}</textarea><button class="btn btn-primary" data-act="copy-export">Copier</button>`);
 }
 function exportJSON(){
-  const d={app:'xamxam', v:1, exported:new Date().toISOString(), cards:Object.values(S.cards), progress:S.progress, custom:S.custom, notes:S.notes, stats:S.stats, prefs:S.prefs, trash:S.trash};
+  const d={app:'xamxam', v:1, exported:new Date().toISOString(), cards:Object.values(S.cards), progress:S.progress, custom:S.custom, notes:S.notes, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams};
   S.prefs.lastExport=now(); savePrefs(); setSync(W.status);
   offerFile('xamxam-sauvegarde-'+dayKey()+'.json', JSON.stringify(d));
 }
@@ -1576,6 +1579,8 @@ function importBackup(text){
   const notes=Object.entries(d.notes||{}).map(([id,n])=>({...n, id}));
   const r=mergeData({cards:d.cards||[], notes, progress:{map:d.progress||{}, custom:d.custom||[]}, stats:d.stats||{days:{}}, prefs:d.prefs||null, trash:d.trash||{}});
   r.fromInc.cards.forEach(id=>cloudPut('cards/'+id,200)); r.fromInc.notes.forEach(id=>cloudPut('notes/'+id,200)); r.fromInc.docs.forEach(k=>cloudPut(k,200));
+  for(const e of Object.values(d.exams||{})){ if(e&&e.id&&(!S.exams[e.id]||(S.exams[e.id].t||0)<(e.t||0))) S.exams[e.id]=e; }
+  for(const x of Object.values(d.docs||{})){ if(x&&x.id&&!S.docs[x.id]) S.docs[x.id]=x; }
   writeLocal(); onDataChanged(true); toast('Sauvegarde importée : '+plural(r.fromInc.cards.length,'carte')+' mise'+(r.fromInc.cards.length>1?'s':'')+' à jour');
 }
 
@@ -1770,9 +1775,10 @@ ${o.text.trim().slice(0,14000)}
 """`;
 }
 const IMP_MAX=200000;
-function resetImpDoc(){ const m=UI.imp; m.text=''; m.file=''; m.items=null; m.msg=''; m.err=''; m.scanned=null; m.paste=''; }
+function impRefresh(){ if(UI.sheetStack.length) paintSheet(true); else rerender(); }
+function resetImpDoc(){ const m=UI.imp; m.blobs=[]; m.text=''; m.file=''; m.items=null; m.msg=''; m.err=''; m.scanned=null; m.paste=''; }
 async function readDocFile(f){
-  const m=UI.imp; resetImpDoc(); m.file=f.name; m.busy=true; m.msg='Lecture de « '+f.name+' »…'; rerender();
+  const m=UI.imp; resetImpDoc(); m.blobs=[f]; m.file=f.name; m.busy=true; m.msg='Lecture de « '+f.name+' »…'; impRefresh();
   const prog=t=>{ const el=$('#impProg'); if(el) el.textContent=t; };
   try{
     const name=f.name.toLowerCase(); const buf=await f.arrayBuffer(); let text='';
@@ -1791,23 +1797,23 @@ async function readDocFile(f){
   }catch(e){
     m.msg=''; m.err=e&&e.old?"Ancien format Word/PowerPoint (.doc, .ppt) : ouvre-le et enregistre-le en .docx, .pptx ou PDF, puis réessaie.":(!navigator.onLine?"Pas de connexion : la première lecture d'un PDF a besoin d'internet. Réessaie une fois connecté.":"Impossible de lire ce fichier. Essaie de l'exporter en PDF, ou colle le texte.");
   }
-  m.busy=false; if(m.text && m.kind==='exam') m.items=parseExam(m.text); rerender();
+  m.busy=false; if(m.text && m.kind==='exam') m.items=parseExam(m.text); impRefresh();
 }
 async function runOcr(kind, files){
-  const m=UI.imp; m.busy=true; m.err=''; rerender();
+  const m=UI.imp; m.busy=true; m.err=''; impRefresh();
   const prog=t=>{ const el=$('#impProg'); if(el) el.textContent=t; };
   try{
     prog('Préparation de la lecture (la première fois, environ 4 Mo à télécharger)…');
     let text='';
     if(kind==='pdf'){ text=await pdfOcr(m.scanned, (i,n,p)=>prog(`Page ${i}/${n} · ${Math.round(p*100)} %`)); if(m.scanned.numPages>40) m.msg='Seules les 40 premières pages ont été lues.'; else m.msg=''; m.scanned=null; }
-    else { resetImpDoc(); m.file=files.length>1?files.length+' photos':'Photo';
+    else { resetImpDoc(); m.blobs=files; m.file=files.length>1?files.length+' photos':'Photo';
       for(let i=0;i<files.length;i++){ const {canvas}=await toJpegBlob(files[i], 2400, 0.9); text+=(i?'\n\n':'')+await ocrImage(canvas, p=>prog(`Photo ${i+1}/${files.length} · ${Math.round(p*100)} %`)); }
       m.msg=''; }
     m.text=cleanText((m.text?m.text+'\n\n':'')+text).slice(0,IMP_MAX);
     if(!m.text.trim()) m.err="Aucun texte reconnu. Prends la photo bien à plat, nette et éclairée.";
     else m.msg=(m.msg?m.msg+' ':'')+'Texte reconnu automatiquement : relis-le, il peut y avoir des erreurs.';
   }catch(e){ m.err="La lecture automatique a échoué. Vérifie ta connexion internet (nécessaire la première fois), puis réessaie."; }
-  m.busy=false; if(m.text && m.kind==='exam') m.items=parseExam(m.text); rerender();
+  m.busy=false; if(m.text && m.kind==='exam') m.items=parseExam(m.text); impRefresh();
 }
 function examLabel(){ return (UI.imp.year||'').trim() || 'Sans année'; }
 function saveExamItems(){
@@ -1820,16 +1826,16 @@ function saveExamItems(){
   toast(plural(n,'question')+' ajoutée'+(n>1?'s':'')+' (Annale '+label+')'+(skip?' · '+skip+' sans réponse gardée'+(skip>1?'s':'')+' de côté':''), 4200);
   m.items=m.items.filter(r=>!r.off && ((r.type==='qcm'&&!r.answer.length)||(r.type==='qa'&&!r.back.trim())));
   if(!m.items.length){ m.items=null; resetImpDoc(); }
-  updateDueDot(); rerender();
+  updateDueDot(); impRefresh();
 }
 function docImportPanel(){
-  const m=UI.imp; const exam=m.kind==='exam';
+  const m=UI.imp; const exam=m.kind==='exam'; const modMode=m.target==='module';
   let html=`<section class="panel stack">
-   <h3>Leçon ou épreuve d'examen</h3>
+   ${modMode?`<h3>Le sujet</h3><p class="small muted">Ajoute le sujet (fichier ou photos) : les questions sont repérées, avec le corrigé s'il y en a un.</p>`:`<h3>Leçon ou épreuve d'examen</h3>
    <div class="seg" role="group" aria-label="Type de document"><button data-act="imp-kind" data-k="lesson" aria-pressed="${!exam}">Leçon</button><button data-act="imp-kind" data-k="exam" aria-pressed="${exam}">Annale d'examen</button></div>
    <p class="small muted">${exam?"Une épreuve des années passées : les QCM et les questions deviennent des cartes à réviser, avec le corrigé s'il est dans le document.":"Ton cours (polycopié, diapos du prof, résumé) : il est rangé dans les notes du chapitre, et Claude peut en tirer des cartes fidèles à ton prof."}</p>
    <label class="field">Chapitre${exam?' <span class="field-hint">Facultatif.</span>':''}<select data-input="imp2-chap">${scopeOptions(m.chap||'',true)}</select></label>
-   ${exam?`<label class="field">Année ou session <span class="field-hint">Ex. 2023, 2022 rattrapage…</span><input type="text" data-input="imp2-year" value="${esc(m.year)}" placeholder="2023"></label>`:''}
+   ${exam?`<label class="field">Année ou session <span class="field-hint">Ex. 2023, 2022 rattrapage…</span><input type="text" data-input="imp2-year" value="${esc(m.year)}" placeholder="2023"></label>`:''}`}
    <div class="row"><button class="btn btn-soft" style="flex:1" data-act="imp-file" ${m.busy?'disabled':''}>${I.plus} Fichier</button><button class="btn btn-soft" style="flex:1" data-act="imp-photo" ${m.busy?'disabled':''}>${I.img} Photos</button></div>
    <p class="small muted">PDF, Word (.docx), PowerPoint (.pptx) ou texte. Pour un sujet sur papier : prends-le en photo, page par page.</p>`;
   if(m.busy) html+=`<div class="notice">${esc(m.msg||'Lecture en cours…')} <span class="mono" id="impProg"></span></div>`;
@@ -1860,7 +1866,7 @@ function examResultsPanel(){
   if(!items.length) return `<section class="panel"><p>Je n'ai reconnu aucune question numérotée. Vérifie que les questions commencent par un numéro (1., 2.…) et les propositions par une lettre (A., B.…), ou utilise « Avec Claude ».</p></section>`;
   const on=items.filter(r=>!r.off), missing=on.filter(r=>r.type==='qcm'?!r.answer.length:!r.back.trim()).length;
   return `<section class="stack" id="impResults"><div class="spread"><h2>${plural(items.length,'question')}</h2><button class="btn btn-ghost" data-act="imp-exam-clear">Effacer</button></div>
-   <p class="small muted">${missing?`<strong>${missing} sans réponse</strong> : touche les bonnes propositions (ou écris la réponse). `:'Toutes les questions ont une réponse. '}Décoche ce qui ne te sert pas.</p>
+   <p class="small muted">${missing?`<strong>${missing} sans réponse</strong> : touche les bonnes propositions (ou écris la réponse)${m.target==='module'?', ou corrige-les après avoir fait l\'examen':''}. `:'Toutes les questions ont une réponse. '}Décoche ce qui ne te sert pas.</p>
    ${items.map((r,i)=>`<div class="gen-card" data-off="${!!r.off}">
      <div class="spread"><span class="badge">${r.num?'Q'+esc(r.num)+' · ':''}${r.type==='qcm'?'QCM':'Question'}</span><label class="row small" style="gap:6px;font-weight:700">Garder<input type="checkbox" class="toggle" data-input="imp2-keep" data-i="${i}" ${r.off?'':'checked'}></label></div>
      <textarea data-input="imp2-edit" data-i="${i}" data-f="front" aria-label="Énoncé" style="min-height:${r.front.length>140?150:70}px">${esc(r.front)}</textarea>
@@ -1868,15 +1874,212 @@ function examResultsPanel(){
        <p class="small ${r.answer.length?'muted':''}" style="${r.answer.length?'':'color:var(--hard);font-weight:700'}">${r.answer.length?'Bonnes réponses : '+r.answer.map(j=>String.fromCharCode(65+j)).join(', '):'Touche les bonnes réponses.'}</p>`:''}
      <textarea data-input="imp2-edit" data-i="${i}" data-f="back" aria-label="${r.type==='qcm'?'Explication':'Réponse'}" placeholder="${r.type==='qcm'?'Explication (facultatif)':'Réponse attendue'}">${esc(r.back)}</textarea>
    </div>`).join('')}
-   <button class="btn btn-primary btn-lg" data-act="imp-exam-save" ${on.length?'':'disabled'}>Ajouter ${plural(on.length-missing,'question')} · Annale ${esc(examLabel())}</button></section>`;
+   ${m.target==='module'?`<button class="btn btn-primary btn-lg" data-act="exam-save" ${on.length?'':'disabled'}>${m.editId?'Enregistrer les modifications':"Enregistrer l'examen · "+plural(on.length,'question')}</button>`:`<button class="btn btn-primary btn-lg" data-act="imp-exam-save" ${on.length?'':'disabled'}>Ajouter ${plural(on.length-missing,'question')} · Annale ${esc(examLabel())}</button>`}</section>`;
 }
 async function examWithClaude(){
   const m=UI.imp; m.aiOpen=true;
-  if(!AI.sample){ rerender(); return; }
-  m.aiBusy=true; m.err=''; rerender(); aiCtl=new AbortController();
+  if(!AI.sample){ impRefresh(); return; }
+  m.aiBusy=true; m.err=''; impRefresh(); aiCtl=new AbortController();
   try{ const data=await AI.sample.json(buildExamPrompt(m), {signal:aiCtl.signal, modelTier:'default'}); const res=normalizeGenerated(data); if(res.length){ m.items=res; m.aiOpen=false; } else m.err="Claude n'a trouvé aucune question."; }
   catch(e){ if(e&&e.code==='invalid_json'&&e.text){ const res=parseLoose(e.text); if(res.length){ m.items=res; m.aiOpen=false; } else m.err=aiErr(e); } else m.err=aiErr(e); }
-  m.aiBusy=false; rerender(); const el=$('#impResults'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  m.aiBusy=false; impRefresh(); const el=$('#impResults'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ---------- Documents de cours et examens par module ----------
+// Les fichiers (PDF, Word, photos…) sont gardés sur le téléphone, dans IndexedDB.
+// S.docs : documents rangés dans un chapitre ; S.exams : épreuves d'un module, avec questions, corrigé et tentatives.
+let FDB=null;
+function fdb(){ return FDB||(FDB=new Promise((res,rej)=>{ const r=indexedDB.open('xamxam-files',1); r.onupgradeneeded=()=>r.result.createObjectStore('files'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); })); }
+async function fop(mode, fn){ const db=await fdb(); return new Promise((res,rej)=>{ const t=db.transaction('files',mode); const st=t.objectStore('files'); let out; const r=fn(st); if(r) r.onsuccess=()=>{ out=r.result; }; t.oncomplete=()=>res(out); t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); }); }
+const fput=(id,blob)=>fop('readwrite', st=>st.put(blob,id));
+const fget=id=>fop('readonly', st=>st.get(id));
+const fdel=id=>fop('readwrite', st=>st.delete(id));
+async function storeFiles(list){ const out=[]; for(const f of list){ const id=uid('f'); await fput(id, f.blob||f); out.push({id, name:f.name||'Document', type:f.type||'', size:f.size||(f.blob&&f.blob.size)||0}); } return out; }
+function fmtSize(n){ return n>1048576?(n/1048576).toFixed(1).replace('.',',')+' Mo':Math.max(1,Math.round(n/1024))+' Ko'; }
+function fmtExamDate(s){ const d=parseDate(s); return d?fmtD(d,{day:'numeric',month:'long',year:'numeric'}):'Sans date'; }
+function saveExams(){ saveLocal(); }
+function fileKind(name, type){ const n=(name||'').toLowerCase();
+  if(n.endsWith('.pdf')||type==='application/pdf') return 'pdf';
+  if(/^image\//.test(type||'')||/\.(jpe?g|png|webp|gif|heic)$/.test(n)) return 'img';
+  if(n.endsWith('.docx')) return 'docx'; if(n.endsWith('.pptx')) return 'pptx';
+  if(/\.(txt|md|csv)$/.test(n)||/^text\//.test(type||'')) return 'txt';
+  return 'other'; }
+async function textOfBlob(blob, name){
+  const k=fileKind(name, blob.type); const buf=await blob.arrayBuffer();
+  if(k==='pdf') return (await pdfText(buf)).pages.join('\n\n');
+  if(k==='docx') return docxText(buf); if(k==='pptx') return pptxText(buf);
+  if(k==='txt') return new TextDecoder().decode(buf);
+  return '';
+}
+function fileIcon(k){ return {pdf:'PDF',img:'Photo',docx:'Word',pptx:'Diapos',txt:'Texte'}[k]||'Fichier'; }
+
+// --- Documents d'un chapitre (leçon) ---
+function chapDocs(id){ return Object.values(S.docs).filter(d=>d.chap===id).sort((a,b)=>a.created-b.created); }
+function docsSection(id){
+  const list=chapDocs(id);
+  return `<section class="panel"><div class="section-title"><h3>Mes documents de cours</h3><button class="btn btn-ghost" data-act="doc-add" data-id="${id}">${I.plus} Ajouter</button></div>
+   ${list.length?`<div class="clist">${list.map(d=>`<button class="citem" data-act="doc-open" data-id="${d.id}"><span style="min-width:0"><span class="q">${esc(d.name)}</span><span class="meta"><span class="badge">${fileIcon(fileKind(d.name,d.type))}</span><span>${fmtSize(d.size)} · ${fmtShort(new Date(d.created))}</span></span></span>${I.chev}</button>`).join('')}</div>`
+     :'<p class="muted small">Ajoute ton cours : PDF, Word, PowerPoint, photos ou tout autre fichier. Il reste sur ton téléphone, même sans internet.</p>'}
+  </section>`;
+}
+async function addDocs(chap, files){
+  try{ const stored=await storeFiles(files); for(const f of stored){ S.docs[f.id]={...f, chap, created:now()}; }
+    saveLocal(); if(statusOf(chap)===0) setStatus(chap,1); toast(plural(stored.length,'document')+' ajouté'+(stored.length>1?'s':'')); }
+  catch{ toast("Impossible d'enregistrer ce fichier (mémoire du téléphone pleine ?)"); }
+  paintSheet(true);
+}
+// Lecteur intégré
+function docViewSheet(){
+  const v=UI.docView; const d=v.meta; const k=fileKind(d.name,d.type);
+  let body='';
+  if(v.err) body=`<div class="notice warn">${esc(v.err)}</div>`;
+  else if(k==='pdf') body=`<div id="pdfPages" class="stack" style="gap:10px"><p class="small muted">Ouverture…</p></div>`;
+  else if(k==='img') body=v.url?`<img src="${v.url}" alt="${esc(d.name)}" style="width:100%;border-radius:var(--r-sm)">`:'';
+  else if(k==='docx'||k==='pptx'||k==='txt') body=v.text===null?'<p class="small muted">Ouverture…</p>':`<div class="panel rt">${md(v.text||'*(document vide)*')}</div>`;
+  else body=`<div class="notice">Ce type de fichier ne peut pas s'afficher dans XamXam. Ouvre-le avec une autre application.</div>`;
+  const canText=['pdf','docx','pptx','txt'].includes(k)&&v.chap;
+  return sheetTop(d.name)+`<p class="small muted">${fileIcon(k)} · ${fmtSize(d.size)}</p>
+   <div class="row"><button class="btn btn-soft" style="flex:1" data-act="doc-download">Ouvrir ailleurs</button>${canText?`<button class="btn btn-soft" style="flex:1" data-act="doc-to-notes">Texte → mes notes</button>`:''}</div>
+   ${body}
+   ${v.chap?`<button class="btn danger" data-act="doc-del">Supprimer ce document</button>`:''}`;
+}
+async function openDoc(meta, chap){
+  const blob=await fget(meta.id).catch(()=>null);
+  UI.docView={meta, chap, blob, url:null, text:null, err:blob?'':'Fichier introuvable sur ce téléphone (ajouté depuis un autre appareil ?).'};
+  const k=fileKind(meta.name, meta.type);
+  if(blob && k==='img') UI.docView.url=URL.createObjectURL(blob);
+  openSheet(docViewSheet);
+  if(!blob) return;
+  if(k==='pdf') renderPdf(blob);
+  else if(k==='docx'||k==='pptx'||k==='txt'){ try{ UI.docView.text=cleanText(await textOfBlob(blob, meta.name)); }catch{ UI.docView.err='Impossible de lire ce document ici. Utilise « Ouvrir ailleurs ».'; } if(UI.sheetStack[UI.sheetStack.length-1]===docViewSheet) paintSheet(true); }
+}
+async function renderPdf(blob){
+  const box=()=>$('#pdfPages');
+  try{
+    const lib=await loadPdf(); const doc=await lib.getDocument({data:await blob.arrayBuffer()}).promise;
+    if(!box()) return; box().innerHTML='';
+    const w=Math.min(900, ($('#sheetIn')||document.body).clientWidth||360);
+    for(let i=1;i<=doc.numPages;i++){
+      const el=box(); if(!el) return;
+      const page=await doc.getPage(i); const vp0=page.getViewport({scale:1}); const sc=w/vp0.width*Math.min(2, window.devicePixelRatio||1);
+      const vp=page.getViewport({scale:sc}); const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height;
+      c.style.cssText='width:100%;height:auto;border-radius:var(--r-sm);border:1px solid var(--line);background:#fff';
+      el.appendChild(c); await page.render({canvasContext:c.getContext('2d'), viewport:vp}).promise;
+    }
+  }catch{ const el=box(); if(el) el.innerHTML='<div class="notice warn">Impossible d\'afficher ce PDF ici. Utilise « Ouvrir ailleurs ».</div>'; }
+}
+function downloadBlob(blob, name){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 10000); }
+
+// --- Examens d'un module ---
+function modExams(mod){ return Object.values(S.exams).filter(e=>e.mod===mod).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.created-a.created); }
+function examKeyCount(e){ return e.items.filter(r=>r.type==='qcm'?r.answer.length:r.back.trim()).length; }
+function bestScore(e){ return (e.attempts||[]).reduce((m,a)=>a.total?Math.max(m, a.score/a.total):m, -1); }
+function modExamsBlock(m){
+  const list=modExams(m.id);
+  let h=`<div class="sub-h"><h3>Examens</h3><span class="small muted mono">${list.length||''}</span></div>`;
+  h+=list.map(e=>{ const b=bestScore(e); return `<button class="chap" data-act="exam-open" data-id="${e.id}"><span class="chap-n">${I.spark}</span><span class="chap-t">${esc(e.title)}<span class="chap-meta">${fmtExamDate(e.date)} · ${plural(e.items.length,'question')}${b>=0?' · meilleur : '+Math.round(b*20*10)/10+'/20':''}</span></span>${I.chev}</button>`; }).join('');
+  h+=`<button class="add-chap" data-act="exam-new" data-mod="${m.id}">+ Ajouter un examen de ${esc(m.short||m.name)}</button>`;
+  return h;
+}
+function startExamImport(mod, exam){
+  const m=UI.imp; resetImpDoc(); m.kind='exam'; m.target='module'; m.mod=mod; m.blobs=[];
+  m.editId=exam?exam.id:null; m.title=exam?exam.title:'Examen de '+(MODS[mod].short||MODS[mod].name); m.titleAuto=exam?null:m.title;
+  m.date=exam?exam.date:''; m.items=exam?clone(exam.items):null;
+  openSheet(examNewSheet);
+}
+function examNewSheet(){
+  const m=UI.imp; const editing=!!m.editId;
+  if(editing) return sheetTop('Questions et corrigé')+`<p class="small muted">Touche les bonnes propositions pour corriger le corrigé, modifie le texte si besoin.</p>`+(m.items?examResultsPanel():'');
+  return sheetTop('Nouvel examen · '+(MODS[m.mod]||{}).short)+`
+   <label class="field">Nom de l'examen<input type="text" data-input="exn-title" value="${esc(m.title)}" placeholder="Examen de sémiologie"><span class="field-hint">L'année de la date est ajoutée automatiquement.</span></label>
+   <label class="field">Date de l'examen<input type="date" data-input="exn-date" value="${esc(m.date)}"></label>`+docImportPanel();
+}
+function saveModuleExam(){
+  const m=UI.imp; if(!m.items||!m.items.length){ toast('Aucune question à enregistrer.'); return; }
+  const items=m.items.filter(r=>!r.off).map(r=>({type:r.type, num:r.num||'', front:r.front.trim(), choices:r.type==='qcm'?r.choices:[], answer:r.type==='qcm'?r.answer:[], back:(r.back||'').trim()}));
+  if(!items.length){ toast('Garde au moins une question.'); return; }
+  if(m.editId){ const e=S.exams[m.editId]; e.items=items; e.t=now(); saveExams(); toast('Examen mis à jour'); closeSheet(); return; }
+  (async()=>{
+    let files=[]; try{ files=await storeFiles(m.blobs||[]); }catch{ toast("Le fichier d'origine n'a pas pu être gardé (mémoire pleine ?)."); }
+    const id=uid('e'); const title=((m.title||'').trim()||'Examen')+(m.title===m.titleAuto&&m.date?' '+m.date.slice(0,4):''); S.exams[id]={id, mod:m.mod, title, date:m.date||'', files, items, attempts:[], created:now(), t:now()};
+    saveExams(); const k=examKeyCount(S.exams[id]);
+    toast('Examen enregistré : '+plural(items.length,'question')+(k<items.length?' ('+(items.length-k)+' sans corrigé)':''), 3600);
+    UI.examId=id; UI.sheetStack.pop(); UI.sheetStack.push(()=>examSheet(UI.examId)); paintSheet();
+  })();
+}
+function examSheet(id){
+  const e=S.exams[id]; if(!e) return sheetTop('Examen')+'<p>Examen introuvable.</p>';
+  const k=examKeyCount(e), n=e.items.length; const at=(e.attempts||[]).slice().reverse();
+  return sheetTop((MODS[e.mod]||{}).short||'Examen')+`
+   <h2 style="font-size:1.5rem">${esc(e.title)}</h2>
+   <label class="field">Date de l'examen<input type="date" data-input="ex-date" value="${esc(e.date)}"></label>
+   <p class="small">${plural(n,'question')} · ${k===n?'corrigé complet':k?k+' avec corrigé, '+(n-k)+' sans':'pas de corrigé'}</p>
+   ${EXR&&EXR.examId===id&&!EXR.done?`<button class="btn btn-primary btn-lg" data-act="exr-resume">Reprendre l'examen (question ${EXR.i+1}/${n})</button><button class="btn" data-act="exr-start">Recommencer à zéro</button>`
+     :`<button class="btn btn-primary btn-lg" data-act="exr-start" ${n?'':'disabled'}>Faire l'examen</button>`}
+   ${k<n?`<p class="small muted">Sans corrigé, tu choisiras les bonnes réponses à la fin, pendant la correction.</p>`:''}
+   <div class="row"><button class="btn btn-soft" style="flex:1" data-act="exam-edit">Questions et corrigé</button><button class="btn btn-soft" style="flex:1" data-act="exam-cards">Ajouter aux révisions</button></div>
+   ${(e.files||[]).length?`<section class="panel"><h3>Sujet d'origine</h3><div class="clist">${e.files.map(f=>`<button class="citem" data-act="exam-file" data-id="${f.id}"><span style="min-width:0"><span class="q">${esc(f.name)}</span><span class="meta"><span class="badge">${fileIcon(fileKind(f.name,f.type))}</span><span>${fmtSize(f.size)}</span></span></span>${I.chev}</button>`).join('')}</div></section>`:''}
+   ${at.length?`<section class="panel"><h3>Mes résultats</h3><div class="stack" style="gap:6px">${at.map(a=>`<div class="spread small"><span>${fmtD(new Date(a.t),{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><strong>${a.total?Math.round(a.score/a.total*200)/10+'/20':'—'} <span class="muted">(${a.score}/${a.total})</span></strong></div>`).join('')}</div></section>`:''}
+   <button class="btn danger" data-act="exam-del">Supprimer cet examen</button>`;
+}
+
+// --- Faire l'examen ---
+let EXR=null;
+function exrStart(id){ const e=S.exams[id]; EXR={examId:id, i:0, picks:e.items.map(()=>[]), texts:e.items.map(()=>''), self:e.items.map(()=>null), done:false, start:now()}; UI.sheetStack.push(examRunSheet); paintSheet(); }
+function examRunSheet(){
+  const e=S.exams[EXR.examId], r=e.items[EXR.i], n=e.items.length, i=EXR.i;
+  const answered=EXR.picks.filter((p,j)=>p.length||EXR.texts[j].trim()).length;
+  return `<div class="layer-top"><button class="icon-btn" data-act="sheet-back" aria-label="Quitter l'examen">${I.x}</button><div class="sess-bar"><i style="width:${(i+1)/n*100}%"></i></div><div class="sess-counts"><span>${i+1}/${n}</span></div></div>
+   <article class="flash"><div class="spread"><p class="eyebrow">${esc(e.title)}</p><span class="badge">${r.num?'Q'+esc(r.num):'Q'+(i+1)} · ${r.type==='qcm'?'QCM':'Question'}</span></div>
+    <div class="front rt">${md(r.front)}</div>
+    ${r.type==='qcm'?`<div class="qcm">${r.choices.map((x,j)=>`<button data-act="exr-pick" data-j="${j}" aria-pressed="${EXR.picks[i].includes(j)}"><span class="k">${String.fromCharCode(65+j)}</span><span>${esc(x)}</span></button>`).join('')}</div>`
+      :`<label class="field">Ta réponse<textarea data-input="exr-text" placeholder="Écris ta réponse…">${esc(EXR.texts[i])}</textarea></label>`}
+   </article>
+   <p class="small muted" style="text-align:center">${answered}/${n} répondue${answered>1?'s':''}</p>
+   <div class="row"><button class="btn" style="flex:1" data-act="exr-nav" data-d="-1" ${i?'':'disabled'}>Précédente</button>${i<n-1?`<button class="btn btn-primary" style="flex:1" data-act="exr-nav" data-d="1">Suivante</button>`:''}</div>
+   <button class="btn ${i===n-1?'btn-primary btn-lg':''}" data-act="exr-finish">Terminer et corriger</button>`;
+}
+function qState(r, j){ // juste / faux / null (pas de corrigé)
+  if(r.type==='qcm'){ if(!r.answer.length) return null; const p=EXR.picks[j]; return p.length===r.answer.length && p.every(x=>r.answer.includes(x)); }
+  return EXR.self[j];
+}
+function exrScore(){ const e=S.exams[EXR.examId]; let s=0, t=0; e.items.forEach((r,j)=>{ const st=qState(r,j); if(st===null) return; t++; if(st) s++; }); return {s,t}; }
+function exrFinish(){
+  const e=S.exams[EXR.examId]; EXR.done=true; EXR.attempt={t:now(), score:0, total:0, ms:now()-EXR.start}; e.attempts=e.attempts||[]; e.attempts.push(EXR.attempt);
+  exrUpdate(); UI.sheetStack[UI.sheetStack.length-1]=examResultSheet; paintSheet();
+}
+function exrUpdate(){ const e=S.exams[EXR.examId]; const {s,t}=exrScore(); EXR.attempt.score=s; EXR.attempt.total=t; e.t=now(); saveExams(); }
+function examResultSheet(){
+  const e=S.exams[EXR.examId]; const {s,t}=exrScore(); const n=e.items.length;
+  const pending=e.items.filter((r,j)=>qState(r,j)===null).length;
+  return sheetTop('Correction')+`
+   <section class="panel stack" style="text-align:center;gap:6px"><p class="eyebrow">${esc(e.title)}</p>
+    <p style="font-family:var(--font-display);font-size:2.6rem;font-weight:800;line-height:1">${t?Math.round(s/t*200)/10:'—'}<span style="font-size:1.2rem" class="muted">/20</span></p>
+    <p class="small">${s} juste${s>1?'s':''} sur ${t} corrigée${t>1?'s':''}${pending?` · <strong style="color:var(--hard)">${pending} sans corrigé</strong>`:''} · ${Math.max(1,Math.round(EXR.attempt.ms/MIN))} min</p></section>
+   ${pending?`<div class="notice">Pour les questions sans corrigé : touche les bonnes propositions (elles seront gardées pour la prochaine fois), ou dis si ta réponse était juste.</div>`:''}
+   ${e.items.map((r,j)=>{ const st=qState(r,j); const p=EXR.picks[j];
+     return `<div class="gen-card"><div class="spread"><span class="badge">${r.num?'Q'+esc(r.num):'Q'+(j+1)}</span><span class="badge" style="${st===true?'background:var(--good-soft);color:var(--good)':st===false?'background:var(--bad-soft);color:var(--bad)':'background:var(--hard-soft);color:var(--hard)'}">${st===true?'Juste':st===false?'Faux':'À corriger'}</span></div>
+      <div class="rt">${md(r.front)}</div>
+      ${r.type==='qcm'?`<div class="qcm">${r.choices.map((x,i)=>{ const good=r.answer.includes(i), pk=p.includes(i); const cls=!r.answer.length?(pk?'':''):(good&&pk?'ok':(!good&&pk?'ko':(good?'ok miss':'')));
+          return `<button class="${cls}" data-act="exr-key" data-q="${j}" data-j="${i}" aria-pressed="${pk}"><span class="k">${String.fromCharCode(65+i)}</span><span>${esc(x)}${pk?' <span class="small muted">· ton choix</span>':''}</span></button>`; }).join('')}</div>
+          <p class="small muted">${r.answer.length?'Bonnes réponses : '+r.answer.map(i=>String.fromCharCode(65+i)).join(', ')+' · touche une proposition pour corriger le corrigé':'Touche les bonnes réponses.'}</p>`
+        :`<p class="small"><strong>Ta réponse :</strong> ${EXR.texts[j].trim()?esc(EXR.texts[j]):'<span class="muted">(vide)</span>'}</p>
+          ${r.back?`<div class="hintbox"><p class="eyebrow">Réponse attendue</p><div class="rt">${md(r.back)}</div></div>`:'<p class="small muted">Pas de réponse attendue dans le sujet.</p>'}
+          <div class="row"><button class="btn ${st===true?'btn-primary':''}" style="flex:1" data-act="exr-self" data-q="${j}" data-v="1">J'avais juste</button><button class="btn ${st===false?'btn-primary':''}" style="flex:1" data-act="exr-self" data-q="${j}" data-v="0">J'avais faux</button></div>`}
+      ${r.type==='qcm'&&r.back?`<div class="rt small">${md(r.back)}</div>`:''}
+     </div>`; }).join('')}
+   <button class="btn btn-primary btn-lg" data-act="exr-close">Terminer</button>
+   <button class="btn" data-act="exr-start">Refaire l'examen</button>`;
+}
+function examToCards(e){
+  let n=0, skip=0; const label=e.title+(e.date?' ('+e.date.slice(0,4)+')':'');
+  for(const r of e.items){
+    if(r.type==='qcm'?!r.answer.length:!r.back.trim()){ skip++; continue; }
+    if(Object.values(S.cards).some(c=>c.exam===label && c.front===r.front)) continue;
+    saveCard(newCard({chap:'', type:r.type, front:r.front, back:r.back, hint:'', choices:r.type==='qcm'?r.choices:[], answer:r.type==='qcm'?r.answer:[], exam:label})); n++;
+  }
+  updateDueDot();
+  toast(n?plural(n,'question')+' ajoutée'+(n>1?'s':'')+' à tes révisions'+(skip?' ('+skip+' sans corrigé laissée'+(skip>1?'s':'')+' de côté)':''):(skip?'Complète d\'abord le corrigé.':'Déjà dans tes révisions.'), 3800);
 }
 
 // ---------- Événements ----------
@@ -1947,7 +2150,7 @@ document.addEventListener('click', async e=>{
     case 'imp-go': { const res=parseLoose(UI.impText||''); if(!res.length){ toast('Aucune carte reconnue. Vérifie le format.'); break; }
       res.forEach(r=>saveCard(newCard({chap:UI.impChap||'', ...r}))); UI.impText=''; toast(plural(res.length,'carte')+' importée'+(res.length>1?'s':'')); updateDueDot(); rerender(); break; }
     case 'import-json': $('#fileJson').click(); break;
-    case 'imp-kind': UI.imp.kind=d.k; if(d.k==='exam' && UI.imp.text && !UI.imp.items) UI.imp.items=parseExam(UI.imp.text); rerender(); break;
+    case 'imp-kind': UI.imp.kind=d.k; if(d.k==='exam' && UI.imp.text && !UI.imp.items) UI.imp.items=parseExam(UI.imp.text); impRefresh(); break;
     case 'imp-file': $('#fileDoc').click(); break;
     case 'imp-photo': UI.fileFor='ocr'; $('#fileImg').multiple=true; $('#fileImg').click(); break;
     case 'imp-ocr-pdf': runOcr('pdf'); break;
@@ -1957,13 +2160,38 @@ document.addEventListener('click', async e=>{
       if(statusOf(m.chap)===0) setStatus(m.chap,1); toast('Leçon rangée dans les notes de « '+CH[m.chap].title+' »', 3600); resetImpDoc(); rerender(); break; }
     case 'imp-lesson-cards': { const m=UI.imp; if(!m.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; }
       UI.gen.chap=m.chap; UI.gen.source='text'; UI.gen.text=m.text; UI.gen.results=null; UI.gen.err=''; UI.newTab='ai'; window.scrollTo(0,0); render(); break; }
-    case 'imp-exam-parse': { const m=UI.imp; if(!m.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; } m.items=parseExam(m.text); rerender(); const el=$('#impResults'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); break; }
+    case 'imp-exam-parse': { const m=UI.imp; if(!m.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; } m.items=parseExam(m.text); impRefresh(); const el=$('#impResults'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); break; }
     case 'imp-exam-ai': if(!UI.imp.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; } examWithClaude(); break;
     case 'imp-exam-copy': await copyText(buildExamPrompt(UI.imp)); break;
-    case 'imp-exam-read': { const m=UI.imp; const res=parseLoose(m.paste); if(!res.length){ m.err="Je n'ai trouvé aucune question dans ce texte. Colle toute la réponse de Claude."; } else { m.err=''; m.items=res; m.aiOpen=false; m.paste=''; } rerender(); break; }
-    case 'imp-exam-clear': UI.imp.items=null; rerender(); break;
-    case 'imp-ans': { const r=UI.imp.items[+d.i], j=+d.j; r.answer=r.answer.includes(j)?r.answer.filter(x=>x!==j):r.answer.concat(j).sort((a,b)=>a-b); rerender(); break; }
+    case 'imp-exam-read': { const m=UI.imp; const res=parseLoose(m.paste); if(!res.length){ m.err="Je n'ai trouvé aucune question dans ce texte. Colle toute la réponse de Claude."; } else { m.err=''; m.items=res; m.aiOpen=false; m.paste=''; } impRefresh(); break; }
+    case 'imp-exam-clear': UI.imp.items=null; impRefresh(); break;
+    case 'imp-ans': { const r=UI.imp.items[+d.i], j=+d.j; r.answer=r.answer.includes(j)?r.answer.filter(x=>x!==j):r.answer.concat(j).sort((a,b)=>a-b); impRefresh(); break; }
     case 'imp-exam-save': saveExamItems(); break;
+    case 'exam-save': saveModuleExam(); break;
+    case 'exam-new': startExamImport(d.mod, null); break;
+    case 'exam-open': UI.examId=d.id; openSheet(()=>examSheet(UI.examId)); break;
+    case 'exam-edit': startExamImport(S.exams[UI.examId].mod, S.exams[UI.examId]); break;
+    case 'exam-cards': examToCards(S.exams[UI.examId]); break;
+    case 'exam-file': { const f=(S.exams[UI.examId].files||[]).find(x=>x.id===d.id); if(f) openDoc(f, null); break; }
+    case 'exam-del': armConfirm(a,"Confirmer : supprimer l'examen",()=>{ const e=S.exams[UI.examId]; (e.files||[]).forEach(f=>fdel(f.id).catch(()=>{})); delete S.exams[UI.examId]; if(EXR&&EXR.examId===UI.examId) EXR=null; saveExams(); toast('Examen supprimé'); closeSheet(); }); break;
+    case 'exr-start': { if(UI.sheetStack[UI.sheetStack.length-1]===examResultSheet) UI.sheetStack.pop(); exrStart(UI.examId); break; }
+    case 'exr-resume': UI.sheetStack.push(examRunSheet); paintSheet(); break;
+    case 'exr-pick': { const p=EXR.picks[EXR.i], j=+d.j; EXR.picks[EXR.i]=p.includes(j)?p.filter(x=>x!==j):p.concat(j).sort((x,y)=>x-y); a.setAttribute('aria-pressed', EXR.picks[EXR.i].includes(j)); break; }
+    case 'exr-nav': EXR.i=Math.max(0, Math.min(S.exams[EXR.examId].items.length-1, EXR.i+(+d.d))); paintSheet(); break;
+    case 'exr-finish': { const left=EXR.picks.filter((p,j)=>!p.length&&!EXR.texts[j].trim()).length;
+      if(left) armConfirm(a, left+' sans réponse · terminer quand même ?', exrFinish); else exrFinish(); break; }
+    case 'exr-key': { const e=S.exams[EXR.examId], r=e.items[+d.q], j=+d.j; r.answer=r.answer.includes(j)?r.answer.filter(x=>x!==j):r.answer.concat(j).sort((x,y)=>x-y); exrUpdate(); paintSheet(true); break; }
+    case 'exr-self': EXR.self[+d.q]=d.v==='1'; exrUpdate(); paintSheet(true); break;
+    case 'exr-close': UI.sheetStack.pop(); paintSheet(); break;
+    case 'doc-add': UI.docChap=d.id; $('#fileAny').click(); break;
+    case 'doc-open': { const m=S.docs[d.id]; if(m) openDoc(m, m.chap); break; }
+    case 'doc-download': { const v=UI.docView; if(v.blob) downloadBlob(v.blob, v.meta.name); else toast('Fichier introuvable sur ce téléphone.'); break; }
+    case 'doc-to-notes': { const v=UI.docView; if(!v.blob) break; a.disabled=true; a.textContent='Lecture…';
+      try{ const t=cleanText(await textOfBlob(v.blob, v.meta.name)); if(!t){ toast('Pas de texte dans ce document (scan ?). Utilise Créer → Importer → Photos.', 4200); }
+        else { const old=(S.notes[v.chap]||{}).text||''; saveNote(v.chap, (old?old.trim()+'\n\n':'')+'## '+v.meta.name.replace(/\.[a-z0-9]+$/i,'')+'\n\n'+t.slice(0,IMP_MAX)); toast('Texte ajouté à tes notes'); } }
+      catch{ toast('Impossible de lire ce document.'); }
+      a.disabled=false; a.textContent='Texte → mes notes'; break; }
+    case 'doc-del': armConfirm(a,'Confirmer la suppression',()=>{ const id=UI.docView.meta.id; delete S.docs[id]; fdel(id).catch(()=>{}); saveLocal(); toast('Document supprimé'); closeSheet(); }); break;
     case 'export-json': exportJSON(); break;
     case 'export-anki': exportAnki(); break;
     case 'copy-export': copyText($('#exportText').value, $('#exportText')); break;
@@ -2001,6 +2229,10 @@ document.addEventListener('input', e=>{
     case 'gen-edit': UI.gen.results[+d.i][d.f]=el.value; break;
     case 'imp-text': UI.impText=el.value; break;
     case 'imp2-year': UI.imp.year=el.value; break;
+    case 'exn-title': UI.imp.title=el.value; break;
+    case 'exn-date': UI.imp.date=el.value; break;
+    case 'ex-date': { const e=S.exams[UI.examId]; if(e){ e.date=el.value; e.t=now(); saveExams(); } break; }
+    case 'exr-text': EXR.texts[EXR.i]=el.value; break;
     case 'imp2-text': UI.imp.text=el.value; break;
     case 'imp2-paste': UI.imp.paste=el.value; break;
     case 'imp2-edit': UI.imp.items[+d.i][d.f]=el.value; break;
@@ -2020,6 +2252,7 @@ document.addEventListener('change', async e=>{
     else { const max=AI.images?AI.images.maxCount:5; for(const f of files.slice(0, Math.max(0,max-UI.gen.photos.length))){ try{ const {blob}=await toJpegBlob(f,1600,0.8); UI.gen.photos.push({blob, url:URL.createObjectURL(blob)}); }catch{ toast('Une photo est illisible.'); } } rerender(); }
     return;
   }
+  if(el.id==='fileAny'){ const fs=Array.from(el.files||[]); el.value=''; if(fs.length) addDocs(UI.docChap, fs); return; }
   if(el.id==='fileDoc'){ const f=el.files&&el.files[0]; el.value=''; if(f) readDocFile(f); return; }
   if(el.id==='fileJson'){ const f=el.files&&el.files[0]; el.value=''; if(!f) return; const text=await f.text(); if(UI.tab==='new' && UI.newTab==='import' && !/"app"\s*:\s*"xamxam"/.test(text)){ UI.impText=text; rerender(); return; } importBackup(text); return; }
   if(!k) return;
@@ -2029,7 +2262,7 @@ document.addEventListener('change', async e=>{
     case 'gen-chap': UI.gen.chap=el.value; rerender(); break;
     case 'imp-chap': UI.impChap=el.value; break;
     case 'imp2-chap': UI.imp.chap=el.value; break;
-    case 'imp2-keep': UI.imp.items[+d.i].off=!el.checked; rerender(); break;
+    case 'imp2-keep': UI.imp.items[+d.i].off=!el.checked; impRefresh(); break;
     case 'gen-hint': UI.gen.hint=el.checked; break;
     case 'gen-keep': UI.gen.results[+d.i].off=!el.checked; rerender(); break;
     case 'ed-ans': { const i=+d.i; ED.answer=ED.answer.filter(x=>x!==i); if(el.checked) ED.answer.push(i); break; }

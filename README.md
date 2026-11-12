@@ -21,3 +21,14 @@ Onglet **Créer → Importer → Leçon ou épreuve d'examen** (ou bouton « Imp
 - Réviser une annale : onglet **Réviser → Quoi réviser → Annales d'examen**.
 
 Bibliothèques incluses dans `lib/` : pdf.js 4.10.38 (Apache-2.0) et Tesseract.js 5.1.1 (Apache-2.0).
+
+## Documents de cours et examens par module
+
+- **Chapitre → Mes documents de cours → Ajouter** : n'importe quel fichier (PDF, Word, PowerPoint, photos…).
+  Gardé sur le téléphone (IndexedDB). Lecture dans l'appli pour PDF, photos, Word, PowerPoint et texte ;
+  « Ouvrir ailleurs » pour les autres. « Texte → mes notes » copie le contenu dans les notes.
+- **Programme → un module → Examens → Ajouter un examen** : nom, date, sujet (fichier ou photos).
+  Questions et corrigé repérés automatiquement, modifiables.
+- **Faire l'examen** : une question à la fois, puis correction avec note sur 20.
+  Sans corrigé, on touche les bonnes réponses pendant la correction (gardées pour la fois suivante).
+- Les fichiers ne sont pas dans la sauvegarde .json (seulement les questions et les résultats).
