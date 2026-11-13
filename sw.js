@@ -1,10 +1,10 @@
 // XamXam : fonctionnement hors ligne.
 // Changer VERSION à chaque mise à jour de l'appli pour rafraîchir le cache.
-const VERSION = 'xamxam-v5';
+const VERSION = 'xamxam-v6';
 // Ces caches-là sont gardés d'une version à l'autre : les bibliothèques (lecture des PDF et des photos, environ 10 Mo)
 // et les polices ne sont pas retéléchargées à chaque mise à jour.
-const LIB = 'xamxam-lib-1', FONTS = 'xamxam-fonts-1', SHARE = 'xamxam-share';
-const KEEP = [VERSION, LIB, FONTS, SHARE];
+const LIB = 'xamxam-lib-1', FONTS = 'xamxam-fonts-1', SHARE = 'xamxam-share', LESSONS = 'xamxam-internat-1';
+const KEEP = [VERSION, LIB, FONTS, SHARE, LESSONS];
 const SHELL = [
   './',
   'index.html',
@@ -80,6 +80,17 @@ self.addEventListener('fetch', e => {
   // Fichiers de l'appli, bibliothèques et polices : cache d'abord, puis réseau.
   const sameOrigin = url.origin === self.location.origin;
   if (!sameOrigin && !isFont(url)) return;
+  // Leçons d'internat : la version gardée s'affiche tout de suite, et elle est rafraîchie en arrière-plan.
+  if (url.pathname.includes('/internat/')) {
+    e.respondWith((async () => {
+      const cache = await caches.open(LESSONS);
+      const hit = await cache.match(req);
+      const net = fetch(req).then(res => { if (res.ok) cache.put(req, res.clone()); return res; });
+      if (hit) { net.catch(() => {}); return hit; }
+      return net;
+    })());
+    return;
+  }
   const name = isFont(url) ? FONTS : isLib(url) ? LIB : VERSION;
   e.respondWith(
     caches.match(req).then(hit => hit || fetch(req).then(res => {

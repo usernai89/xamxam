@@ -299,6 +299,49 @@ mark.filled{background:var(--hl)!important;color:var(--hl-ink)!important;font-we
 .verdict.ko{background:var(--bad-soft);color:var(--bad)}
 .verdict.todo{background:var(--hard-soft);color:var(--hard)}
 
+/* Internat */
+.plan{display:flex;flex-direction:column}
+.pl{padding:3px 0;line-height:1.4}
+.pl0{font-family:var(--font-display);font-weight:700;font-size:1.0625rem;margin-top:9px}
+.pl0:first-child{margin-top:0}
+.pl1{padding-left:16px;font-weight:700}
+.pl2{padding-left:32px}
+.pl3{padding-left:48px;color:var(--muted);font-size:0.9375rem}
+.plq{color:var(--muted);font-style:italic;margin-top:6px}
+.lz .lz-h1{font-family:var(--font-display);font-size:1.1875rem;font-weight:700;margin:1.3em 0 .5em;padding-bottom:5px;border-bottom:2px solid var(--fg);line-height:1.25}
+.lz .lz-h1:first-child{margin-top:0}
+.lz .lz-h2{font-family:var(--font-body);font-size:1rem;font-weight:700;margin:1.1em 0 .35em;line-height:1.3}
+.lz .lz-h3{font-family:var(--font-body);font-size:0.9375rem;font-weight:700;margin:.9em 0 .25em;color:var(--muted)}
+.lz p{margin:.45em 0}
+.tbl-mini{overflow-x:auto;margin:.6em 0}
+.tbl-mini table{border-collapse:collapse;font-size:0.875rem;width:100%;line-height:1.35}
+.tbl-mini th,.tbl-mini td{border:1px solid var(--line2);padding:6px 8px;text-align:left;vertical-align:top}
+.tbl-mini th{background:var(--surface2)}
+.fig{margin:0;border:1px solid var(--line);border-radius:var(--r);padding:12px;background:var(--surface)}
+.fig figcaption{font-family:var(--font-display);font-weight:700;margin-bottom:8px}
+.fig{overflow-x:auto}
+.fig svg{display:block;width:100%;min-width:540px;height:auto}
+.sch text{font-family:var(--font-body);font-size:13px;fill:var(--fg)}
+.sch .t{font-weight:700}
+.sch .s{font-size:11px;fill:var(--muted)}
+.sch .c{text-anchor:middle}
+.sch .e{text-anchor:end}
+.sch .b{fill:var(--surface);stroke:var(--fg);stroke-width:1.5}
+.sch .y{fill:var(--hl-soft);stroke:var(--fg);stroke-width:1.5}
+.sch .g{fill:var(--surface2);stroke:var(--line2);stroke-width:1.5}
+.sch .a{stroke:var(--fg);stroke-width:1.5;fill:none}
+.sch .d{stroke:var(--muted);stroke-width:1.5;fill:none;stroke-dasharray:5 4}
+.sch .m{fill:var(--fg)}
+.sch .sr{stroke:var(--bad)} .sch .tr{fill:var(--bad)}
+.sch .sb{stroke:var(--accent2)} .sch .tb{fill:var(--accent2)}
+.clock-big{font-family:var(--font-display);font-size:3.25rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums lining-nums}
+.clock-big.low{color:var(--bad)}
+.kchips .chip{min-height:38px;height:auto;padding:7px 12px;text-align:left;line-height:1.25;font-weight:400}
+.kchips .chip[aria-pressed=true]{font-weight:700}
+details.peek{border-top:1px solid var(--line);padding-top:6px}
+details.peek>summary{color:var(--link);font-weight:700;cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center}
+details.peek>summary::-webkit-details-marker{display:none}
+
 /* Créer */
 .gen-card{border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:11px;background:var(--surface)}
 .gen-card[data-off=true]{opacity:.5}
@@ -467,10 +510,10 @@ const FONTS = {
  serif:{name:'Livre', css:"'Source Serif 4',Georgia,'Times New Roman',serif"},
  system:{name:'Système', css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"}
 };
-const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', syn:'Fiches syndromes', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
+const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
 const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'nunito', heads:'expressive', size:17, radius:'soft', density:'normal', anim:'flip', buttons:4,
   semStart:'2026-11-19', examDate:'', newPerDay:25, maxRev:300, capExam:true, quick:10, lastExport:0,
-  home:[['today',1],['exams',1],['syn',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
+  home:[['today',1],['exams',1],['internat',1],['syn',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
 
 // ---------- Icons ----------
 const I = {
@@ -565,17 +608,19 @@ function buildIndex(){
     const extra=(S.custom||[]).filter(c=>c.sub===s.id && !c.del).sort((a,b)=>a.created-b.created).map(c=>({id:c.id, title:c.title, sub:s.id, mod:m.id, custom:true}));
     s.all=list.concat(extra); s.all.forEach((c,i)=>{ c.n=i+1; CH[c.id]=c; });
   }}
+  buildInt();
 }
 const allChapters = () => Object.values(CH);
 
 // ---------- État ----------
-const S = { cards:{}, progress:{}, notes:{}, custom:[], stats:{days:{}}, prefs:clone(DEFAULT_PREFS), trash:{}, docs:{}, exams:{} };
+const S = { cards:{}, progress:{}, notes:{}, custom:[], stats:{days:{}}, prefs:clone(DEFAULT_PREFS), trash:{}, docs:{}, exams:{}, internat:{prog:{}, fiches:{}, tries:{}, custom:[]} };
 const LS_KEY='xamxam.v1';
 function loadLocal(){
   const raw=lsGet(LS_KEY); if(!raw){ migratePrefs(); return; }
   try{ const d=JSON.parse(raw);
     S.cards=d.cards||{}; S.progress=d.progress||{}; S.notes=d.notes||{}; S.custom=d.custom||[];
     S.stats=d.stats||{days:{}}; S.prefs={...clone(DEFAULT_PREFS), ...(d.prefs||{})}; S.trash=d.trash||{}; S.docs=d.docs||{}; S.exams=d.exams||{};
+    S.internat={prog:{}, fiches:{}, tries:{}, custom:[], ...(d.internat||{})};
   }catch{}
   migratePrefs();
 }
@@ -585,7 +630,7 @@ function migratePrefs(){ const p=S.prefs; if(p.ui!==2){ p.theme='cahier'; p.acce
 let localTimer;
 function saveLocal(){ clearTimeout(localTimer); localTimer=setTimeout(writeLocal, 250); }
 function writeLocal(){
-  const d={cards:S.cards, progress:S.progress, notes:S.notes, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams};
+  const d={cards:S.cards, progress:S.progress, notes:S.notes, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams, internat:S.internat};
   if(!lsSet(LS_KEY, JSON.stringify(d))){ // trop lourd (images) : on garde le texte sur le téléphone, les images restent dans la sauvegarde en ligne
     const light={...d, cards:Object.fromEntries(Object.entries(S.cards).map(([k,c])=>[k, c.img?{...c, img:'', imgCloud:true}:c]))};
     lsSet(LS_KEY, JSON.stringify(light));
@@ -835,7 +880,7 @@ function weakSpot(){
 }
 function ensureHome(){
   const h=Array.isArray(S.prefs.home)?S.prefs.home:[];
-  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='syn'||k==='exams'?i+1:h.length, 0, [k,1]); } }
+  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
   S.prefs.home=h.filter(r=>HOME_SECTIONS[r[0]]);
 }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -1064,6 +1109,7 @@ function homeSection(k){
       ${w?`<button class="btn btn-ghost today-weak" data-act="start" data-mode="hard" data-scope="s:${w.id}">Point faible : ${esc(w.name)} (${plural(w.n,'carte')} à retravailler)</button>`:''}
     </section>`;
   }
+  if(k==='internat') return intHomeBlock();
   if(k==='exams'){
     const all=Object.values(S.exams);
     if(!all.length) return `<section class="panel stack"><h3 style="margin:0">Mes examens</h3>
@@ -1159,9 +1205,10 @@ function weekSheet(){
 
 // ---------- Vue : Programme ----------
 function viewProg(){
+  if(UI.progView==='int') return viewInt();
   const f=UI.progFilter, q=UI.progQuery.trim().toLowerCase();
   const filters=[['all','Tous'],['0','Pas vus'],['1','Vus'],['2','Appris'],['3','Maîtrisés']];
-  let html=`<header class="stack" style="gap:4px"><p class="eyebrow">Semestre 5 · ${allChapters().length} chapitres</p><h1>Programme</h1></header>
+  let html=`<header class="stack" style="gap:4px"><p class="eyebrow">Semestre 5 · ${allChapters().length} chapitres</p><h1>Programme</h1></header>${progSeg()}
    <button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button>
    <div class="search">${I.search}<input type="search" id="progSearch" placeholder="Chercher un chapitre" value="${esc(UI.progQuery)}" data-input="progq" aria-label="Chercher un chapitre"></div>
    <div class="chips" role="group" aria-label="Filtrer">${filters.map(([k,l])=>`<button class="chip" data-act="progf" data-f="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</div>`;
@@ -1174,7 +1221,7 @@ function viewProg(){
       if(!chs.length && (q||f!=='all')) continue;
       const learned=s.all.filter(c=>statusOf(c.id)>=2).length;
       inner+=`<div class="sub-h"><h3>${esc(s.name)}</h3><span class="small muted mono">${learned}/${s.all.length}</span></div>`;
-      inner+=chs.map(c=>{ const st=statusOf(c.id); const n=cardCount[c.id]||0; return `<button class="chap" data-act="chap" data-id="${c.id}"><span class="chap-n">${pad(c.n)}</span><span class="chap-t">${esc(c.title)}${(()=>{ const m=[n?plural(n,'carte'):'', S.notes[c.id]&&S.notes[c.id].text?'notes':'', docCount[c.id]?plural(docCount[c.id],'document'):''].filter(Boolean).join(' · '); return m?`<span class="chap-meta">${m}</span>`:''; })()}</span><span class="pill s${st}">${STATUS[st]}</span></button>`; }).join('');
+      inner+=chs.map(c=>{ const st=statusOf(c.id); const n=cardCount[c.id]||0; return `<button class="chap" data-act="chap" data-id="${c.id}"><span class="chap-n">${pad(c.n)}</span><span class="chap-t">${esc(c.title)}${(()=>{ const m=[n?plural(n,'carte'):'', S.notes[c.id]&&S.notes[c.id].text?'notes':'', docCount[c.id]?plural(docCount[c.id],'document'):'', L3INT[c.id]?'internat':''].filter(Boolean).join(' · '); return m?`<span class="chap-meta">${m}</span>`:''; })()}</span><span class="pill s${st}">${STATUS[st]}</span></button>`; }).join('');
       if(!q && f==='all') inner+=`<button class="add-chap" data-act="add-chap" data-sub="${s.id}">+ Ajouter un chapitre à ${esc(s.name)}</button>`;
       shown+=chs.length;
     }
@@ -1193,6 +1240,7 @@ function chapterSheet(id){
    <h2 style="font-size:1.5rem">${esc(c.title)}</h2>
    <div class="seg" role="group" aria-label="Où en es-tu ?">${STATUS.map((l,i)=>`<button data-act="set-status" data-id="${id}" data-s="${i}" aria-pressed="${st===i}">${l}</button>`).join('')}</div>
    <button class="btn btn-primary btn-lg" data-act="start" data-mode="${cnt.rev+cnt.lrn+cnt.nw?'srs':'cram'}" data-scope="c:${id}" ${cards.length?'':'disabled'}>${cards.length?'Réviser ce chapitre · '+plural(cards.length,'carte'):'Pas encore de carte à réviser'}</button>
+   ${intChapPanel(id)}
    ${docsSection(id)}
    <section class="panel"><div class="section-title"><h3>Mes notes</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="imp-lesson" data-id="${id}">Importer</button><button class="btn btn-ghost" data-act="note-edit" data-id="${id}">${note?'Modifier':'Écrire'}</button></div></div>
      <div id="noteView" class="rt">${note?md(note):'<p class="muted small">Écris ou colle ici ton résumé et les points clés du cours.</p>'}</div>
@@ -1664,7 +1712,7 @@ async function offerFile(filename, text){
   openSheet(()=>sheetTop(filename)+`<p class="small">Le téléchargement direct n'est pas disponible ici. Copie ce texte et enregistre-le dans un fichier.</p><textarea id="exportText" style="min-height:50vh" readonly>${esc(text)}</textarea><button class="btn btn-primary" data-act="copy-export">Copier</button>`);
 }
 function exportJSON(){
-  const d={app:'xamxam', v:1, exported:new Date().toISOString(), cards:Object.values(S.cards), progress:S.progress, custom:S.custom, notes:S.notes, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams};
+  const d={app:'xamxam', v:1, exported:new Date().toISOString(), cards:Object.values(S.cards), progress:S.progress, custom:S.custom, notes:S.notes, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams, internat:S.internat};
   S.prefs.lastExport=now(); savePrefs(); setSync(W.status);
   offerFile('xamxam-sauvegarde-'+dayKey()+'.json', JSON.stringify(d));
 }
@@ -1690,6 +1738,7 @@ function importBackup(text){
   r.fromInc.cards.forEach(id=>cloudPut('cards/'+id,200)); r.fromInc.notes.forEach(id=>cloudPut('notes/'+id,200)); r.fromInc.docs.forEach(k=>cloudPut(k,200));
   for(const e of Object.values(d.exams||{})){ if(e&&e.id&&(!S.exams[e.id]||(S.exams[e.id].t||0)<(e.t||0))) S.exams[e.id]=e; }
   for(const x of Object.values(d.docs||{})){ if(x&&x.id&&!S.docs[x.id]) S.docs[x.id]=x; }
+  mergeInternat(d.internat);
   writeLocal(); onDataChanged(true); toast('Sauvegarde importée : '+plural(r.fromInc.cards.length,'carte')+' mise'+(r.fromInc.cards.length>1?'s':'')+' à jour');
 }
 
@@ -2256,7 +2305,7 @@ async function gh(method, path, body){
   if(!r.ok) throw Object.assign(new Error('http'),{code:'http', status:r.status});
   return r.json();
 }
-function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams}; }
+function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams, internat:S.internat}; }
 function applyRemote(d){
   const before=JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
   const notes=Object.entries(d.notes||{}).map(([id,n])=>({...n, id}));
@@ -2269,6 +2318,7 @@ function applyRemote(d){
     if(!l||(e.t||0)>(l.t||0)){ S.exams[e.id]={...e, files:l?l.files:(e.files||[]), attempts}; ex++; }
     else if(attempts.length!==(l.attempts||[]).length){ l.attempts=attempts; ex++; } }
   for(const id of Object.keys(S.exams)){ if(S.trash[id] && S.trash[id]>=(S.exams[id].t||0)) delete S.exams[id]; }
+  if(mergeInternat(d.internat)) ex++;
   return r.fromInc.cards.length || r.fromInc.notes.length || r.fromInc.docs.size || ex || before!==JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
 }
 async function gsSync(manual){
@@ -2362,6 +2412,756 @@ async function handleSharedLaunch(){
   try{ history.replaceState(null,'',location.pathname); }catch{}
   try{ const c=await caches.open('xamxam-share'); const r=await c.match('shared-file'); if(!r) return; const text=await r.text(); await c.delete('shared-file'); importBackup(text); }catch{ toast("Impossible d'ouvrir le fichier partagé."); }
 }
+
+// ---------- Internat des hôpitaux ----------
+// Programme du concours d'après le document de l'étudiante : 4 épreuves écrites de 2 heures.
+// Chaque question a un plan (plan type de sa famille, ou plan propre quand la leçon est rédigée),
+// une leçon type à recopier (mots-clés ==surlignés==) et des explications.
+// Les leçons rédigées sont des fichiers : internat/lecons/<id>.md
+const INT_DUR=120;
+const INT_STATUS=['À faire','Plan su','Leçon sue','Maîtrisée'];
+const INT_YEARS={PCEM1:'1re année', PCEM2:'2e année', DCEM1:'3e année', DCEM2:'4e année', DCEM3:'5e année'};
+
+// Plans types : un par famille de questions. Deux espaces de retrait = une sous-partie.
+const PLANS={
+ 'a-organe':{n:"Organe (viscère)", ep:'anat', ex:'cœur, foie, estomac, rate, rein, utérus', p:`I. Généralités
+  1. Définition
+  2. Intérêt : anatomique, clinique, paraclinique, chirurgical
+II. Anatomie descriptive
+  1. Situation et projection
+  2. Forme et configuration externe : faces, bords, extrémités
+  3. Dimensions, poids, couleur, consistance
+  4. Moyens de fixité
+  5. Configuration interne et structure
+III. Rapports
+  1. Rapports péritonéaux ou de la loge
+  2. Rapports avec les organes voisins : face par face, bord par bord
+IV. Vascularisation et innervation
+  1. Artères
+  2. Veines
+  3. Lymphatiques
+  4. Nerfs
+V. Applications cliniques
+  1. Examen clinique et imagerie
+  2. Pathologie et voies d'abord chirurgicales
+Conclusion`},
+ 'a-conduit':{n:"Conduit", ep:'anat', ex:'bronches, œsophage, uretère, voies biliaires', p:`I. Généralités
+  1. Définition
+  2. Intérêt
+II. Anatomie descriptive
+  1. Origine
+  2. Trajet et direction : portions successives
+  3. Terminaison
+  4. Dimensions : longueur, calibre, rétrécissements
+  5. Configuration interne et structure
+  6. Moyens de fixité
+III. Rapports : portion par portion
+IV. Vascularisation et innervation
+  1. Artères
+  2. Veines
+  3. Lymphatiques
+  4. Nerfs
+V. Applications cliniques
+Conclusion`},
+ 'a-artere':{n:"Artère, vascularisation d'un membre", ep:'anat', ex:'aorte, artères du membre supérieur et du membre inférieur', p:`I. Généralités
+  1. Définition
+  2. Intérêt
+II. Anatomie descriptive
+  1. Origine
+  2. Trajet et direction
+  3. Terminaison
+  4. Dimensions : longueur, calibre
+III. Rapports : segment par segment
+IV. Distribution
+  1. Branches collatérales
+  2. Branches terminales
+  3. Anastomoses et voies de suppléance
+V. Retour veineux et lymphatique (pour la vascularisation d'un membre)
+VI. Applications cliniques
+  1. Pouls, pression artérielle, points de compression
+  2. Exploration : écho-Doppler, artériographie
+  3. Pathologie et abord chirurgical
+Conclusion`},
+ 'a-nerf':{n:"Nerf, plexus", ep:'anat', ex:'nerfs crâniens, plexus brachial, lombaire, sacré', p:`I. Généralités
+  1. Définition : nerf moteur, sensitif ou mixte
+  2. Intérêt
+II. Anatomie descriptive
+  1. Origine : réelle et apparente (constitution pour un plexus)
+  2. Trajet
+  3. Terminaison
+III. Rapports : segment par segment
+IV. Distribution
+  1. Branches collatérales
+  2. Branches terminales
+  3. Anastomoses
+V. Anatomie fonctionnelle
+  1. Territoire moteur
+  2. Territoire sensitif
+  3. Fibres végétatives
+VI. Applications cliniques
+  1. Examen clinique et paralysies
+  2. Blocs anesthésiques et voies d'abord
+Conclusion`},
+ 'a-voie':{n:"Voie nerveuse (faisceau)", ep:'anat', ex:'faisceau pyramidal', p:`I. Généralités
+  1. Définition
+  2. Intérêt
+II. Anatomie descriptive
+  1. Origine : neurones, aire corticale
+  2. Trajet : étage par étage
+  3. Terminaison
+III. Systématisation : somatotopie, croisements
+IV. Vascularisation
+V. Anatomie fonctionnelle : rôle
+VI. Applications cliniques : syndromes selon le niveau de la lésion, exploration
+Conclusion`},
+ 'a-muscle':{n:"Muscle, cloison musculaire", ep:'anat', ex:'diaphragme', p:`I. Généralités
+  1. Définition
+  2. Intérêt
+II. Anatomie descriptive
+  1. Situation
+  2. Forme et constitution
+  3. Insertions : origine, terminaison
+  4. Orifices (pour une cloison comme le diaphragme)
+III. Rapports
+IV. Vascularisation et innervation
+V. Anatomie fonctionnelle : action
+VI. Applications cliniques
+Conclusion`},
+ 'a-articulation':{n:"Articulation", ep:'anat', ex:'genou, hanche, épaule', p:`I. Généralités
+  1. Définition et type d'articulation
+  2. Intérêt
+II. Anatomie descriptive
+  1. Surfaces articulaires
+  2. Moyens d'union : capsule, ligaments
+  3. Synoviale et moyens de glissement
+III. Rapports
+IV. Vascularisation et innervation
+V. Anatomie fonctionnelle
+  1. Stabilité
+  2. Mouvements et muscles moteurs
+VI. Applications cliniques
+  1. Examen clinique et imagerie
+  2. Traumatismes, ponction, voies d'abord
+Conclusion`},
+ 'a-cavite':{n:"Cavité, région", ep:'anat', ex:'ventricules cérébraux', p:`I. Généralités
+  1. Définition
+  2. Intérêt
+II. Anatomie descriptive
+  1. Situation
+  2. Forme et dimensions
+  3. Limites et parois
+  4. Communications et orifices
+III. Contenu
+IV. Rapports
+V. Vascularisation et innervation
+VI. Applications cliniques
+Conclusion`},
+ 'b-fonction':{n:"Fonction physiologique", ep:'bio', ex:'circulation, respiration, digestion, hémostase, immunité, régulation des ions', p:`Introduction
+  1. Définition
+  2. Intérêt
+I. Rappels : anatomiques, histologiques, biochimiques
+II. Acteurs et mécanismes : étape par étape
+III. Régulation : nerveuse, hormonale, locale
+IV. Méthodes d'exploration et valeurs normales
+V. Applications : variations physiologiques, pathologie, thérapeutique
+Conclusion`},
+ 'b-processus':{n:"Phénomène cellulaire ou génétique", ep:'bio', ex:'mitose, méiose, synthèse des protéines, mutations', p:`Introduction
+  1. Définition
+  2. Intérêt
+I. Rappels : structures et molécules en jeu
+II. Déroulement : étapes ou phases successives
+III. Contrôle et régulation
+IV. Résultats et signification biologique
+V. Anomalies et applications médicales
+Conclusion`},
+ 'b-substance':{n:"Molécule, système de groupes", ep:'bio', ex:'hémoglobine, groupes sanguins', p:`Introduction
+  1. Définition
+  2. Intérêt
+I. Structure
+II. Génétique et biosynthèse
+III. Propriétés et fonctions
+IV. Variations physiologiques
+V. Méthodes d'étude
+VI. Applications : anomalies, pathologie, thérapeutique
+Conclusion`},
+ 'b-biophys':{n:"Biophysique des rayonnements", ep:'bio', ex:'effets des rayonnements ionisants, radioprotection', p:`Introduction
+  1. Définition
+  2. Intérêt
+I. Rappels : nature et sources des rayonnements, grandeurs et unités
+II. Interactions avec la matière vivante
+  1. Étapes physique et chimique
+  2. Lésions moléculaires et cellulaires
+III. Effets sur l'organisme
+  1. Effets déterministes (obligatoires)
+  2. Effets stochastiques (aléatoires)
+  3. Facteurs de radiosensibilité
+IV. Applications : radioprotection, radiothérapie, imagerie
+Conclusion`},
+ 'm-maladie':{n:"Maladie", ep:'med', ex:'paludisme, fièvre typhoïde, HTA, diabète, asthme', p:`I. Généralités
+  1. Définition
+  2. Intérêt : épidémiologique, diagnostique, thérapeutique, pronostique
+  3. Épidémiologie
+  4. Physiopathologie et anatomie pathologique
+II. Signes
+  1. Type de description (TDD) : la forme la plus typique
+    a. Clinique : début, phase d'état
+    b. Paraclinique : biologie, imagerie
+    c. Évolution : éléments de surveillance, modalités, complications
+  2. Formes cliniques : symptomatiques, selon le terrain, compliquées
+III. Diagnostic
+  1. Positif
+  2. Différentiel
+  3. Étiologique
+IV. Traitement
+  1. Curatif : buts, moyens, indications, surveillance
+  2. Préventif
+Conclusion`},
+ 'm-syndrome':{n:"Syndrome (démarche diagnostique)", ep:'med', ex:'anémies, ictères, adénopathies cervicales', p:`I. Généralités
+  1. Définition
+  2. Intérêt
+  3. Physiopathologie ou rappel anatomique
+II. Diagnostic positif
+  1. Circonstances de découverte
+  2. Examen clinique
+  3. Examens paracliniques
+III. Diagnostic de gravité
+IV. Diagnostic différentiel
+V. Diagnostic étiologique
+  1. Enquête : interrogatoire, examen, examens orientés
+  2. Étiologies
+VI. Traitement : symptomatique, étiologique
+Conclusion`},
+ 'c-affection':{n:"Affection chirurgicale", ep:'chir', ex:'mal de Pott, anévrismes, hernies, ostéomyélites', p:`I. Généralités
+  1. Définition
+  2. Intérêt
+  3. Rappels : anatomie, physiopathologie, anatomie pathologique
+  4. Étiologies et facteurs favorisants
+II. Signes
+  1. Type de description (TDD)
+    a. Clinique : signes fonctionnels, généraux, physiques
+    b. Paraclinique : biologie, imagerie
+    c. Évolution : éléments de surveillance, modalités, complications
+  2. Formes cliniques
+III. Diagnostic
+  1. Positif
+  2. Différentiel
+  3. Étiologique
+IV. Traitement
+  1. Buts
+  2. Moyens : médicaux, instrumentaux, chirurgicaux
+  3. Indications
+  4. Résultats : suites opératoires, complications, pronostic
+Conclusion`},
+ 'c-trauma':{n:"Traumatisme, fracture", ep:'chir', ex:'traumatismes du crâne, du rachis, du bassin, de la jambe, de l\'épaule, du thorax', p:`I. Généralités
+  1. Définition
+  2. Intérêt : fréquence, gravité
+  3. Rappel anatomique
+  4. Étiologies et mécanismes
+  5. Anatomie pathologique : lésions, lésions associées, classifications
+II. Signes
+  1. Type de description (TDD)
+    a. Clinique : interrogatoire, inspection, palpation, bilan vasculo-nerveux et cutané, bilan général
+    b. Paraclinique : radiographies, scanner
+    c. Évolution : consolidation, complications immédiates, secondaires, tardives
+  2. Formes cliniques
+III. Diagnostic
+  1. Positif
+  2. Différentiel
+  3. Lésionnel : bilan complet du traumatisé
+IV. Traitement
+  1. Buts
+  2. Moyens : ramassage et transport, orthopédiques, chirurgicaux, rééducation
+  3. Indications
+  4. Résultats et séquelles
+Conclusion`},
+ 'c-tumeur':{n:"Tumeur, cancer", ep:'chir', ex:'cancers du sein, du côlon, du rectum, de la langue, de la thyroïde, tumeurs osseuses', p:`I. Généralités
+  1. Définition
+  2. Intérêt
+  3. Épidémiologie et facteurs de risque
+  4. Anatomie pathologique : macroscopie, microscopie, extension, classification TNM
+II. Signes
+  1. Type de description (TDD)
+    a. Circonstances de découverte
+    b. Clinique : signes fonctionnels, généraux, physiques
+    c. Paraclinique : diagnostic (biopsie), bilan d'extension, bilan du terrain
+    d. Évolution et complications
+  2. Formes cliniques
+III. Diagnostic
+  1. Positif : preuve histologique
+  2. Différentiel
+IV. Traitement
+  1. Buts
+  2. Moyens : chirurgie, radiothérapie, chimiothérapie, autres
+  3. Indications selon le stade
+  4. Résultats, surveillance, pronostic
+  5. Prévention et dépistage
+Conclusion`},
+ 'c-urgence':{n:"Urgence chirurgicale", ep:'chir', ex:'brûlures étendues, occlusions, plaies vasculaires', p:`I. Généralités
+  1. Définition
+  2. Intérêt : urgence, pronostic vital
+  3. Physiopathologie
+  4. Étiologies
+II. Signes
+  1. Type de description (TDD)
+    a. Clinique
+    b. Paraclinique
+    c. Évolution et complications
+  2. Formes cliniques
+III. Diagnostic
+  1. Positif
+  2. De gravité
+  3. Différentiel
+  4. Étiologique
+IV. Traitement
+  1. Buts
+  2. Moyens : gestes d'urgence et réanimation, chirurgie
+  3. Indications
+  4. Surveillance et résultats
+  5. Prévention
+Conclusion`}
+};
+
+// Épreuves → groupes → questions : [id, titre, famille de plan, année d'enseignement, chapitres de L3 liés, remarque]
+const INT=[
+ {id:'chir', name:'Pathologie chirurgicale', coef:2, groups:[
+  ['Traumatologie et orthopédie',[
+   ['c-brulures','Brûlures étendues','c-urgence','DCEM2',''],
+   ['c-fractures-ouvertes','Fractures ouvertes','c-trauma','DCEM2',''],
+   ['c-osteomyelites','Ostéomyélites aiguës','c-affection','DCEM2',''],
+   ['c-tumeurs-os','Tumeurs osseuses primitives','c-tumeur','DCEM2',''],
+   ['c-trauma-crane','Traumatismes crânio-cérébraux','c-trauma','DCEM3','neuro-4 neuro-6'],
+   ['c-trauma-rachis','Traumatismes du rachis','c-trauma','DCEM2','neuro-7'],
+   ['c-trauma-bassin','Traumatismes du bassin','c-trauma','DCEM2',''],
+   ['c-trauma-jambe','Traumatismes de la jambe','c-trauma','DCEM2',''],
+   ['c-trauma-epaule',"Traumatismes de l'épaule",'c-trauma','DCEM2',''],
+   ['c-pott','Mal de Pott','c-affection','DCEM2','neuro-7']]],
+  ['Vaisseaux et thorax',[
+   ['c-anevrismes-art','Anévrismes artériels','c-affection','DCEM2','cardio-1'],
+   ['c-anevrismes-av','Anévrismes artério-veineux','c-affection','DCEM2','cardio-1'],
+   ['c-plaies-vasc','Plaies vasculaires','c-urgence','DCEM2','cardio-1 cardio-6'],
+   ['c-trauma-thorax','Traumatismes thoraciques','c-trauma','DCEM2',''],
+   ['c-hernies-diaph','Hernies diaphragmatiques','c-affection','DCEM3','']]],
+  ['Cou et cancers',[
+   ['c-adp-cervicales','Adénopathies cervicales','m-syndrome','DCEM3','hemsemio-1'],
+   ['c-cancer-langue','Cancer de la langue','c-tumeur','DCEM3',''],
+   ['c-cancer-thyroide','Cancer de la thyroïde','c-tumeur','DCEM3',''],
+   ['c-cancer-sein','Cancer du sein','c-tumeur','DCEM3',''],
+   ['c-cancer-colon','Cancer du côlon','c-tumeur','DCEM3',''],
+   ['c-cancer-rectum','Cancer du rectum','c-tumeur','DCEM3',''],
+   ['c-tumeurs-cerveau','Tumeurs cérébrales','c-tumeur','DCEM3','neuro-4']]],
+  ['Chirurgie digestive, urologie, obstétrique',[
+   ['c-hernies-aine',"Hernies de l'aine",'c-affection','DCEM3',''],
+   ['c-occlusions','Occlusions intestinales','c-urgence','DCEM3',''],
+   ['c-uro','Pathologies urologiques graves : prostate, rein, testicule','c-affection','DCEM3','','Intitulé général dans ton programme : à préciser avec la liste officielle des questions.'],
+   ['c-obstetrique','Pathologies obstétricales graves','c-urgence','DCEM3','','Intitulé général dans ton programme : à préciser avec la liste officielle des questions.']]]]},
+ {id:'med', name:'Pathologie médicale', coef:2, groups:[
+  ['Cardiovasculaire',[
+   ['m-ic','Insuffisance cardiaque','m-maladie','DCEM1','cardio-9 cardio-3 cardio-4'],
+   ['m-hta','Hypertension artérielle','m-maladie','DCEM1','cardio-7'],
+   ['m-coronaropathies','Coronaropathies : angor et infarctus du myocarde','m-maladie','DCEM1','cardio-8 cardio-12 biochim-6']]],
+  ['Digestif',[
+   ['m-ulceres','Ulcères gastro-duodénaux','m-maladie','DCEM1','dig-6'],
+   ['m-cirrhose','Cirrhoses','m-maladie','DCEM1','dig-3 dig-4 dig-5 biochim-4'],
+   ['m-ictere','Ictères','m-syndrome','DCEM1','dig-7 biochim-4'],
+   ['m-pancreatite','Pancréatites','m-maladie','DCEM1',''],
+   ['m-hepatites','Hépatites virales','m-maladie','DCEM1','dig-7 biochim-4']]],
+  ['Infectieux',[
+   ['m-palu','Paludisme','m-maladie','DCEM1','parasito-5'],
+   ['m-typhoide','Fièvre typhoïde','m-maladie','DCEM1','gen-1'],
+   ['m-vih','Infection à VIH et sida','m-maladie','DCEM1','immuno-8 myco-8 myco-4 parasito-6'],
+   ['m-tuberculose','Tuberculose','m-maladie','DCEM1',''],
+   ['m-cholera','Choléra','m-maladie','DCEM1','dig-2 gen-3'],
+   ['m-amibiase','Amibiase','m-maladie','DCEM1','parasito-22 dig-2']]],
+  ['Hématologie',[
+   ['m-anemies','Anémies','m-syndrome','DCEM1','hemsemio-2 hemato-17 hemato-3'],
+   ['m-leucemies','Leucémies','m-maladie','DCEM2','hemato-2 hemato-17 hemato-16'],
+   ['m-hodgkin','Maladie de Hodgkin','m-maladie','DCEM2','hemsemio-1 hemsemio-3'],
+   ['m-myelome','Myélome multiple','m-maladie','DCEM2','hemato-16 gen-2']]],
+  ['Néphrologie',[
+   ['m-ira','Insuffisance rénale aiguë','m-maladie','DCEM2','nephro-8 nephro-2 biochim-3'],
+   ['m-irc','Insuffisance rénale chronique','m-maladie','DCEM2','nephro-9 nephro-1 biochim-3'],
+   ['m-sn','Syndrome néphrotique','m-maladie','DCEM2','nephro-5 nephro-3 nephro-4']]],
+  ['Respiratoire',[
+   ['m-asthme','Asthme','m-maladie','DCEM1',''],
+   ['m-pneumonies','Infections pulmonaires','m-maladie','DCEM1',''],
+   ['m-tumeurs-poumon','Tumeurs broncho-pulmonaires','m-maladie','DCEM1',''],
+   ['m-embolie','Embolie pulmonaire','m-maladie','DCEM1','cardio-12 cardio-1']]],
+  ['Endocrinologie, métabolisme, maladies de système',[
+   ['m-diabete','Diabète sucré','m-maladie','DCEM2','endoc-6'],
+   ['m-hyperthyroidie','Hyperthyroïdies','m-maladie','DCEM2','endoc-1'],
+   ['m-hypothyroidie','Hypothyroïdies','m-maladie','DCEM2','endoc-2'],
+   ['m-surrenale','Insuffisance surrénale','m-maladie','DCEM2','endoc-4'],
+   ['m-cushing','Hypercorticismes','m-maladie','DCEM2','endoc-3'],
+   ['m-lupus','Lupus érythémateux systémique','m-maladie','DCEM2','rhumato-3 immuno-1'],
+   ['m-goutte','Goutte','m-maladie','DCEM2','rhumato-3'],
+   ['m-pr','Polyarthrite rhumatoïde','m-maladie','DCEM2','rhumato-3 gen-2']]]]},
+ {id:'anat', name:'Anatomie', coef:1, groups:[
+  ['Système nerveux central',[
+   ['a-ventricules','Ventricules cérébraux','a-cavite','PCEM1','neuro-4'],
+   ['a-nerfs-craniens','Nerfs crâniens','a-nerf','PCEM1','neuro-3'],
+   ['a-pyramidal','Faisceau pyramidal','a-voie','PCEM1','neuro-2 neuro-1']]],
+  ['Thorax',[
+   ['a-coeur','Cœur','a-organe','PCEM1','cardio-11 cardio-4'],
+   ['a-poumons','Poumons','a-organe','PCEM1',''],
+   ['a-bronches','Bronches','a-conduit','PCEM1',''],
+   ['a-aorte','Aorte','a-artere','PCEM1','cardio-1'],
+   ['a-diaphragme','Diaphragme','a-muscle','PCEM1','']]],
+  ['Abdomen et pelvis',[
+   ['a-estomac','Estomac','a-organe','PCEM1',''],
+   ['a-foie','Foie','a-organe','PCEM1','dig-5'],
+   ['a-pancreas','Pancréas','a-organe','PCEM1',''],
+   ['a-rate','Rate','a-organe','PCEM1','hemsemio-3'],
+   ['a-reins','Reins','a-organe','PCEM1','nephro-1'],
+   ['a-vessie','Vessie','a-organe','PCEM1','']]],
+  ['Organes génitaux',[
+   ['a-uterus','Utérus','a-organe','PCEM1',''],
+   ['a-ovaires','Ovaires','a-organe','PCEM1',''],
+   ['a-testicules','Testicules','a-organe','PCEM1','']]],
+  ['Membres',[
+   ['a-vasc-ms','Vascularisation du membre supérieur','a-artere','PCEM2','cardio-1'],
+   ['a-vasc-mi','Vascularisation du membre inférieur','a-artere','PCEM2','cardio-1'],
+   ['a-plexus-brachial','Plexus brachial','a-nerf','PCEM2',''],
+   ['a-plexus-lombaire','Plexus lombaire','a-nerf','PCEM2',''],
+   ['a-plexus-sacre','Plexus sacré','a-nerf','PCEM2',''],
+   ['a-genou','Articulation du genou','a-articulation','PCEM2',''],
+   ['a-hanche','Articulation de la hanche','a-articulation','PCEM2',''],
+   ['a-epaule',"Articulation de l'épaule",'a-articulation','PCEM2','']]]]},
+ {id:'bio', name:'Biologie', coef:2, groups:[
+  ['Physiologie',[
+   ['b-circulation','Physiologie de la circulation','b-fonction','PCEM2','cardio-11 cardio-7'],
+   ['b-sodium','Régulation du sodium','b-fonction','PCEM2','gen-3 gen-5'],
+   ['b-potassium','Régulation du potassium','b-fonction','PCEM2','gen-5'],
+   ['b-calcium','Régulation du calcium','b-fonction','PCEM2','gen-5 endoc-5 rhumato-1'],
+   ['b-digestion','Physiologie de la digestion','b-fonction','PCEM2',''],
+   ['b-respiration','Physiologie de la respiration','b-fonction','PCEM2','']]],
+  ['Immunologie',[
+   ['b-immunite-innee','Immunité innée','b-fonction','PCEM2','immuno-1 immuno-2 immuno-6 immuno-7 immuno-8'],
+   ['b-immunite-adaptative','Immunité adaptative','b-fonction','PCEM2','immuno-1 immuno-3 immuno-4 immuno-5'],
+   ['b-auto-immunite','Auto-immunité','b-fonction','PCEM2','immuno-1 immuno-5']]],
+  ['Biologie cellulaire',[
+   ['b-mitose','Mitose','b-processus','PCEM1',''],
+   ['b-meiose','Méiose','b-processus','PCEM1',''],
+   ['b-synthese-proteique','Synthèse des protéines : ADN, ARN messager','b-processus','PCEM1','']]],
+  ['Génétique',[
+   ['b-mutations','Mutations','b-processus','PCEM1',''],
+   ['b-transmission','Transmission des caractères héréditaires','b-processus','PCEM1','']]],
+  ['Hématologie',[
+   ['b-groupes','Groupes sanguins','b-substance','PCEM2','hemato-5 hemato-15 hemato-12'],
+   ['b-hemostase','Hémostase','b-fonction','PCEM2','hemato-11 hemato-18 hemato-10'],
+   ['b-hemoglobine','Hémoglobine','b-substance','PCEM2','hemato-6 hemato-8 hemato-7']]],
+  ['Biophysique',[
+   ['b-rayonnements','Effets biologiques des rayonnements ionisants','b-biophys','PCEM2',''],
+   ['b-radioprotection','Radioprotection','b-biophys','PCEM2','']]]]}
+];
+// Leçons rédigées (fichiers internat/lecons/<id>.md). Complété automatiquement à la publication.
+const INT_READY=['b-groupes','b-hemoglobine','b-hemostase','b-immunite-adaptative','b-immunite-innee','m-amibiase','m-palu','m-typhoide'];
+const INTQ={}, L3INT={}, INTL={};
+const fold = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+function buildInt(){
+  for(const k in INTQ) delete INTQ[k]; for(const k in L3INT) delete L3INT[k];
+  for(const ep of INT){ let n=0; ep.all=[];
+    for(const [g,items] of ep.groups) for(const [id,t,type,an,l3,note] of items){ const x={id,t,type,an,ep:ep.id,g,l3:(l3||'').split(' ').filter(Boolean),note:note||'',n:++n}; INTQ[id]=x; ep.all.push(x); }
+    for(const c of (S.internat.custom||[])){ if(c.del||c.ep!==ep.id) continue; const x={id:c.id,t:c.title,type:c.type,an:'',ep:ep.id,g:'Mes questions',l3:[],note:'',n:++n,custom:true}; INTQ[c.id]=x; ep.all.push(x); }
+  }
+  for(const x of Object.values(INTQ)) for(const c of x.l3) (L3INT[c]=L3INT[c]||[]).push(x.id);
+}
+const intSt = id => (S.internat.prog[id]||{}).s||0;
+function setIntSt(id,s){ S.internat.prog[id]={s,t:now()}; saveLocal(); }
+const intSeen = x => x.l3.some(c=>statusOf(c)>=1);   // la leçon correspondante a déjà été vue en cours
+const intReady = id => INT_READY.includes(id) || !!((S.internat.fiches[id]||{}).lecon);
+function intCounts(list){ const c=[0,0,0,0]; list.forEach(x=>c[intSt(x.id)]++); return c; }
+function intBar(c,n){ const w=i=>n?c[i]/n*100:0; return `<span class="bar" role="img" aria-label="${c[3]} maîtrisées, ${c[2]} leçons sues, ${c[1]} plans sus sur ${n}">${c[3]?`<i class="b3" style="width:${w(3)}%"></i>`:''}${c[2]?`<i class="b2" style="width:${w(2)}%"></i>`:''}${c[1]?`<i class="b1" style="width:${w(1)}%"></i>`:''}</span>`; }
+
+// --- Leçons rédigées : fichiers texte avec des repères @@plan, @@lecon, @@explications, @@schema, @@applications ---
+function parseLesson(text){
+  const out={plan:'',lecon:'',expl:'',apps:'',figs:[]}; let cur=null, fig=null;
+  for(const line of String(text||'').replace(/\r/g,'').split('\n')){
+    const m=line.match(/^@@\s*([A-Za-zÀ-ÿ]+)\s*(.*)$/);
+    if(m){ const k=fold(m[1]); fig=null;
+      if(k==='schema'||k==='figure'){ fig={title:m[2].trim(), svg:''}; out.figs.push(fig); cur='fig'; }
+      else cur={plan:'plan', lecon:'lecon', explications:'expl', explication:'expl', applications:'apps'}[k]||null;
+      continue; }
+    if(cur==='fig') fig.svg+=line+'\n'; else if(cur) out[cur]+=line+'\n';
+  }
+  for(const k of ['plan','lecon','expl','apps']) out[k]=out[k].replace(/\s+$/,'').replace(/^\n+/,'');
+  return out;
+}
+async function loadLesson(id){
+  if(INTL[id] && !INTL[id].offline) return INTL[id];
+  if(!INT_READY.includes(id)) return INTL[id]={none:true};
+  try{ const r=await fetch('internat/lecons/'+id+'.md'); if(!r.ok) throw new Error('http'); INTL[id]=parseLesson(await r.text()); }
+  catch{ INTL[id]={offline:true}; }
+  return INTL[id];
+}
+function intLoad(id){ loadLesson(id).then(()=>{ const top=UI.sheetStack[UI.sheetStack.length-1];
+  if((top===intSheet&&UI.intId===id&&!UI.intEdit)||(top===intCheckSheet&&ITR&&ITR.id===id)||(top===intRunSheet&&ITR&&ITR.id===id&&!ITR.run)) paintSheet(true); }); }
+let intPrefetched=false;
+function intPrefetch(){ if(intPrefetched||!navigator.onLine) return; intPrefetched=true; (async()=>{ for(const id of INT_READY){ try{ await loadLesson(id); }catch{} } })(); }
+function intContent(id){
+  const x=INTQ[id], own=S.internat.fiches[id]||{}, L=INTL[id]||{};
+  return { plan: own.plan || L.plan || (PLANS[x.type]||PLANS['m-maladie']).p, planOwn:!!own.plan, planGen:!own.plan&&!L.plan,
+    lecon: own.lecon || L.lecon || '', leconOwn:!!own.lecon, leconBase:!!L.lecon,
+    expl:L.expl||'', notes:own.expl||'', apps:L.apps||'', figs:L.figs||[],
+    loading:INT_READY.includes(id)&&!INTL[id], offline:!!L.offline };
+}
+function keysOf(lecon){ const out=[], seen=new Set(); for(const m of String(lecon||'').matchAll(/==(.+?)==/g)){ const k=m[1].trim(), n=fold(k); if(k && !seen.has(n)){ seen.add(n); out.push(k); } } return out; }
+function planLines(text){ return String(text||'').split('\n').filter(l=>l.trim()).map(l=>({lvl:Math.min(3,Math.floor(l.match(/^\s*/)[0].replace(/\t/g,'  ').length/2)), t:l.trim()})); }
+function planHTML(text, upto){ const L=planLines(text), n=upto==null?L.length:Math.min(upto,L.length);
+  return `<div class="plan">${L.slice(0,n).map(l=>`<div class="pl pl${l.lvl}">${inline(esc(l.t))}</div>`).join('')}${n<L.length?`<div class="pl plq">… encore ${plural(L.length-n,'ligne')}</div>`:''}</div>`; }
+// Comme md(), avec trois niveaux de titres (## ### ####) et des tableaux simples (| a | b |).
+function mdLesson(text){
+  const lines=esc(text||'').split('\n'); let html='', list=false, table=false;
+  const close=()=>{ if(list){ html+='</ul>'; list=false; } if(table){ html+='</tbody></table></div>'; table=false; } };
+  for(const raw of lines){ const l=raw.trim(); let m;
+    if(!l){ close(); continue; }
+    if((m=l.match(/^(#{2,4})\s+(.*)/))){ close(); const lv=m[1].length-1; html+=`<h${lv+2} class="lz-h${lv}">${inline(m[2])}</h${lv+2}>`; continue; }
+    if(l.startsWith('|')){ const cells=l.replace(/^\||\|$/g,'').split('|').map(c=>c.trim()); if(/^[-: ]*$/.test(cells.join(''))) continue;
+      if(!table){ close(); html+='<div class="tbl-mini"><table><thead><tr>'+cells.map(c=>'<th>'+inline(c)+'</th>').join('')+'</tr></thead><tbody>'; table=true; }
+      else html+='<tr>'+cells.map(c=>'<td>'+inline(c)+'</td>').join('')+'</tr>'; continue; }
+    if((m=l.match(/^[-•]\s+(.*)/))){ if(!list){ close(); html+='<ul>'; list=true; } html+='<li>'+inline(m[1])+'</li>'; continue; }
+    close(); html+='<p>'+inline(l)+'</p>';
+  }
+  close(); return html;
+}
+
+// --- Vue : Internat (dans l'onglet Programme) ---
+Object.assign(UI,{progView:lsGet('xamxam.progView')==='int'?'int':'l3', intFilter:'all', intQuery:'', intId:null, intTab:'plan', intEdit:null, intRecite:null});
+function progSeg(){ return `<div class="seg" role="group" aria-label="Quel programme"><button data-act="prog-view" data-v="l3" aria-pressed="${UI.progView!=='int'}">Cours de L3</button><button data-act="prog-view" data-v="int" aria-pressed="${UI.progView==='int'}">Internat</button></div>`; }
+function viewInt(){
+  intPrefetch();
+  const all=Object.values(INTQ), f=UI.intFilter, q=fold(UI.intQuery.trim()), c=intCounts(all); const nSeen=all.filter(intSeen).length;
+  const filters=[['all','Toutes'],['seen','Vues en cours'+(nSeen?' · '+nSeen:'')],['ready','Leçon rédigée'],['0','À faire'],['1','Plan su'],['2','Leçon sue'],['3','Maîtrisées']];
+  const match=x=>(f==='all'||(f==='seen'?intSeen(x):f==='ready'?intReady(x.id):String(intSt(x.id))===f))&&(!q||fold(x.t).includes(q)||fold(x.g).includes(q));
+  let html=`<header class="stack" style="gap:4px"><p class="eyebrow">Concours des hôpitaux du Sénégal · ${all.length} questions</p><h1>Internat</h1></header>${progSeg()}
+   <section class="panel stack" style="gap:10px"><div class="spread"><strong>Où j'en suis</strong><span class="small muted">${c[1]+c[2]+c[3]} plans sus · ${c[2]+c[3]} leçons sues</span></div>${intBar(c,all.length)}
+     <div class="legend"><span><i class="lg3"></i>Maîtrisée</span><span><i class="lg2"></i>Leçon sue</span><span><i class="lg1"></i>Plan su</span></div>
+     <div class="row" style="flex-wrap:nowrap"><button class="btn btn-soft" style="flex:1" data-act="int-plans">Plans types</button><button class="btn btn-primary" style="flex:1" data-act="int-train">Épreuve blanche</button></div></section>
+   <div class="search">${I.search}<input type="search" id="intSearch" placeholder="Chercher une question" value="${esc(UI.intQuery)}" data-input="int-q" aria-label="Chercher une question"></div>
+   <div class="chips" role="group" aria-label="Filtrer">${filters.map(([k,l])=>`<button class="chip" data-act="int-f" data-f="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</div>`;
+  let total=0;
+  for(const ep of INT){
+    let inner='', shown=0, lastG=null;
+    for(const x of ep.all){ if(!match(x)) continue;
+      if(x.g!==lastG){ inner+=`<div class="sub-h"><h3>${esc(x.g)}</h3></div>`; lastG=x.g; }
+      const st=intSt(x.id); const meta=[intReady(x.id)?'leçon rédigée':'plan type', intSeen(x)?'vue en cours':(x.l3.length?'dans tes cours de L3':''), x.note?'à préciser':''].filter(Boolean).join(' · ');
+      inner+=`<button class="chap" data-act="int-open" data-id="${x.id}"><span class="chap-n">${pad(x.n)}</span><span class="chap-t">${esc(x.t)}<span class="chap-meta">${meta}</span></span><span class="pill s${st}">${INT_STATUS[st]}</span></button>`; shown++; }
+    if(!shown && (q||f!=='all')) continue;
+    if(!q && f==='all') inner+=`<button class="add-chap" data-act="int-add" data-ep="${ep.id}">+ Ajouter une question</button>`;
+    total+=shown;
+    const cc=intCounts(ep.all), known=cc[2]+cc[3]; const open=UI.open.has('int-'+ep.id)||q||f!=='all';
+    html+=`<details class="mod" data-mod="int-${ep.id}" ${open?'open':''}><summary><span class="stack" style="gap:2px"><strong style="font-family:var(--font-display);font-size:1.0625rem">${esc(ep.name)}</strong><span class="small muted">coefficient ${ep.coef} · ${plural(ep.all.length,'question')}${known?' · '+known+' sue'+(known>1?'s':''):''}</span></span>${I.chev}</summary>${inner}</details>`;
+  }
+  if(!total) html+=`<p class="muted">Aucune question ne correspond.</p>`;
+  html+=`<p class="small muted">Programme établi d'après ton document. Les leçons sont des modèles : en cas de différence, c'est le cours de tes professeurs qui fait foi.</p>`;
+  return html;
+}
+
+// --- Fiche d'une question ---
+function intOpen(id){ if(!INTQ[id]) return; UI.intId=id; UI.intTab='plan'; UI.intEdit=null; UI.intRecite=null;
+  const i=UI.sheetStack.indexOf(intSheet); if(i>=0){ UI.sheetStack.length=i+1; paintSheet(); } else openSheet(intSheet);
+  intLoad(id); }
+function intSheet(){
+  const id=UI.intId, x=INTQ[id]; if(!x) return sheetTop('Internat')+'<p>Question introuvable.</p>';
+  const ep=INT.find(e=>e.id===x.ep), st=intSt(id), C=intContent(id), tab=UI.intTab, pt=PLANS[x.type]||{};
+  const keys=keysOf(C.lecon), tries=S.internat.tries[id]||[];
+  let body='';
+  if(UI.intEdit){ const f=UI.intEdit, val=f==='plan'?C.plan:f==='lecon'?C.lecon:C.notes;
+    body=`<section class="panel stack"><h3 style="margin:0">${{plan:'Mon plan',lecon:'Ma leçon type',expl:'Mes notes'}[f]}</h3>
+      <p class="small muted">${f==='plan'?'Une ligne par titre. Décale avec deux espaces pour une sous-partie.':f==='lecon'?'Titres : « ## I. … » puis « ### 1. … ». Entoure chaque mot-clé avec deux signes égal : ==mot-clé==.':'Les explications de tes professeurs, tes moyens de retenir, les pièges.'}</p>
+      <textarea id="intEditText" style="min-height:46vh">${esc(val)}</textarea>
+      <div class="row" style="flex-wrap:nowrap"><button class="btn btn-primary" style="flex:1" data-act="int-save">Enregistrer</button><button class="btn" style="flex:1" data-act="int-cancel">Annuler</button></div></section>`;
+  }
+  else if(tab==='plan'){ const L=planLines(C.plan), rec=UI.intRecite;
+    body=`<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Le plan</h3><button class="btn btn-ghost" data-act="int-edit" data-f="plan">Modifier</button></div>
+      <p class="small muted">À retenir en premier. ${C.planGen?`C'est le plan type « ${esc(pt.n||'')} », le même pour toutes les questions de cette famille.`:C.planOwn?'C\'est ton plan.':'C\'est le plan de cette leçon.'}</p>
+      ${planHTML(C.plan, rec)}
+      ${rec==null?`<button class="btn btn-soft" data-act="int-recite">Réciter le plan</button>`
+        :`<div class="row" style="flex-wrap:nowrap">${rec<L.length?`<button class="btn btn-primary" style="flex:1" data-act="int-next">Ligne suivante</button>`:''}<button class="btn" style="flex:1" data-act="int-recite-stop">${rec<L.length?'Tout afficher':'Terminé'}</button></div><p class="small muted">Dis la ligne suivante à voix haute, puis vérifie.</p>`}
+      ${C.planOwn?`<button class="btn btn-ghost" data-act="int-reset" data-f="plan">Revenir au plan d'origine</button>`:''}</section>`;
+  }
+  else if(tab==='lecon'){
+    if(C.loading) body=`<section class="panel"><p class="muted">Chargement de la leçon…</p></section>`;
+    else if(C.lecon) body=`<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Leçon type</h3><button class="btn btn-ghost" data-act="int-edit" data-f="lecon">Modifier</button></div>
+      <p class="small muted">Ce qu'il faut savoir écrire le jour de l'épreuve. <span class="hl">${plural(keys.length,'mot-clé','mots-clés')}</span> à placer : ce sont eux qui rapportent les points.</p>
+      <div class="rt lz">${mdLesson(C.lecon)}</div>
+      ${C.leconOwn&&C.leconBase?`<button class="btn btn-ghost" data-act="int-reset" data-f="lecon">Revenir à la leçon d'origine</button>`:''}</section>`;
+    else body=`<section class="panel stack"><h3 style="margin:0">Leçon type</h3>
+      <p>${C.offline?'Cette leçon est rédigée, mais il faut internet pour la charger la première fois.':'Pas encore de leçon rédigée pour cette question. Apprends d\'abord le plan, puis écris ta leçon à partir de ton cours.'}</p>
+      ${C.offline?`<button class="btn btn-soft" data-act="int-retry">Réessayer</button>`:`<button class="btn btn-soft" data-act="int-edit" data-f="lecon">${I.pen} Écrire ma leçon</button>`}</section>
+      ${C.offline?'':`<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Avec Claude</h3><span class="small muted">facultatif</span></div>
+       <p class="small muted">Copie la consigne, colle-la dans Claude, puis colle ici sa réponse : la leçon est rangée dans cette fiche. Vérifie-la toujours avec ton cours.</p>
+       <div class="row" style="flex-wrap:nowrap"><button class="btn btn-soft" style="flex:1" data-act="int-copy">Copier la consigne</button><a class="btn" style="flex:1;text-decoration:none" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude</a></div>
+       <label class="field">Réponse de Claude<textarea id="intPaste" placeholder="@@plan …"></textarea></label>
+       <button class="btn" data-act="int-paste">Ranger dans la fiche</button></section>`}`;
+  }
+  else body=(C.loading?`<section class="panel"><p class="muted">Chargement…</p></section>`:'')
+      +(C.expl?`<section class="panel stack"><h3 style="margin:0">Comprendre</h3><div class="rt lz">${mdLesson(C.expl)}</div></section>`:'')
+      +C.figs.map(g=>`<figure class="fig"><figcaption>${esc(g.title)}</figcaption>${g.svg}</figure>`).join('')
+      +(C.apps?`<section class="panel stack"><h3 style="margin:0">Applications cliniques</h3><div class="rt lz">${mdLesson(C.apps)}</div></section>`:'')
+      +`<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Mes notes</h3><button class="btn btn-ghost" data-act="int-edit" data-f="expl">${C.notes?'Modifier':'Écrire'}</button></div>
+        ${C.notes?`<div class="rt lz">${mdLesson(C.notes)}</div>`:`<p class="small muted">${C.expl?'Ajoute ici les explications de tes professeurs, tes moyens de retenir, les pièges.':'Pas encore d\'explications pour cette question. Note ici celles de ton cours.'}</p>`}</section>`;
+  const links=x.l3.filter(c=>CH[c]);
+  return sheetTop(ep.name+' · '+x.n+'/'+ep.all.length)+`
+   <div class="stack" style="gap:6px"><h2>${esc(x.t)}</h2>
+    <p class="small muted">Coefficient ${ep.coef} · épreuve de ${INT_DUR/60} h${x.an?' · enseignée en '+INT_YEARS[x.an]:''}</p>
+    ${x.note?`<p class="small" style="color:var(--hard)">${esc(x.note)}</p>`:''}</div>
+   <div class="seg" role="group" aria-label="Où en es-tu ?">${INT_STATUS.map((l,i)=>`<button data-act="int-status" data-s="${i}" aria-pressed="${st===i}">${l}</button>`).join('')}</div>
+   ${links.length?`<section class="panel"><h3>Dans tes cours de L3</h3>
+     <p class="small muted" style="margin-bottom:8px">${links.some(c=>statusOf(c)>=1)?'Tu as déjà vu cette leçon en cours : apprends-la maintenant au format de l\'internat.':'Ces leçons de ton année préparent cette question : travaille-les ensemble.'}</p>
+     <div class="menu">${links.map(c=>`<button data-act="chap" data-id="${c}">${I.book}<span><span class="t">${esc(CH[c].title)}</span><span class="d">${esc(SUBS[CH[c].sub].name)} · ${STATUS[statusOf(c)]}</span></span>${I.chev}</button>`).join('')}</div></section>`:''}
+   <div class="seg" role="group" aria-label="Partie de la fiche">${[['plan','Plan'],['lecon','Leçon type'],['expl','Explications']].map(([k,l])=>`<button data-act="int-tab" data-t="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
+   ${body}
+   ${UI.intEdit?'':`<button class="btn btn-primary btn-lg" data-act="int-train" data-id="${id}">S'entraîner sur cette question · ${INT_DUR/60} h</button>
+   ${tries.length?`<section class="panel"><h3>Mes essais</h3><div class="stack" style="gap:8px">${tries.slice().reverse().slice(0,6).map(a=>`<div class="spread small"><span>${fmtD(new Date(a.t),{day:'numeric',month:'short'})} · ${fmtDur(a.ms)}${a.aid?' · plan regardé':''}</span><strong>${a.n?Math.round(a.k/a.n*100)+' % des mots-clés':['plan à revoir','plan presque juste','plan juste'][a.plan||0]}</strong></div>`).join('')}</div></section>`:''}
+   ${x.custom?`<button class="btn danger" data-act="int-del">Supprimer cette question</button>`:''}`}`;
+}
+function plansSheet(){
+  return sheetTop('Plans types')+`<p>Chaque famille de questions a son plan. Apprends d'abord ces plans : le jour de l'épreuve, tu sais déjà où ranger tes idées.</p>`
+   +INT.map(ep=>`<h3 class="syn-sys">${esc(ep.name)}</h3>`+Object.entries(PLANS).filter(([,p])=>p.ep===ep.id).map(([key,p])=>{ const n=Object.values(INTQ).filter(x=>x.type===key).length;
+     return `<details class="syn" data-plan="${key}"><summary><span>${esc(p.n)}<span class="small muted" style="display:block;font-family:var(--font-body);font-weight:400">${n?plural(n,'question')+' · ':''}${esc(p.ex)}</span></span>${I.chev}</summary><div class="syn-body">${planHTML(p.p)}</div></details>`; }).join('')).join('');
+}
+function intAddSheet(){ const ep=INT.find(e=>e.id===UI.intAddEp);
+  return sheetTop('Nouvelle question')+`<p>Ajoute une question de <strong>${esc(ep.name.toLowerCase())}</strong> qui manque au programme.</p>
+   <label class="field">Intitulé de la question<input type="text" id="intAddTitle" placeholder="Ex. Appendicite aiguë"></label>
+   <label class="field">Famille de plan<select id="intAddType">${Object.entries(PLANS).filter(([,p])=>p.ep===ep.id||(ep.id==='chir'&&p.ep==='med')).map(([k,p])=>`<option value="${k}">${esc(p.n)}</option>`).join('')}</select></label>
+   <button class="btn btn-primary btn-lg" data-act="int-add-go">Ajouter</button>`;
+}
+function buildIntPrompt(id){ const x=INTQ[id], ep=INT.find(e=>e.id===x.ep), p=PLANS[x.type]||{};
+  return `Tu es un enseignant de la Faculté de médecine de Dakar (UCAD). Rédige une question du concours d'internat des hôpitaux du Sénégal, épreuve écrite de ${ep.name.toLowerCase()} (${INT_DUR/60} heures, coefficient ${ep.coef}).
+
+Question : « ${x.t} »
+
+Plan type de cette famille de questions (adapte-le à la question, sans changer l'ordre des grandes parties) :
+${p.p||''}
+
+Écris ta réponse en trois blocs. Chaque bloc commence par une ligne de repère, exactement comme ceci :
+
+@@plan
+Le plan détaillé de la question : une ligne par titre, sous-parties décalées de deux espaces.
+
+@@lecon
+La leçon type, telle qu'un candidat doit la rédiger le jour de l'épreuve : 700 à 1000 mots, en suivant le plan. Titres : « ## I. … » pour les grandes parties, « ### 1. … » pour les sous-parties. Phrases courtes, listes avec « - ». Entoure chaque mot-clé attendu par le correcteur avec deux signes égal, comme ==mot-clé== (40 à 70 mots-clés). Pour une question d'anatomie ou de biologie, termine par les applications cliniques. Finis par une conclusion.
+
+@@explications
+Pour comprendre et retenir : l'idée générale en mots simples, les mécanismes (le pourquoi), les pièges classiques, un moyen mnémotechnique, le schéma à savoir refaire décrit en mots. 150 à 300 mots, en tutoyant.
+
+Règles : français médical exact ; contexte du Sénégal quand c'est utile (épidémiologie, programmes nationaux) ; n'invente aucun chiffre ni aucune dose dont tu n'es pas sûr ; aucun texte avant ni après les trois blocs.`; }
+
+// --- Épreuve blanche : 2 heures sur une feuille, puis correction avec la fiche ---
+let ITR=null, itrTimer=null; const ITR_KEY='xamxam.itr';
+function itrSave(){ if(ITR) lsSet(ITR_KEY, JSON.stringify(ITR)); else { try{ localStorage.removeItem(ITR_KEY); }catch{} } }
+function itrLoad(){ try{ const d=JSON.parse(lsGet(ITR_KEY)||'null'); if(d && INTQ[d.id]) ITR=d; else if(d) localStorage.removeItem(ITR_KEY); }catch{ ITR=null; } }
+function itrElapsed(){ return ITR.acc+(ITR.run?now()-ITR.run:0); }
+function itrLeft(){ return ITR.dur*MIN-itrElapsed(); }
+function itrClock(){ const left=itrLeft(), s=Math.floor(Math.abs(left)/1000); return (left<0?'+ ':'')+Math.floor(s/3600)+':'+pad(Math.floor(s%3600/60))+':'+pad(s%60); }
+function itrBegin(id){
+  if(ITR && ITR.id!==id){ toast('Une épreuve blanche est déjà en cours : termine-la ou abandonne-la d\'abord.', 3600); itrResume(); return; }
+  if(!ITR){ ITR={id, acc:0, run:now(), dur:INT_DUR, aid:false, phase:'run', keys:[], plan:null, rang:false}; itrSave(); }
+  itrResume();
+}
+function itrResume(){ if(!ITR) return; const fn=ITR.phase==='check'?intCheckSheet:intRunSheet; UI.sheetStack=UI.sheetStack.filter(s=>s!==intRunSheet&&s!==intCheckSheet&&s!==intPickSheet); UI.sheetStack.push(fn); paintSheet(); intLoad(ITR.id); itrTick(); }
+function itrTick(){ clearInterval(itrTimer);
+  itrTimer=setInterval(()=>{ if(!ITR||ITR.phase!=='run'||UI.sheetStack[UI.sheetStack.length-1]!==intRunSheet){ clearInterval(itrTimer); return; }
+    const el=$('#itrClock'); if(el){ el.textContent=itrClock(); el.classList.toggle('low', itrLeft()<10*MIN); }
+    if(ITR.run && !ITR.rang && itrLeft()<=0){ ITR.rang=true; itrSave(); toast('Temps écoulé : pose ton stylo.', 6000); try{ if(navigator.vibrate) navigator.vibrate([300,150,300]); }catch{} } }, 1000); }
+function intRunSheet(){
+  const x=INTQ[ITR.id], ep=INT.find(e=>e.id===x.ep), C=intContent(x.id), paused=!ITR.run;
+  return `<div class="layer-top"><button class="icon-btn" data-act="sheet-back" aria-label="Fermer">${I.x}</button><h2>Épreuve blanche</h2></div>
+   <div class="stack" style="gap:6px"><p class="eyebrow">${esc(ep.name)} · coefficient ${ep.coef} · ${fmtDur(ITR.dur*MIN)}</p><h2>${esc(x.t)}</h2></div>
+   <section class="panel stack" style="text-align:center"><p class="clock-big${itrLeft()<10*MIN?' low':''}" id="itrClock">${itrClock()}</p>
+     <p class="small muted">${paused?'En pause.':'Le temps continue même si tu fermes l\'appli ou éteins l\'écran.'}</p>
+     <div class="row" style="flex-wrap:nowrap"><button class="btn" style="flex:1" data-act="itr-pause">${paused?'Reprendre':'Pause'}</button><button class="btn btn-primary" style="flex:1" data-act="itr-done">J'ai fini</button></div></section>
+   <section class="panel stack"><h3 style="margin:0">Comme le jour du concours</h3>
+     <div class="rt"><ul><li>Écris sur une feuille, sans regarder la fiche.</li><li>Commence par le <strong>plan</strong>, bien apparent.</li><li>Place le plus possible de <strong>mots-clés</strong> : ce sont eux qui rapportent les points.</li><li>Ajoute un schéma et les applications cliniques quand c'est possible.</li></ul></div>
+     <details class="peek" ${ITR.aid?'open':''}><summary>J'ai un trou : voir le plan</summary>${planHTML(C.plan)}</details></section>
+   <button class="btn btn-ghost danger" data-act="itr-cancel">Abandonner cet essai</button>`;
+}
+function intCheckSheet(){
+  const x=INTQ[ITR.id], C=intContent(x.id), keys=keysOf(C.lecon), sel=new Set(ITR.keys);
+  return sheetTop('Correction')+`
+   <div class="stack" style="gap:6px"><h2>${esc(x.t)}</h2><p class="small muted">Temps utilisé : ${fmtDur(ITR.acc)}${ITR.aid?' · tu as regardé le plan':''}</p></div>
+   <section class="panel stack"><h3 style="margin:0">1. Ton plan</h3>${planHTML(C.plan)}
+     <p class="small muted">Compare avec ta copie. Ton plan était :</p>
+     <div class="seg" role="group" aria-label="Mon plan était">${[['2','Juste'],['1','Presque'],['0','À revoir']].map(([v,l])=>`<button data-act="itr-plan" data-v="${v}" aria-pressed="${String(ITR.plan)===v}">${l}</button>`).join('')}</div></section>
+   ${C.loading?`<section class="panel"><p class="muted">Chargement de la leçon…</p></section>`:keys.length?`<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>2. Tes mots-clés</h3><strong>${sel.size}/${keys.length}</strong></div>
+     <p class="small muted">Relis ta copie et touche chaque mot-clé que tu as écrit.</p>
+     <div class="chips kchips">${keys.map((k,i)=>`<button class="chip" data-act="itr-key" data-i="${i}" aria-pressed="${sel.has(i)}">${inline(esc(k))}</button>`).join('')}</div></section>
+     <details class="syn"><summary><span>Relire la leçon type</span>${I.chev}</summary><div class="syn-body"><div class="rt lz">${mdLesson(C.lecon)}</div></div></details>`
+    :`<section class="panel"><h3>2. Le contenu</h3><p>Pas encore de leçon type pour cette question : compare ta copie avec ton cours.</p></section>`}
+   <button class="btn btn-primary btn-lg" data-act="itr-save" ${ITR.plan==null?'disabled':''}>${ITR.plan==null?'Note d\'abord ton plan':'Enregistrer mon résultat'}</button>
+   <button class="btn btn-ghost danger" data-act="itr-cancel">Abandonner cet essai</button>`;
+}
+function intPickSheet(){
+  const nSeen=Object.values(INTQ).filter(x=>intSeen(x)&&intSt(x.id)<3).length;
+  return sheetTop('Épreuve blanche')+`<p>Une question tirée au sort, ${INT_DUR/60} heures, comme au concours. Tu écris sur une feuille, puis tu te corriges avec la fiche.</p>
+   <section class="panel"><div class="menu">${INT.map(ep=>`<button data-act="int-draw" data-ep="${ep.id}">${I.exam}<span><span class="t">${esc(ep.name)}</span><span class="d">coefficient ${ep.coef} · ${plural(ep.all.length,'question')}</span></span>${I.chev}</button>`).join('')}
+     ${nSeen?`<button data-act="int-draw" data-ep="seen">${I.book}<span><span class="t">Parmi les leçons vues en cours</span><span class="d">${plural(nSeen,'question')}</span></span>${I.chev}</button>`:''}</div></section>
+   <p class="small muted">Le tirage préfère les questions dont tu connais déjà le plan.</p>`;
+}
+function mergeInternat(inc){ if(!inc) return false; let ch=false; const T=S.internat;
+  for(const k of ['prog','fiches']) for(const [id,v] of Object.entries(inc[k]||{})){ const l=T[k][id]; if(v && (!l||(v.t||0)>(l.t||0))){ T[k][id]=v; ch=true; } }
+  for(const [id,arr] of Object.entries(inc.tries||{})){ const seen=new Set((T.tries[id]||[]).map(a=>a.t)); for(const a of arr||[]) if(a && !seen.has(a.t)){ (T.tries[id]=T.tries[id]||[]).push(a); seen.add(a.t); ch=true; } if(T.tries[id]) T.tries[id].sort((a,b)=>a.t-b.t); }
+  const cm={}; for(const c of T.custom) cm[c.id]=c; for(const c of inc.custom||[]){ const l=cm[c.id]; if(c && c.id && (!l||(c.t||0)>(l.t||0))){ cm[c.id]=c; ch=true; } } T.custom=Object.values(cm);
+  return ch;
+}
+function intHomeBlock(){
+  const all=Object.values(INTQ), c=intCounts(all);
+  const next=all.filter(x=>intSeen(x)&&intSt(x.id)<2).sort((a,b)=>(intReady(b.id)-intReady(a.id))||(intSt(a.id)-intSt(b.id)))[0] || all.filter(x=>intReady(x.id)&&x.l3.length&&intSt(x.id)<2)[0] || all.filter(x=>intReady(x.id)&&intSt(x.id)<2)[0];
+  return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Internat</h3><button class="btn btn-ghost" data-act="goto-int">Tout voir</button></div>
+    <p class="small muted">${c[1]+c[2]+c[3]} plans sus · ${c[2]+c[3]} leçons sues sur ${all.length} questions</p>${intBar(c,all.length)}
+    ${ITR?`<div class="exam-row"><span style="min-width:0"><span class="t">${esc(INTQ[ITR.id].t)}</span><span class="m">Épreuve blanche en cours</span></span><button class="btn btn-primary" data-act="itr-resume">Reprendre</button></div>`
+     :next?`<div class="exam-row"><button style="text-align:left;padding:0;border:0;background:none;color:inherit;min-width:0" data-act="int-open" data-id="${next.id}"><span class="t">${esc(next.t)}</span><span class="m">${intSeen(next)?'Vue en cours : à apprendre au format de l\'internat':'Leçon rédigée, prête à apprendre'}</span></button><button class="btn" data-act="int-open" data-id="${next.id}">Ouvrir</button></div>`:''}</section>`;
+}
+function intChapPanel(chapId){ const ids=(L3INT[chapId]||[]).filter(id=>INTQ[id]); if(!ids.length) return '';
+  return `<section class="panel"><div class="section-title"><h3>À l'internat</h3><span class="small muted">épreuves de ${INT_DUR/60} h</span></div>
+    <p class="small muted" style="margin-bottom:8px">Cette leçon prépare ${ids.length>1?'des questions':'une question'} du concours. Apprends-la aussi au format de l'internat : le plan d'abord, puis la leçon type.</p>
+    <div class="menu">${ids.map(id=>{ const x=INTQ[id], ep=INT.find(e=>e.id===x.ep); return `<button data-act="int-open" data-id="${id}">${I.exam}<span><span class="t">${esc(x.t)}</span><span class="d">${esc(ep.name)} · ${INT_STATUS[intSt(id)]}${intReady(id)?' · leçon rédigée':''}</span></span>${I.chev}</button>`; }).join('')}</div></section>`;
+}
+document.addEventListener('click', async e=>{
+  const a=e.target.closest('[data-act]'); if(!a) return; const act=a.dataset.act, d=a.dataset;
+  if(!/^(int-|itr-|prog-view$|goto-int$)/.test(act)) return;
+  switch(act){
+    case 'prog-view': UI.progView=d.v==='int'?'int':'l3'; lsSet('xamxam.progView', UI.progView); window.scrollTo(0,0); render(); break;
+    case 'goto-int': UI.tab='prog'; UI.progView='int'; lsSet('xamxam.tab','prog'); lsSet('xamxam.progView','int'); window.scrollTo(0,0); render(); break;
+    case 'int-f': UI.intFilter=d.f; rerender(); break;
+    case 'int-open': intOpen(d.id); break;
+    case 'int-tab': UI.intTab=d.t; UI.intRecite=null; paintSheet(true); break;
+    case 'int-status': setIntSt(UI.intId, +d.s); paintSheet(true); break;
+    case 'int-plans': openSheet(plansSheet); break;
+    case 'int-recite': UI.intRecite=0; paintSheet(true); break;
+    case 'int-next': UI.intRecite++; paintSheet(true); break;
+    case 'int-recite-stop': UI.intRecite=null; paintSheet(true); break;
+    case 'int-edit': UI.intEdit=d.f; paintSheet(true); break;
+    case 'int-cancel': UI.intEdit=null; paintSheet(true); break;
+    case 'int-save': { const f=UI.intEdit, v=($('#intEditText')||{}).value||''; const o=S.internat.fiches[UI.intId]=S.internat.fiches[UI.intId]||{}; o[f]=v.replace(/\s+$/,''); o.t=now(); saveLocal(); UI.intEdit=null; UI.intTab=f; toast('Enregistré'); paintSheet(true); break; }
+    case 'int-reset': armConfirm(a,'Confirmer : effacer ma version',()=>{ const o=S.internat.fiches[UI.intId]; if(o){ o[d.f]=''; o.t=now(); saveLocal(); } paintSheet(true); }); break;
+    case 'int-retry': delete INTL[UI.intId]; paintSheet(true); intLoad(UI.intId); break;
+    case 'int-copy': await copyText(buildIntPrompt(UI.intId)); break;
+    case 'int-paste': { const L=parseLesson(($('#intPaste')||{}).value||''); if(!L.lecon&&!L.plan){ toast("Je n'ai pas trouvé les repères @@plan et @@lecon. Colle toute la réponse.", 3600); break; }
+      const o=S.internat.fiches[UI.intId]=S.internat.fiches[UI.intId]||{}; if(L.plan) o.plan=L.plan; if(L.lecon) o.lecon=L.lecon; if(L.expl) o.expl=L.expl; o.t=now(); saveLocal(); toast('Leçon rangée dans la fiche'); paintSheet(); break; }
+    case 'int-add': UI.intAddEp=d.ep; openSheet(intAddSheet); break;
+    case 'int-add-go': { const t=(($('#intAddTitle')||{}).value||'').trim(); if(!t){ toast('Écris l\'intitulé de la question.'); break; }
+      const c={id:uid('q'), ep:UI.intAddEp, title:t, type:($('#intAddType')||{}).value||'m-maladie', t:now()}; S.internat.custom.push(c); saveLocal(); buildInt(); UI.open.add('int-'+c.ep); closeSheet(); toast('Question ajoutée'); break; }
+    case 'int-del': armConfirm(a,'Confirmer la suppression',()=>{ const c=S.internat.custom.find(x=>x.id===UI.intId); if(c){ c.del=true; c.t=now(); } saveLocal(); buildInt(); closeSheet(); toast('Question supprimée'); }); break;
+    case 'int-train': if(d.id) itrBegin(d.id); else if(ITR) itrResume(); else openSheet(intPickSheet); break;
+    case 'int-draw': { let pool=(d.ep==='seen'?Object.values(INTQ).filter(intSeen):INT.find(x=>x.id===d.ep).all).filter(x=>intSt(x.id)<3);
+      if(!pool.length){ toast('Toutes ces questions sont déjà maîtrisées.'); break; }
+      const known=pool.filter(x=>intSt(x.id)>=1); if(known.length && Math.random()<0.75) pool=known;
+      itrBegin(pool[Math.floor(Math.random()*pool.length)].id); break; }
+    case 'itr-resume': itrResume(); break;
+    case 'itr-pause': if(ITR.run){ ITR.acc=itrElapsed(); ITR.run=0; } else ITR.run=now(); itrSave(); paintSheet(true); itrTick(); break;
+    case 'itr-done': ITR.acc=itrElapsed(); ITR.run=0; ITR.phase='check'; itrSave(); itrResume(); break;
+    case 'itr-cancel': armConfirm(a,'Confirmer : abandonner',()=>{ ITR=null; itrSave(); clearInterval(itrTimer); closeSheet(); }); break;
+    case 'itr-plan': ITR.plan=+d.v; itrSave(); paintSheet(true); break;
+    case 'itr-key': { const i=+d.i, k=ITR.keys.indexOf(i); if(k>=0) ITR.keys.splice(k,1); else ITR.keys.push(i); itrSave(); paintSheet(true); break; }
+    case 'itr-save': { const id=ITR.id, n=keysOf(intContent(id).lecon).length; const tr={t:now(), ms:ITR.acc, k:Math.min(ITR.keys.length,n), n, plan:ITR.plan, aid:!!ITR.aid};
+      (S.internat.tries[id]=S.internat.tries[id]||[]).push(tr); if(ITR.plan===2 && intSt(id)<1) S.internat.prog[id]={s:1,t:now()}; saveLocal();
+      ITR=null; itrSave(); closeSheet(); toast(n?`${tr.k} mots-clés sur ${n} : ${Math.round(tr.k/n*100)} %`:'Essai enregistré', 3600); break; }
+  }
+});
+document.addEventListener('input', e=>{ const el=e.target; if(!el.dataset||el.dataset.input!=='int-q') return;
+  UI.intQuery=el.value; clearTimeout(UI.iq); UI.iq=setTimeout(()=>{ const pos=el.selectionStart; rerender(); const n=$('#intSearch'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch{} } }, 200); });
+document.addEventListener('toggle', e=>{ const el=e.target; if(el.matches && el.matches('details.peek') && el.open && ITR && !ITR.aid){ ITR.aid=true; itrSave(); } }, true);
 
 // ---------- Événements ----------
 function afterRender(){
@@ -3055,7 +3855,7 @@ function synSheet(){
 }
 
 // ---------- Démarrage ----------
-loadLocal(); exrLoad(); buildIndex(); applyTheme(); updateDueDot(); render();
+loadLocal(); exrLoad(); buildIndex(); itrLoad(); applyTheme(); updateDueDot(); render();
 cloudInit(); aiInit();
 if(PWA){ handleSharedLaunch(); setTimeout(()=>gsSync(false), 1500); window.addEventListener('online', ()=>gsSync(false));
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && now()-GS.last>2*MIN) gsSync(false); else if(document.visibilityState==='hidden'){ clearTimeout(GS.timer); gsSync(false); } }); }

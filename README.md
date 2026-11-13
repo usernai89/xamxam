@@ -48,6 +48,22 @@ Bibliothèques incluses dans `lib/` : pdf.js 4.10.38 (Apache-2.0) et Tesseract.j
 - **Partager** (examen, chapitre, ou sélection dans Réviser) : crée un fichier `.json` avec seulement les questions.
   Pour le recevoir : Créer → Importer → Fichier XamXam, ou Partager → XamXam depuis WhatsApp (Android, appli installée).
 
+## Internat des hôpitaux
+
+**Programme → Internat** : le programme du concours (4 épreuves écrites de 2 h), relié aux cours de L3.
+
+- 103 questions classées par épreuve. Chaque question a une fiche en trois parties :
+  **Plan** (à retenir en premier), **Leçon type** à recopier (mots-clés surlignés), **Explications** (schémas, pièges, moyens de retenir).
+- **Plans types** : un plan par famille de questions (organe, conduit, artère, nerf, articulation, maladie, traumatisme, cancer…).
+- Sans leçon rédigée, la fiche montre le plan type de sa famille ; on peut écrire sa propre leçon.
+- **Épreuve blanche** : chronomètre de 2 h, rédaction sur feuille, puis correction en cochant les mots-clés écrits.
+- Les chapitres de L3 liés à une question portent la mention « internat » ; la fiche du chapitre renvoie à la question.
+
+Les leçons rédigées sont des fichiers texte dans `internat/lecons/<id>.md`, avec les repères
+`@@plan`, `@@lecon`, `@@explications`, `@@schema Titre` (suivi d'un SVG). Les mots-clés s'écrivent `==mot-clé==`.
+Pour ajouter une leçon : créer le fichier, puis ajouter son identifiant à `INT_READY` dans `index.html`.
+La liste des questions est dans la constante `INT` de `index.html`.
+
 ## Mettre à jour
 
 Changer `VERSION` dans `sw.js` à chaque modification, sinon les appareils gardent l'ancienne version en mémoire.
