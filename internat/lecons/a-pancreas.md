@@ -86,4 +86,4 @@ Un cancer bouche lentement le cholédoque : la vésicule saine se distend. Un ca
 - L'artère gastro-duodénale est derrière D1 : c'est elle qui saigne dans l'ulcère bulbaire postérieur.
 
 ## Lien avec tes cours
-L1 S1 · Anatomie : « Le duodéno-pancréas » ; M1 S7 · Chirurgie digestive : « Pancréatites aiguës », « Cancer du pancréas exocrine ».
+L1 S1 · Anatomie : « Duodéno-pancréas » ; M1 S7 · Chirurgie digestive : « Pancréatites aiguës », « Cancer du pancréas exocrine ».

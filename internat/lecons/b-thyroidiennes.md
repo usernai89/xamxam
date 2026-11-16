@@ -111,4 +111,4 @@ L'hypophyse est très sensible au moindre manque ou excès d'hormones thyroïdie
 - Un nouveau-né hypothyroïdien paraît souvent normal : seul le dépistage permet de le traiter à temps.
 
 ## Lien avec tes cours
-L2 S3 · Biochimie : « Hormones thyroïdiennes » ; L2 S4 · Physiologie : « La thyroïde » ; L3 S5 : « Hyperthyroïdie », « Hypothyroïdie ».
+L2 S3 · Biochimie : « Hormones thyroïdiennes » ; L2 S4 · Physiologie : « Thyroïde » ; L3 S5 : « Hyperthyroïdie », « Hypothyroïdie ».

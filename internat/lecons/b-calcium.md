@@ -100,4 +100,4 @@ Une partie du calcium voyage accrochée à l'albumine. Si l'albumine est basse (
 - La tétanie de la crise d'angoisse vient de l'alcalose respiratoire, pas d'un manque de calcium.
 
 ## Lien avec tes cours
-L2 S4 · Physiologie : « Les parathyroïdes » ; L3 S5 : « Hyperparathyroïdies et hypoparathyroïdies », « Ostéoporose et ostéomalacie » ; M2 S10 · Néphrologie : « Dyscalcémies ».
+L2 S4 · Physiologie : « Parathyroïdes » ; L3 S5 : « Hyperparathyroïdies et hypoparathyroïdies », « Ostéoporose et ostéomalacie » ; M2 S10 · Néphrologie : « Dyscalcémies ».

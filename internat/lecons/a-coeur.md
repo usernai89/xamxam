@@ -94,4 +94,4 @@ Vue antérieure : ventricule droit au premier plan, ventricule gauche à gauche 
 - Les sinus de Valsalva sont dans l'aorte, pas dans le ventricule.
 
 ## Lien avec tes cours
-L1 S1 · Anatomie : « Topographie générale du thorax », « Système circulatoire » ; L1 S2 · Biophysique : « Électrophysiologie de la cellule cardiaque » ; M1 S7 · Cardiologie : « Maladie coronaire ».
+L1 S1 · Anatomie : « Topographie générale du thorax », « Système circulatoire : vue d'ensemble » ; L1 S2 · Biophysique : « Électrophysiologie de la cellule cardiaque » ; M1 S7 · Cardiologie : « Maladie coronaire ».

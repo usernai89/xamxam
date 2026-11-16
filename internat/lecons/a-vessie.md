@@ -89,4 +89,4 @@ Pendant un accouchement bloqué, la tête de l'enfant écrase pendant des heures
 - Hématurie terminale chez un jeune venu d'une zone de bilharziose : cherche les œufs dans les urines.
 
 ## Lien avec tes cours
-L2 S4 · Neuro-anatomie (organes) : « La vessie » ; L3 S6 · Sémiologie chirurgicale (urologie) ; M2 S10 · Urologie : « Cancers de la vessie », « Fistules urogénitales ».
+L2 S4 · Anatomie (organes du tronc et du pelvis) : « Vessie » ; L3 S6 · Sémiologie chirurgicale (urologie) ; M2 S10 · Urologie : « Cancers de la vessie », « Fistules urogénitales ».

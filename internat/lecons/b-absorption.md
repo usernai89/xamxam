@@ -86,4 +86,4 @@ La paroi de l'intestin est plissée comme une serviette éponge : elle offre une
 - Le fructose n'utilise pas le cotransport avec le sodium.
 
 ## Lien avec tes cours
-L1 S2 · Physiologie : « Digestion » ; M1 S7 · HGE : « Malabsorption intestinale », « Diagnostic d'une malabsorption intestinale ».
+L1 S2 · Physiologie : « Digestion » ; M1 S7 · HGE : « Malabsorption intestinale ».

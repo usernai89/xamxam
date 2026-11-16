@@ -94,4 +94,4 @@ Le conduit thoracique ramène la lymphe de tout l'abdomen et se jette à la base
 - L'éléphantiasis des membres en zone tropicale doit faire penser à la filariose lymphatique.
 
 ## Lien avec tes cours
-L2 S3 · Histologie : « Organes lymphoïdes » ; L3 S5 · Parasitologie : « Filariose lymphatique » ; L3 S5 · Sémiologie : « Sémiologie des adénopathies ».
+L2 S3 · Histologie : « Organes lymphoïdes » ; L3 S5 · Parasitologie : « Les filarioses » ; L3 S5 · Sémiologie : « Sémiologie des adénopathies ».

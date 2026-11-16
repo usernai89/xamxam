@@ -89,4 +89,4 @@ Avant d'enlever la vésicule, le chirurgien doit voir clairement deux éléments
 - La veine porte se forme derrière le col du pancréas, pas au hile.
 
 ## Lien avec tes cours
-L1 S1 · Anatomie : « Le foie », « Le duodéno-pancréas » ; L3 S6 · Sémiologie chirurgicale : « Lithiase de la voie biliaire principale » ; M1 S7 · Chirurgie digestive : « Lithiase biliaire et ses complications ».
+L1 S1 · Anatomie : « Foie », « Duodéno-pancréas » ; L3 S6 · Sémiologie chirurgicale : « Lithiase de la voie biliaire principale » ; M1 S7 · Chirurgie digestive : « Lithiase biliaire et ses complications ».

@@ -89,4 +89,4 @@ Les lymphatiques de l'abdomen remontent par le canal thoracique, qui se jette à
 - Le pylore est à droite de la ligne médiane.
 
 ## Lien avec tes cours
-L1 S1 · Anatomie : « L'estomac », « Vaisseaux de l'estomac » ; M1 S7 · Chirurgie digestive : « Cancer de l'estomac », « Complications évolutives des ulcères gastro-duodénaux ».
+L1 S1 · Anatomie : « Estomac et ses vaisseaux » ; M1 S7 · Chirurgie digestive : « Cancer de l'estomac », « Complications évolutives des ulcères gastro-duodénaux ».

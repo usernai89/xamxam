@@ -84,4 +84,4 @@ Les fibres de la pupille sont à la surface du III : un anévrisme ou un engagem
 - Une paralysie isolée du VI ne localise pas la lésion : pense à l'hypertension intracrânienne.
 
 ## Lien avec tes cours
-L2 S4 · Neuro-anatomie : « Nerfs moteurs de l'œil » ; L3 S5 : « Nerfs crâniens », « HTIC » ; D1 S12 · Ophtalmologie.
+L2 S4 · Neuro-anatomie : « Nerfs moteurs de l'œil » ; L3 S5 : « Nerfs crâniens », « Syndrome d'hypertension intracrânienne (HTIC) » ; D1 S12 · Ophtalmologie.

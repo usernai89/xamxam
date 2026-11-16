@@ -95,4 +95,4 @@ Les centres et voies des pupilles et des mouvements oculaires sont dans le tronc
 - La rigidité de décérébration est un signe de gravité du coma.
 
 ## Lien avec tes cours
-L2 S4 · Neuro-anatomie : « Tronc cérébral » ; L2 S4 · Physiologie : « Veille et sommeil » ; L3 S5 · Sémiologie neurologique : « Sémiologie des comas ».
+L2 S4 · Neuro-anatomie : « Tronc cérébral » ; L2 S4 · Physiologie : « Veille et sommeil » ; L3 S5 · Sémiologie neurologique : « Sémiologie des comas non traumatiques ».

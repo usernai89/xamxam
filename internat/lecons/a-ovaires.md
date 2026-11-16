@@ -91,4 +91,4 @@ Comme pour le testicule : la droite va dans la veine cave, la gauche dans la vei
 - Une douleur brutale avec malaise chez une femme en âge de procréer : pense d'abord à la grossesse extra-utérine rompue.
 
 ## Lien avec tes cours
-L1 S2 · Embryologie : « Gamétogenèse » ; L2 S4 · Physiologie : « Reproduction » ; M2 S10 · Gynécologie : « Tumeurs de l'ovaire », « Grossesse extra-utérine ».
+L1 S2 · Embryologie : « Gamétogenèse » ; L2 S4 · Physiologie : « Reproduction » ; M2 S10 · Gynécologie : « Tumeurs de l'ovaire », « Hémorragies du premier trimestre ».

@@ -99,4 +99,4 @@ Eau totale 60 % du poids, intracellulaire 40 %, extracellulaire 20 % (dont plasm
 - Corriger trop vite une hyponatrémie chronique peut détruire des neurones (myélinolyse).
 
 ## Lien avec tes cours
-L1 S2 · Physiologie : « Les compartiments liquidiens de l'organisme » ; L3 S5 : « Sémiologie des déshydratations » ; M2 S10 · Pédiatrie : « Déshydratation de l'enfant ».
+L1 S2 · Physiologie : « Milieu intérieur et compartiments liquidiens » ; L3 S5 : « Sémiologie des déshydratations » ; M2 S10 · Pédiatrie : « Déshydratation de l'enfant ».

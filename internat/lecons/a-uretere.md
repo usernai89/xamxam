@@ -85,4 +85,4 @@ Le départ (jonction pyélo-urétérale), le passage du bord du bassin (vaisseau
 - La douleur irradiée aux bourses ou aux grandes lèvres vient du nerf génito-fémoral.
 
 ## Lien avec tes cours
-L2 S4 · Neuro-anatomie (organes) : « Uretères » ; L3 S5 · Sémiologie néphrologique : « Œdème de type rénal, colique néphrétique » ; M2 S10 · Urologie : « Lithiase urinaire », « Bilharziose urogénitale ».
+L2 S4 · Anatomie (organes du tronc et du pelvis) : « Uretères » ; L3 S5 · Sémiologie néphrologique : « Œdème de type rénal, colique néphrétique, autres douleurs » ; M2 S10 · Urologie : « Lithiase urinaire », « Bilharziose urogénitale ».

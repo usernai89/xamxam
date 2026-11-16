@@ -105,4 +105,4 @@ Le cancer s'étend d'abord dans la graisse autour du rectum. Le chirurgien enlè
 - Les nerfs de l'érection passent sur les côtés du rectum : la chirurgie doit les respecter.
 
 ## Lien avec tes cours
-L2 S4 · Neuro-anatomie (organes) : « Le rectum » ; M1 S7 · Chirurgie digestive : « Cancers colorectaux », « Abcès et fistules anales », « Fissure anale ».
+L2 S4 · Anatomie (organes du tronc et du pelvis) : « Rectum » ; M1 S7 · Chirurgie digestive : « Cancers colorectaux », « Abcès et fistules anales », « Fissure anale ».

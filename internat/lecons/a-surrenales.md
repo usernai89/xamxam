@@ -89,4 +89,4 @@ Une artère d'en haut (diaphragmatique), une du milieu (aorte), une d'en bas (r�
 - Un arrêt brutal des corticoïdes peut provoquer une insuffisance surrénale aiguë.
 
 ## Lien avec tes cours
-L2 S4 : « Les surrénales » (anatomie) et « Surrénales » (physiologie) ; L3 S5 · Sémiologie endocrinienne : « Hypercorticismes », « Hypocorticismes ».
+L2 S4 : « Surrénales » (anatomie et physiologie) ; L3 S5 · Sémiologie endocrinienne : « Hypercorticismes », « Hypocorticismes ».

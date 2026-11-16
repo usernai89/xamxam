@@ -90,4 +90,4 @@ Un sigmoïde long, avec un pied de méso étroit, tourne sur lui-même comme une
 - Les veines du côlon vont à la veine porte : bilan hépatique de tout cancer colique.
 
 ## Lien avec tes cours
-L1 S1 · Anatomie : « Le côlon » ; M1 S7 · Chirurgie digestive : « Cancers colorectaux », « Volvulus du côlon pelvien », « Occlusion intestinale aiguë ».
+L1 S1 · Anatomie : « Côlon » ; M1 S7 · Chirurgie digestive : « Cancers colorectaux », « Volvulus du côlon pelvien », « Occlusion intestinale aiguë ».

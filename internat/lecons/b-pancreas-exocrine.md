@@ -89,4 +89,4 @@ La lipase est plus spécifique du pancréas et reste élevée plus longtemps. Un
 - L'entérokinase est intestinale.
 
 ## Lien avec tes cours
-L1 S2 · Physiologie : « Digestion » ; M1 S7 · Chirurgie digestive : « Pancréatites aiguës » ; L3 S6 : « Sémiologie des pancréatites aiguës ».
+L1 S2 · Physiologie : « Digestion » ; M1 S7 · Chirurgie digestive : « Pancréatites aiguës » ; L3 S6 · Sémiologie chirurgicale : « Pancréatites aiguës ».
