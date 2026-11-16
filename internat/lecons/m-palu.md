@@ -1,95 +1,95 @@
 @@plan
-I. Généralités
-  1. Définition
-  2. Intérêt
-  3. Épidémiologie : agent, vecteur, réservoir, transmission, sujets à risque
-  4. Cycle parasitaire et physiopathologie
-II. Signes
-  1. TDD : accès palustre simple à Plasmodium falciparum de l'adulte
-    a. Clinique : incubation, invasion, état
-    b. Paraclinique
-    c. Évolution
-  2. Formes cliniques
-    a. Paludisme grave
-    b. Formes selon le terrain
-    c. Formes selon l'espèce, formes chroniques
-III. Diagnostic
-  1. Positif
-  2. Différentiel
-  3. Étiologique
-IV. Traitement
-  1. Curatif : buts, moyens, indications, surveillance
-  2. Préventif
-Conclusion
+I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+  I.3- Épidémiologie : agent, vecteur, réservoir, transmission, sujets à risque
+  I.4- Cycle parasitaire et physiopathologie
+II- SIGNES
+  II.1- TDD : accès palustre simple à Plasmodium falciparum de l'adulte
+    II.1.1- Clinique : incubation, invasion, état
+    II.1.2- Paraclinique
+    II.1.3- Évolution
+  II.2- Formes cliniques
+    II.2.1- Paludisme grave
+    II.2.2- Formes selon le terrain
+    II.2.3- Formes selon l'espèce, formes chroniques
+III- DIAGNOSTIC
+  III.1- Positif
+  III.2- Différentiel
+  III.3- Étiologique
+IV- TRAITEMENT
+  IV.1- Curatif : buts, moyens, indications, surveillance
+  IV.2- Préventif
+V- CONCLUSION
 
 @@lecon
-## I. Généralités
-### 1. Définition
+## I- INTRODUCTION
+### I.1- Définition
 Le paludisme est une ==érythrocytopathie fébrile et hémolysante== due à la présence et à la multiplication dans le foie puis dans les hématies d'un ==hématozoaire du genre Plasmodium==, transmis à l'homme par la piqûre de l'==anophèle femelle==.
-### 2. Intérêt
+### I.2- Intérêt
 - Épidémiologique : ==première endémie parasitaire mondiale==, ==problème de santé publique== en Afrique subsaharienne, où surviennent la grande majorité des cas et des décès.
 - Diagnostique : ==toute fièvre en zone d'endémie est un paludisme jusqu'à preuve du contraire== ; la confirmation parasitologique est obligatoire.
 - Pronostique : ==Plasmodium falciparum== est responsable des ==formes graves==, mortelles sans traitement : c'est une ==urgence==.
 - Thérapeutique : ==combinaisons à base d'artémisinine==, menace des résistances ; prévention possible.
-### 3. Épidémiologie
+### I.3- Épidémiologie
 - Agent : cinq espèces, ==P. falciparum== (la plus fréquente au Sénégal, la seule qui tue), ==P. vivax==, ==P. ovale==, ==P. malariae==, P. knowlesi.
 - Vecteur : ==anophèle femelle== (complexe Anopheles gambiae, Anopheles funestus), qui pique le soir et la nuit.
 - Réservoir : l'==homme==.
 - Transmission : ==vectorielle== surtout ; plus rarement ==transfusionnelle== ou ==transplacentaire==. Au Sénégal, elle est ==saisonnière==, pendant et après la saison des pluies.
 - Sujets à risque : ==enfants de moins de 5 ans==, ==femmes enceintes==, ==sujets non immuns==. En zone d'endémie s'installe une ==prémunition== : immunité relative, lente à acquérir, non stérilisante et labile.
-### 4. Cycle parasitaire et physiopathologie
+### I.4- Cycle parasitaire et physiopathologie
 - Chez l'homme, cycle asexué ou ==schizogonie== : les ==sporozoïtes== inoculés gagnent le foie (==schizogonie hépatique==, silencieuse) ; les ==mérozoïtes== libérés envahissent les hématies (==schizogonie érythrocytaire==) : trophozoïte, schizonte, rosace, puis éclatement. Certains parasites deviennent des ==gamétocytes==.
 - P. vivax et P. ovale laissent dans le foie des ==hypnozoïtes==, responsables de rechutes tardives.
 - Chez l'anophèle, cycle sexué ou ==sporogonie==.
 - L'==éclatement des rosaces== libère le ==pigment malarique (hémozoïne)==, pyrogène : c'est la fièvre. L'==hémolyse== explique l'anémie et l'ictère. Pour P. falciparum, la ==cytoadhérence== des hématies parasitées et leur ==séquestration== dans les capillaires profonds, surtout cérébraux, expliquent le ==neuropaludisme==.
 
-## II. Signes
-### 1. TDD : accès palustre simple à Plasmodium falciparum de l'adulte
-#### a. Clinique
+## II- SIGNES
+### II.1- TDD : accès palustre simple à Plasmodium falciparum de l'adulte
+#### II.1.1- Clinique
 - ==Incubation== : 7 à 15 jours, silencieuse.
 - Invasion : fièvre continue à 39-40 °C, ==céphalées==, ==courbatures==, ==troubles digestifs== (nausées, vomissements, diarrhée) : c'est l'==embarras gastrique fébrile==.
 - État : ==accès palustre== en trois stades : ==frissons==, ==chaleur== (fièvre à 40-41 °C), ==sueurs== abondantes, suivis d'une sensation de bien-être. L'accès se répète toutes les 48 heures : ==fièvre tierce==. L'examen peut trouver une ==splénomégalie==, une pâleur, un subictère.
-#### b. Paraclinique
+#### II.1.2- Paraclinique
 - Diagnostic de certitude, en urgence : ==goutte épaisse== (sensible, mesure la densité parasitaire) et ==frottis sanguin== (identifie l'espèce), colorés au ==Giemsa== ; ==test de diagnostic rapide (TDR)== qui détecte l'antigène ==HRP2== de P. falciparum.
 - Signes d'orientation : ==thrombopénie==, ==anémie hémolytique==, leucocytes normaux ou bas, CRP élevée.
-#### c. Évolution
+#### II.1.3- Évolution
 - Traité tôt : guérison en quelques jours.
 - Non traité : répétition des accès, anémie, et à tout moment passage au ==paludisme grave==.
-### 2. Formes cliniques
-#### a. Paludisme grave
+### II.2- Formes cliniques
+#### II.2.1- Paludisme grave
 Présence de formes asexuées de P. falciparum dans le sang et d'au moins un critère de gravité de l'OMS :
 - neurologiques : ==troubles de la conscience ou coma== (neuropaludisme), ==convulsions répétées==, ==prostration== ;
 - ==détresse respiratoire== ou œdème pulmonaire, ==collapsus cardiovasculaire== ;
 - ==ictère==, ==hémoglobinurie==, ==saignements anormaux==, ==insuffisance rénale== ;
 - biologiques : ==anémie sévère==, ==hypoglycémie==, ==acidose==, ==hyperlactatémie==, ==hyperparasitémie==.
-#### b. Formes selon le terrain
+#### II.2.2- Formes selon le terrain
 - Enfant : convulsions, anémie sévère, hypoglycémie.
 - Femme enceinte : anémie, avortement, accouchement prématuré, ==petit poids de naissance==, formes graves.
 - Paludisme congénital, paludisme transfusionnel, sujet non immun.
-#### c. Formes selon l'espèce et formes chroniques
+#### II.2.3- Formes selon l'espèce et formes chroniques
 - P. vivax et P. ovale : fièvre tierce bénigne, ==rechutes==. P. malariae : ==fièvre quarte==, néphropathie.
 - ==Paludisme viscéral évolutif==, ==fièvre bilieuse hémoglobinurique==, splénomégalie palustre hyperimmune.
 
-## III. Diagnostic
-### 1. Positif
+## III- DIAGNOSTIC
+### III.1- Positif
 Arguments épidémiologiques (séjour en zone d'endémie), cliniques (fièvre) et surtout parasitologiques (==goutte épaisse, frottis ou TDR positifs==).
-### 2. Différentiel
+### III.2- Différentiel
 ==Fièvre typhoïde==, ==méningite==, ==hépatites virales==, arboviroses (dengue), pyélonéphrite, septicémies, grippe. Devant un coma fébrile : méningo-encéphalite.
-### 3. Étiologique
+### III.3- Étiologique
 Espèce en cause ; facteurs favorisants : âge, grossesse, absence de prémunition, absence de moustiquaire.
 
-## IV. Traitement
-### 1. Curatif
+## IV- TRAITEMENT
+### IV.1- Curatif
 - Buts : ==éliminer le parasite==, prévenir ou traiter les complications, interrompre la transmission.
 - Moyens : ==dérivés de l'artémisinine== (artésunate, artéméther), ==combinaisons thérapeutiques à base d'artémisinine (CTA)== : artéméther-luméfantrine, artésunate-amodiaquine, dihydroartémisinine-pipéraquine ; ==quinine== ; ==primaquine== ; traitement symptomatique : ==paracétamol==, réhydratation, ==sérum glucosé==, anticonvulsivants, ==transfusion==, épuration extra-rénale.
 - Indications. Accès simple : ==CTA par voie orale pendant 3 jours==. Paludisme grave : ==urgence==, hospitalisation, ==artésunate par voie intraveineuse== (2,4 mg/kg à H0, H12, H24 puis une fois par jour ; 3 mg/kg chez l'enfant de moins de 20 kg), relais par une CTA orale dès que possible ; à défaut artéméther intramusculaire ou ==quinine en perfusion de sérum glucosé==. P. vivax et P. ovale : ajout de primaquine après recherche d'un ==déficit en G6PD==.
 - Surveillance : température, conscience, diurèse, glycémie, ==parasitémie de contrôle==.
-### 2. Préventif
+### IV.2- Préventif
 - ==Lutte antivectorielle== : ==moustiquaires imprégnées d'insecticide à longue durée d'action==, ==aspersions intradomiciliaires==, destruction des gîtes larvaires.
 - ==Chimioprévention== : ==traitement préventif intermittent de la femme enceinte par la sulfadoxine-pyriméthamine==, ==chimioprévention du paludisme saisonnier== chez l'enfant, chimioprophylaxie du voyageur.
 - ==Vaccination== antipaludique de l'enfant (RTS,S, R21).
 
-## Conclusion
+## V- CONCLUSION
 Le paludisme est une parasitose fréquente et potentiellement mortelle. Son pronostic repose sur un ==diagnostic parasitologique précoce== et un traitement rapide par les dérivés de l'artémisinine ; son contrôle passe par la prévention.
 
 @@explications

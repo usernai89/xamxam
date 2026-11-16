@@ -1,75 +1,75 @@
 @@plan
-I. Généralités
-  1. Définition
-  2. Intérêt
-  3. Physiopathologie : anémies centrales et périphériques
-II. Diagnostic positif
-  1. Syndrome anémique
-  2. Hémogramme
-III. Diagnostic de gravité
-IV. Diagnostic différentiel
-V. Diagnostic étiologique
-  1. Enquête
-  2. Anémies microcytaires
-  3. Anémies normocytaires ou macrocytaires régénératives
-  4. Anémies normocytaires arégénératives
-  5. Anémies macrocytaires arégénératives
-VI. Traitement
-Conclusion
+I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+  I.3- Physiopathologie : anémies centrales et périphériques
+II- DIAGNOSTIC POSITIF
+  II.1- Syndrome anémique
+  II.2- Hémogramme
+III- DIAGNOSTIC DE GRAVITÉ
+IV- DIAGNOSTIC DIFFÉRENTIEL
+V- DIAGNOSTIC ÉTIOLOGIQUE
+  V.1- Enquête
+  V.2- Anémies microcytaires
+  V.3- Anémies normocytaires ou macrocytaires régénératives
+  V.4- Anémies normocytaires arégénératives
+  V.5- Anémies macrocytaires arégénératives
+VI- TRAITEMENT
+VII- CONCLUSION
 
 @@lecon
-## I. Généralités
-### 1. Définition
+## I- INTRODUCTION
+### I.1- Définition
 L'anémie est la ==diminution du taux d'hémoglobine== au-dessous des valeurs normales pour l'âge et le sexe : moins de ==13 g/dL chez l'homme==, de ==12 g/dL chez la femme==, de ==11 g/dL chez la femme enceinte==.
-### 2. Intérêt
+### I.2- Intérêt
 - Fréquence : ==problème de santé publique== en Afrique (carences, paludisme, drépanocytose, parasitoses).
 - C'est un ==symptôme== : il faut toujours en chercher la cause.
 - Parfois une ==urgence== transfusionnelle.
-### 3. Physiopathologie
+### I.3- Physiopathologie
 - Anémies ==centrales==, par défaut de production médullaire : elles sont ==arégénératives==. Causes : carences en ==fer==, en ==vitamine B12== ou en ==folates==, insuffisance médullaire, inflammation, insuffisance rénale.
 - Anémies ==périphériques==, par perte ou destruction des globules rouges : elles sont ==régénératives==. Causes : ==hémorragie aiguë==, ==hémolyse==.
 
-## II. Diagnostic positif
-### 1. Syndrome anémique
+## II- DIAGNOSTIC POSITIF
+### II.1- Syndrome anémique
 - ==Pâleur== de la peau et des muqueuses (conjonctives, paumes).
 - Signes fonctionnels : ==asthénie==, ==dyspnée d'effort==, ==palpitations==, vertiges, céphalées.
 - Signes cardiovasculaires : ==tachycardie==, ==souffle systolique fonctionnel==.
-### 2. Hémogramme
+### II.2- Hémogramme
 Il confirme l'anémie et l'oriente par trois paramètres : le ==volume globulaire moyen (VGM)==, la teneur en hémoglobine et le taux de ==réticulocytes==.
 
-## III. Diagnostic de gravité
+## III- DIAGNOSTIC DE GRAVITÉ
 La tolérance dépend de la ==rapidité d'installation==, de la profondeur de l'anémie et du terrain. Signes de gravité : dyspnée de repos, tachycardie importante, ==angor==, hypotension, troubles de la conscience.
 
-## IV. Diagnostic différentiel
+## IV- DIAGNOSTIC DIFFÉRENTIEL
 Fausses anémies par ==hémodilution== : grossesse, splénomégalie volumineuse, perfusions abondantes.
 
-## V. Diagnostic étiologique
-### 1. Enquête
+## V- DIAGNOSTIC ÉTIOLOGIQUE
+### V.1- Enquête
 Interrogatoire (alimentation, saignements, règles, médicaments, origine), examen (ictère, splénomégalie, adénopathies, signes hémorragiques), puis examens orientés par l'hémogramme.
-### 2. Anémies microcytaires
+### V.2- Anémies microcytaires
 VGM inférieur à 80 fL ; l'examen clé est la ==ferritine==.
 - Ferritine basse : ==carence en fer==, la cause la plus fréquente. Il faut en trouver l'origine : ==saignements digestifs== ou ==gynécologiques==, ==ankylostomose==, carence d'apport, grossesses répétées.
 - Ferritine normale ou élevée avec syndrome inflammatoire : ==anémie inflammatoire==.
 - Fer normal : ==thalassémie==, à rechercher par l'électrophorèse de l'hémoglobine.
-### 3. Anémies régénératives
+### V.3- Anémies régénératives
 Réticulocytes supérieurs à 120 G/L.
 - ==Hémorragie aiguë==.
 - ==Hémolyse== : ictère, splénomégalie, bilirubine libre élevée, haptoglobine effondrée. Causes corpusculaires : ==drépanocytose==, ==déficit en G6PD==, anomalies de la membrane. Causes extracorpusculaires : ==paludisme==, hémolyses immunologiques (==test de Coombs== positif), toxiques, mécaniques.
-### 4. Anémies normocytaires arégénératives
+### V.4- Anémies normocytaires arégénératives
 - ==Insuffisance rénale chronique==, inflammation, maladies endocriniennes.
 - Sinon ==myélogramme== : ==aplasie médullaire==, ==leucémie==, envahissement de la moelle.
-### 5. Anémies macrocytaires arégénératives
+### V.5- Anémies macrocytaires arégénératives
 VGM supérieur à 100 fL.
 - Causes simples à écarter : alcool, hypothyroïdie, médicaments, maladie du foie.
 - ==Carence en vitamine B12== (==maladie de Biermer==) ou en ==folates== : le myélogramme montre une ==mégaloblastose==.
 - Myélodysplasies.
 
-## VI. Traitement
+## VI- TRAITEMENT
 - Symptomatique : ==transfusion de concentrés de globules rouges== si l'anémie est mal tolérée.
 - Étiologique : ==fer par voie orale== pendant plusieurs mois et traitement de la cause du saignement ; vitamine B12 par voie intramusculaire ; acide folique ; érythropoïétine dans l'insuffisance rénale ; traitement d'une hémolyse.
 - Préventif : supplémentation en fer et en acide folique de la femme enceinte, déparasitage, lutte contre le paludisme.
 
-## Conclusion
+## VII- CONCLUSION
 L'anémie est un symptôme fréquent. Sa démarche étiologique repose sur l'hémogramme : le volume globulaire moyen et les réticulocytes orientent à eux seuls vers le mécanisme et la cause.
 
 @@explications

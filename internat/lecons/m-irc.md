@@ -1,42 +1,42 @@
 @@plan
-I. Généralités
-  1. Définition et stades
-  2. Intérêt
-  3. Physiopathologie
-II. Signes
-  1. TDD : insuffisance rénale chronique évoluée
-    a. Clinique : le syndrome urémique
-    b. Paraclinique
-    c. Évolution et complications
-  2. Formes cliniques
-III. Diagnostic
-  1. Positif : arguments de chronicité
-  2. Différentiel
-  3. Étiologique
-  4. Facteurs d'aggravation
-IV. Traitement
-  1. Buts
-  2. Moyens : néphroprotection, traitement des complications, suppléance
-  3. Indications
-  4. Prévention
-Conclusion
+I- INTRODUCTION
+  I.1- Définition et stades
+  I.2- Intérêt
+  I.3- Physiopathologie
+II- SIGNES
+  II.1- TDD : insuffisance rénale chronique évoluée
+    II.1.1- Clinique : le syndrome urémique
+    II.1.2- Paraclinique
+    II.1.3- Évolution et complications
+  II.2- Formes cliniques
+III- DIAGNOSTIC
+  III.1- Positif : arguments de chronicité
+  III.2- Différentiel
+  III.3- Étiologique
+  III.4- Facteurs d'aggravation
+IV- TRAITEMENT
+  IV.1- Buts
+  IV.2- Moyens : néphroprotection, traitement des complications, suppléance
+  IV.3- Indications
+  IV.4- Prévention
+V- CONCLUSION
 
 @@lecon
-## I. Généralités
-### 1. Définition et stades
+## I- INTRODUCTION
+### I.1- Définition et stades
 L'insuffisance rénale chronique est la ==diminution progressive et irréversible du débit de filtration glomérulaire==, par réduction du nombre de néphrons fonctionnels. La ==maladie rénale chronique== est définie par des signes d'atteinte rénale ou un débit de filtration ==inférieur à 60 mL/min/1,73 m² depuis plus de trois mois==. Elle comporte cinq stades ; le stade 5, au-dessous de 15 mL/min, est l'==insuffisance rénale terminale==.
-### 2. Intérêt
+### I.2- Intérêt
 - Fréquence croissante, liée à l'==hypertension artérielle== et au ==diabète==.
 - Longtemps ==silencieuse==.
 - Coût et difficulté d'accès de la dialyse et de la greffe : la ==prévention== est capitale.
-### 3. Physiopathologie
+### I.3- Physiopathologie
 - Les néphrons restants travaillent davantage, ce qui accélère leur destruction.
 - Défaut d'épuration : accumulation de l'==urée==, de la ==créatinine==, du potassium, des acides.
 - Défaut des fonctions endocrines : baisse de l'==érythropoïétine== (anémie), baisse de la ==vitamine D active== avec hypocalcémie, hyperphosphorémie et ==hyperparathyroïdie secondaire==.
 
-## II. Signes
-### 1. TDD : insuffisance rénale chronique évoluée
-#### a. Clinique
+## II- SIGNES
+### II.1- TDD : insuffisance rénale chronique évoluée
+#### II.1.1- Clinique
 Début discret : ==polyurie== et ==nycturie==. Puis ==syndrome urémique== :
 - général : asthénie, anorexie, amaigrissement ;
 - cardiovasculaire : ==hypertension artérielle==, insuffisance cardiaque, ==péricardite== ;
@@ -45,48 +45,48 @@ Début discret : ==polyurie== et ==nycturie==. Puis ==syndrome urémique== :
 - neurologique : crampes, ==polynévrite==, troubles de la conscience ;
 - osseux : douleurs, fractures (==ostéodystrophie rénale==) ;
 - cutané : ==prurit==, teint terreux.
-#### b. Paraclinique
+#### II.1.2- Paraclinique
 - Élévation de la créatinine et de l'urée ; ==estimation du débit de filtration glomérulaire== par une formule.
 - ==Anémie normochrome normocytaire arégénérative==.
 - ==Hypocalcémie==, ==hyperphosphorémie==, parathormone élevée.
 - ==Hyperkaliémie==, ==acidose métabolique==.
 - ==Échographie== : ==reins de petite taille==, mal différenciés.
-#### c. Évolution et complications
+#### II.1.3- Évolution et complications
 - Progression vers le stade terminal.
 - Complications ==cardiovasculaires==, première cause de décès.
 - Hyperkaliémie, œdème pulmonaire, péricardite, dénutrition, infections.
-### 2. Formes cliniques
+### II.2- Formes cliniques
 Formes à gros reins : ==diabète==, ==polykystose rénale==, amylose, infection à VIH. Formes de l'enfant, avec retard de croissance.
 
-## III. Diagnostic
-### 1. Positif : arguments de chronicité
+## III- DIAGNOSTIC
+### III.1- Positif : arguments de chronicité
 Créatininémies antérieures élevées, ==petits reins==, ==anémie==, ==hypocalcémie==.
-### 2. Différentiel
+### III.2- Différentiel
 Insuffisance rénale aiguë.
-### 3. Étiologique
+### III.3- Étiologique
 - Néphropathies ==glomérulaires== : glomérulonéphrites chroniques, ==néphropathie diabétique==.
 - Néphropathies ==vasculaires== : ==néphroangiosclérose== hypertensive.
 - Néphropathies ==tubulo-interstitielles== chroniques : obstacles, infections urinaires hautes répétées, toxiques.
 - Néphropathies ==héréditaires== : polykystose rénale.
-### 4. Facteurs d'aggravation
+### III.4- Facteurs d'aggravation
 À rechercher devant toute aggravation brutale : ==déshydratation==, ==médicaments néphrotoxiques== (anti-inflammatoires, produits de contraste), ==obstacle==, infection urinaire, hypertension mal contrôlée.
 
-## IV. Traitement
-### 1. Buts
+## IV- TRAITEMENT
+### IV.1- Buts
 Ralentir la progression, traiter les complications, préparer puis assurer la suppléance.
-### 2. Moyens
+### IV.2- Moyens
 - ==Néphroprotection== : contrôle strict de la pression artérielle, ==inhibiteurs de l'enzyme de conversion== ou antagonistes de l'angiotensine II pour réduire la ==protéinurie==, régime peu salé et à apport contrôlé en protéines, équilibre du diabète, éviction des néphrotoxiques.
 - Traitement des complications : ==fer et érythropoïétine==, calcium, ==vitamine D==, chélateurs du phosphore, bicarbonate de sodium, diurétiques de l'anse, régime pauvre en potassium.
 - Suppléance : ==hémodialyse== par une ==fistule artério-veineuse==, ==dialyse péritonéale==, ==transplantation rénale==.
 - Mesures associées : vaccination contre l'hépatite B, protection des veines de l'avant-bras.
-### 3. Indications
+### IV.3- Indications
 - À tous les stades : néphroprotection et correction des facteurs d'aggravation.
 - À partir du stade 3 : traitement des complications.
 - Au stade 5 : suppléance ; la transplantation est le meilleur traitement.
-### 4. Prévention
+### IV.4- Prévention
 Dépistage chez les sujets à risque, hypertendus et diabétiques, par la créatinine et la recherche d'une protéinurie.
 
-## Conclusion
+## V- CONCLUSION
 L'insuffisance rénale chronique est une maladie silencieuse et grave. Dépistée tôt, sa progression peut être ralentie ; au stade terminal, seule la dialyse ou la greffe permet la survie.
 
 @@explications

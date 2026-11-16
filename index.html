@@ -323,6 +323,7 @@ mark.filled{background:var(--hl)!important;color:var(--hl-ink)!important;font-we
 .fig figcaption{font-family:var(--font-display);font-weight:700;margin-bottom:8px}
 .fig{overflow-x:auto}
 .fig svg{display:block;width:100%;min-width:540px;height:auto}
+.lz li.li2{margin-left:1.25em;list-style-type:circle}
 .sch text{font-family:var(--font-body);font-size:13px;fill:var(--fg)}
 .sch .t{font-weight:700}
 .sch .s{font-size:11px;fill:var(--muted)}
@@ -2779,335 +2780,306 @@ const INT_STATUS=['À faire','Plan su','Leçon sue','Maîtrisée'];
 
 // Plans types : un par famille de questions. Deux espaces de retrait = une sous-partie.
 const PLANS={
- 'a-organe':{n:"Organe (viscère)", ep:'anat', ex:'cœur, foie, estomac, rate, rein, utérus', p:`I. Généralités
-  1. Définition
-  2. Intérêt : anatomique, clinique, paraclinique, chirurgical
-II. Anatomie descriptive
-  1. Situation et projection
-  2. Forme et configuration externe : faces, bords, extrémités
-  3. Dimensions, poids, couleur, consistance
-  4. Moyens de fixité
-  5. Configuration interne et structure
-III. Rapports
-  1. Rapports péritonéaux ou de la loge
-  2. Rapports avec les organes voisins : face par face, bord par bord
-IV. Vascularisation et innervation
-  1. Artères
-  2. Veines
-  3. Lymphatiques
-  4. Nerfs
-V. Applications cliniques
-  1. Examen clinique et imagerie
-  2. Pathologie et voies d'abord chirurgicales
-Conclusion`},
- 'a-conduit':{n:"Conduit", ep:'anat', ex:'bronches, œsophage, uretère, voies biliaires', p:`I. Généralités
-  1. Définition
-  2. Intérêt
-II. Anatomie descriptive
-  1. Origine
-  2. Trajet et direction : portions successives
-  3. Terminaison
-  4. Dimensions : longueur, calibre, rétrécissements
-  5. Configuration interne et structure
-  6. Moyens de fixité
-III. Rapports : portion par portion
-IV. Vascularisation et innervation
-  1. Artères
-  2. Veines
-  3. Lymphatiques
-  4. Nerfs
-V. Applications cliniques
-Conclusion`},
- 'a-artere':{n:"Artère, vascularisation d'un membre", ep:'anat', ex:'aorte, artères du membre supérieur et du membre inférieur', p:`I. Généralités
-  1. Définition
-  2. Intérêt
-II. Anatomie descriptive
-  1. Origine
-  2. Trajet et direction
-  3. Terminaison
-  4. Dimensions : longueur, calibre
-III. Rapports : segment par segment
-IV. Distribution
-  1. Branches collatérales
-  2. Branches terminales
-  3. Anastomoses et voies de suppléance
-V. Retour veineux et lymphatique (pour la vascularisation d'un membre)
-VI. Applications cliniques
-  1. Pouls, pression artérielle, points de compression
-  2. Exploration : écho-Doppler, artériographie
-  3. Pathologie et abord chirurgical
-Conclusion`},
- 'a-nerf':{n:"Nerf, plexus", ep:'anat', ex:'nerfs crâniens, plexus brachial, lombaire, sacré', p:`I. Généralités
-  1. Définition : nerf moteur, sensitif ou mixte
-  2. Intérêt
-II. Anatomie descriptive
-  1. Origine : réelle et apparente (constitution pour un plexus)
-  2. Trajet
-  3. Terminaison
-III. Rapports : segment par segment
-IV. Distribution
-  1. Branches collatérales
-  2. Branches terminales
-  3. Anastomoses
-V. Anatomie fonctionnelle
-  1. Territoire moteur
-  2. Territoire sensitif
-  3. Fibres végétatives
-VI. Applications cliniques
-  1. Examen clinique et paralysies
-  2. Blocs anesthésiques et voies d'abord
-Conclusion`},
- 'a-voie':{n:"Voie nerveuse (faisceau)", ep:'anat', ex:'faisceau pyramidal', p:`I. Généralités
-  1. Définition
-  2. Intérêt
-II. Anatomie descriptive
-  1. Origine : neurones, aire corticale
-  2. Trajet : étage par étage
-  3. Terminaison
-III. Systématisation : somatotopie, croisements
-IV. Vascularisation
-V. Anatomie fonctionnelle : rôle
-VI. Applications cliniques : syndromes selon le niveau de la lésion, exploration
-Conclusion`},
- 'a-muscle':{n:"Muscle, cloison musculaire", ep:'anat', ex:'diaphragme', p:`I. Généralités
-  1. Définition
-  2. Intérêt
-II. Anatomie descriptive
-  1. Situation
-  2. Forme et constitution
-  3. Insertions : origine, terminaison
-  4. Orifices (pour une cloison comme le diaphragme)
-III. Rapports
-IV. Vascularisation et innervation
-V. Anatomie fonctionnelle : action
-VI. Applications cliniques
-Conclusion`},
- 'a-articulation':{n:"Articulation", ep:'anat', ex:'genou, hanche, épaule', p:`I. Généralités
-  1. Définition et type d'articulation
-  2. Intérêt
-II. Anatomie descriptive
-  1. Surfaces articulaires
-  2. Moyens d'union : capsule, ligaments
-  3. Synoviale et moyens de glissement
-III. Rapports
-IV. Vascularisation et innervation
-V. Anatomie fonctionnelle
-  1. Stabilité
-  2. Mouvements et muscles moteurs
-VI. Applications cliniques
-  1. Examen clinique et imagerie
-  2. Traumatismes, ponction, voies d'abord
-Conclusion`},
- 'a-cavite':{n:"Cavité, région", ep:'anat', ex:'ventricules cérébraux', p:`I. Généralités
-  1. Définition
-  2. Intérêt
-II. Anatomie descriptive
-  1. Situation
-  2. Forme et dimensions
-  3. Limites et parois
-  4. Communications et orifices
-III. Contenu
-IV. Rapports
-V. Vascularisation et innervation
-VI. Applications cliniques
-Conclusion`},
- 'a-region':{n:"Région, pédicule", ep:'anat', ex:'région sous-maxillaire, pédicule hépatique', p:`I. Généralités
-  1. Définition
-  2. Intérêt : anatomique, clinique, chirurgical
-II. Situation et limites
-  1. Limites superficielles
-  2. Limites profondes
-III. Constitution : plans successifs, de la superficie à la profondeur
-IV. Contenu
-  1. Éléments vasculaires
-  2. Éléments nerveux
-  3. Lymphatiques et organes
-  4. Disposition et rapports des éléments entre eux
-V. Rapports avec les régions voisines
-VI. Applications cliniques
-  1. Examen et exploration
-  2. Voies d'abord et pathologie
-Conclusion`},
- 'b-fonction':{n:"Fonction physiologique", ep:'bio', ex:'circulation, respiration, digestion, hémostase, immunité, régulation des ions', p:`Introduction
-  1. Définition
-  2. Intérêt
-I. Rappels : anatomiques, histologiques, biochimiques
-II. Acteurs et mécanismes : étape par étape
-III. Régulation : nerveuse, hormonale, locale
-IV. Méthodes d'exploration et valeurs normales
-V. Applications : variations physiologiques, pathologie, thérapeutique
-Conclusion`},
- 'b-processus':{n:"Phénomène cellulaire ou génétique", ep:'bio', ex:'mitose, méiose, synthèse des protéines, mutations', p:`Introduction
-  1. Définition
-  2. Intérêt
-I. Rappels : structures et molécules en jeu
-II. Déroulement : étapes ou phases successives
-III. Contrôle et régulation
-IV. Résultats et signification biologique
-V. Anomalies et applications médicales
-Conclusion`},
- 'b-substance':{n:"Molécule, système de groupes", ep:'bio', ex:'hémoglobine, groupes sanguins', p:`Introduction
-  1. Définition
-  2. Intérêt
-I. Structure
-II. Génétique et biosynthèse
-III. Propriétés et fonctions
-IV. Variations physiologiques
-V. Méthodes d'étude
-VI. Applications : anomalies, pathologie, thérapeutique
-Conclusion`},
- 'b-biophys':{n:"Biophysique des rayonnements", ep:'bio', ex:'effets des rayonnements ionisants, radioprotection', p:`Introduction
-  1. Définition
-  2. Intérêt
-I. Rappels : nature et sources des rayonnements, grandeurs et unités
-II. Interactions avec la matière vivante
-  1. Étapes physique et chimique
-  2. Lésions moléculaires et cellulaires
-III. Effets sur l'organisme
-  1. Effets déterministes (obligatoires)
-  2. Effets stochastiques (aléatoires)
-  3. Facteurs de radiosensibilité
-IV. Applications : radioprotection, radiothérapie, imagerie
-Conclusion`},
- 'm-maladie':{n:"Maladie", ep:'med', ex:'paludisme, fièvre typhoïde, HTA, diabète, asthme', p:`I. Généralités
-  1. Définition
-  2. Intérêt : épidémiologique, diagnostique, thérapeutique, pronostique
-  3. Épidémiologie
-  4. Physiopathologie et anatomie pathologique
-II. Signes
-  1. Type de description (TDD) : la forme la plus typique
-    a. Clinique : début, phase d'état
-    b. Paraclinique : biologie, imagerie
-    c. Évolution : éléments de surveillance, modalités, complications
-  2. Formes cliniques : symptomatiques, selon le terrain, compliquées
-III. Diagnostic
-  1. Positif
-  2. Différentiel
-  3. Étiologique
-IV. Traitement
-  1. Curatif : buts, moyens, indications, surveillance
-  2. Préventif
-Conclusion`},
- 'm-syndrome':{n:"Syndrome (démarche diagnostique)", ep:'med', ex:'anémies, ictères, adénopathies cervicales', p:`I. Généralités
-  1. Définition
-  2. Intérêt
-  3. Physiopathologie ou rappel anatomique
-II. Diagnostic positif
-  1. Circonstances de découverte
-  2. Examen clinique
-  3. Examens paracliniques
-III. Diagnostic de gravité
-IV. Diagnostic différentiel
-V. Diagnostic étiologique
-  1. Enquête : interrogatoire, examen, examens orientés
-  2. Étiologies
-VI. Traitement : symptomatique, étiologique
-Conclusion`},
- 'm-urgence':{n:"Urgence médicale (oral)", ep:'med', ex:'état de mal épileptique, coma hépatique, intoxications, accidents des traitements', p:`I. Généralités
-  1. Définition
-  2. Intérêt : urgence diagnostique et thérapeutique, pronostic vital
-  3. Physiopathologie
-II. Diagnostic
-  1. Positif : clinique, signes de gravité
-  2. Examens urgents, sans retarder le traitement
-  3. Différentiel
-  4. Étiologique
-III. Prise en charge
-  1. Buts
-  2. Gestes immédiats : liberté des voies aériennes, respiration, circulation, conditionnement
-  3. Traitement spécifique
-  4. Traitement de la cause
-  5. Surveillance
-  6. Prévention des récidives
-Conclusion`},
- 'c-affection':{n:"Affection chirurgicale", ep:'chir', ex:'mal de Pott, anévrismes, hernies, ostéomyélites', p:`I. Généralités
-  1. Définition
-  2. Intérêt
-  3. Rappels : anatomie, physiopathologie, anatomie pathologique
-  4. Étiologies et facteurs favorisants
-II. Signes
-  1. Type de description (TDD)
-    a. Clinique : signes fonctionnels, généraux, physiques
-    b. Paraclinique : biologie, imagerie
-    c. Évolution : éléments de surveillance, modalités, complications
-  2. Formes cliniques
-III. Diagnostic
-  1. Positif
-  2. Différentiel
-  3. Étiologique
-IV. Traitement
-  1. Buts
-  2. Moyens : médicaux, instrumentaux, chirurgicaux
-  3. Indications
-  4. Résultats : suites opératoires, complications, pronostic
-Conclusion`},
- 'c-trauma':{n:"Traumatisme, fracture", ep:'chir', ex:'traumatismes du crâne, du rachis, du bassin, de la jambe, de l\'épaule, du thorax', p:`I. Généralités
-  1. Définition
-  2. Intérêt : fréquence, gravité
-  3. Rappel anatomique
-  4. Étiologies et mécanismes
-  5. Anatomie pathologique : lésions, lésions associées, classifications
-II. Signes
-  1. Type de description (TDD)
-    a. Clinique : interrogatoire, inspection, palpation, bilan vasculo-nerveux et cutané, bilan général
-    b. Paraclinique : radiographies, scanner
-    c. Évolution : consolidation, complications immédiates, secondaires, tardives
-  2. Formes cliniques
-III. Diagnostic
-  1. Positif
-  2. Différentiel
-  3. Lésionnel : bilan complet du traumatisé
-IV. Traitement
-  1. Buts
-  2. Moyens : ramassage et transport, orthopédiques, chirurgicaux, rééducation
-  3. Indications
-  4. Résultats et séquelles
-Conclusion`},
- 'c-tumeur':{n:"Tumeur, cancer", ep:'chir', ex:'cancers du sein, du côlon, du rectum, de la langue, de la thyroïde, tumeurs osseuses', p:`I. Généralités
-  1. Définition
-  2. Intérêt
-  3. Épidémiologie et facteurs de risque
-  4. Anatomie pathologique : macroscopie, microscopie, extension, classification TNM
-II. Signes
-  1. Type de description (TDD)
-    a. Circonstances de découverte
-    b. Clinique : signes fonctionnels, généraux, physiques
-    c. Paraclinique : diagnostic (biopsie), bilan d'extension, bilan du terrain
-    d. Évolution et complications
-  2. Formes cliniques
-III. Diagnostic
-  1. Positif : preuve histologique
-  2. Différentiel
-IV. Traitement
-  1. Buts
-  2. Moyens : chirurgie, radiothérapie, chimiothérapie, autres
-  3. Indications selon le stade
-  4. Résultats, surveillance, pronostic
-  5. Prévention et dépistage
-Conclusion`},
- 'c-urgence':{n:"Urgence chirurgicale", ep:'chir', ex:'brûlures étendues, occlusions, plaies vasculaires', p:`I. Généralités
-  1. Définition
-  2. Intérêt : urgence, pronostic vital
-  3. Physiopathologie
-  4. Étiologies
-II. Signes
-  1. Type de description (TDD)
-    a. Clinique
-    b. Paraclinique
-    c. Évolution et complications
-  2. Formes cliniques
-III. Diagnostic
-  1. Positif
-  2. De gravité
-  3. Différentiel
-  4. Étiologique
-IV. Traitement
-  1. Buts
-  2. Moyens : gestes d'urgence et réanimation, chirurgie
-  3. Indications
-  4. Surveillance et résultats
-  5. Prévention
-Conclusion`}
+ 'a-organe':{n:"Organe (viscère)", ep:'anat', ex:'cœur, foie, estomac, rate, rein, utérus', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt : anatomique, clinique, chirurgical
+II- ANATOMIE DESCRIPTIVE
+  II.1- Situation et projection
+  II.2- Forme et configuration externe
+  II.3- Dimensions, poids, couleur, consistance
+  II.4- Configuration interne et structure
+  II.5- Moyens de fixité
+III- RAPPORTS
+  III.1- Péritoine ou loge
+  III.2- Rapports avec les organes voisins (AC : applications cliniques)
+IV- VASCULARISATION ET INNERVATION
+  IV.1- Artères
+  IV.2- Veines
+  IV.3- Lymphatiques
+  IV.4- Nerfs
+V- EXPLORATIONS ET APPLICATIONS CLINIQUES
+VI- CONCLUSION`},
+ 'a-conduit':{n:"Conduit", ep:'anat', ex:'bronches, œsophage, uretère, voies biliaires', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Origine
+  II.2- Trajet, direction, portions
+  II.3- Terminaison
+  II.4- Dimensions et rétrécissements
+  II.5- Configuration interne et structure
+  II.6- Moyens de fixité
+III- RAPPORTS : portion par portion
+IV- VASCULARISATION ET INNERVATION
+V- EXPLORATIONS ET APPLICATIONS CLINIQUES
+VI- CONCLUSION`},
+ 'a-artere':{n:"Artère, vascularisation d'un membre", ep:'anat', ex:'aorte, artères du membre supérieur et du membre inférieur', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Origine
+  II.2- Trajet, direction, segments
+  II.3- Terminaison
+  II.4- Longueur et calibre
+III- RAPPORTS : segment par segment
+IV- DISTRIBUTION
+  IV.1- Branches collatérales
+  IV.2- Branches terminales
+  IV.3- Anastomoses
+V- EXPLORATIONS ET APPLICATIONS CLINIQUES : pouls, compression, plaies, abords
+VI- CONCLUSION`},
+ 'a-nerf':{n:"Nerf, plexus", ep:'anat', ex:'nerfs crâniens, plexus brachial, lombaire, sacré', p:`I- INTRODUCTION
+  I.1- Définition : nerf moteur, sensitif ou mixte
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Origine réelle et apparente (constitution pour un plexus)
+  II.2- Trajet
+  II.3- Terminaison
+III- RAPPORTS
+IV- DISTRIBUTION
+  IV.1- Branches collatérales
+  IV.2- Branches terminales
+  IV.3- Territoires moteur et sensitif
+V- ANATOMIE FONCTIONNELLE
+VI- EXPLORATIONS ET APPLICATIONS CLINIQUES
+VII- CONCLUSION`},
+ 'a-voie':{n:"Voie nerveuse (faisceau)", ep:'anat', ex:'faisceau pyramidal', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Origine : neurones, aire corticale
+  II.2- Trajet : étage par étage
+  II.3- Terminaison
+III- SYSTÉMATISATION : somatotopie, croisements
+IV- VASCULARISATION
+V- ANATOMIE FONCTIONNELLE
+VI- APPLICATIONS CLINIQUES : syndromes selon le niveau, explorations
+VII- CONCLUSION`},
+ 'a-muscle':{n:"Muscle, cloison musculaire", ep:'anat', ex:'diaphragme', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Situation
+  II.2- Forme et constitution
+  II.3- Insertions
+  II.4- Orifices (pour une cloison)
+III- RAPPORTS
+IV- VASCULARISATION ET INNERVATION
+V- ANATOMIE FONCTIONNELLE
+VI- APPLICATIONS CLINIQUES
+VII- CONCLUSION`},
+ 'a-articulation':{n:"Articulation", ep:'anat', ex:'genou, hanche, épaule', p:`I- INTRODUCTION
+  I.1- Définition et type d'articulation
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Surfaces articulaires
+  II.2- Moyens d'union : capsule, ligaments passifs, ligaments actifs
+  II.3- Moyens de glissement : synoviale, bourses
+III- RAPPORTS
+IV- VASCULARISATION ET INNERVATION
+V- ANATOMIE FONCTIONNELLE : stabilité, mouvements, muscles moteurs
+VI- EXPLORATIONS ET APPLICATIONS CLINIQUES
+VII- CONCLUSION`},
+ 'a-cavite':{n:"Cavité, région", ep:'anat', ex:'ventricules cérébraux', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Situation
+  II.2- Forme et dimensions
+  II.3- Parois
+  II.4- Communications et orifices
+III- CONTENU
+IV- RAPPORTS
+V- VASCULARISATION ET INNERVATION
+VI- APPLICATIONS CLINIQUES
+VII- CONCLUSION`},
+ 'a-region':{n:"Région, pédicule", ep:'anat', ex:'région sous-maxillaire, pédicule hépatique', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- SITUATION ET LIMITES
+  II.1- Limites superficielles
+  II.2- Limites profondes
+III- CONSTITUTION : plans successifs, de la superficie à la profondeur
+IV- CONTENU
+  IV.1- Vaisseaux
+  IV.2- Nerfs
+  IV.3- Lymphatiques et organes
+  IV.4- Disposition des éléments entre eux
+V- RAPPORTS AVEC LES RÉGIONS VOISINES
+VI- APPLICATIONS CLINIQUES
+VII- CONCLUSION`},
+ 'b-fonction':{n:"Fonction physiologique", ep:'bio', ex:'circulation, respiration, digestion, hémostase, immunité, régulation des ions', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- RAPPELS : anatomiques, histologiques, biochimiques
+III- MÉCANISMES : acteurs, étapes, facteurs
+IV- RÉGULATION : intrinsèque, nerveuse, hormonale
+V- EXPLORATION ET VALEURS NORMALES
+VI- PHYSIOPATHOLOGIE ET APPLICATIONS
+VII- CONCLUSION`},
+ 'b-processus':{n:"Phénomène cellulaire ou génétique", ep:'bio', ex:'mitose, méiose, synthèse des protéines, mutations', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- RAPPELS : structures en jeu
+III- DÉROULEMENT : étape par étape
+IV- RÉGULATION ET CONTRÔLE
+V- MÉTHODES D'ÉTUDE
+VI- ANOMALIES ET APPLICATIONS CLINIQUES
+VII- CONCLUSION`},
+ 'b-substance':{n:"Molécule, système de groupes", ep:'bio', ex:'hémoglobine, groupes sanguins', p:`I- INTRODUCTION
+  I.1- Définition et nature
+  I.2- Intérêt
+II- STRUCTURE ET PROPRIÉTÉS
+III- MÉTABOLISME
+  III.1- Origine : biosynthèse, apports, besoins
+  III.2- Transport
+  III.3- Catabolisme et élimination
+IV- RÔLES ET EFFETS BIOLOGIQUES
+V- RÉGULATION
+VI- EXPLORATION ET VALEURS NORMALES
+VII- APPLICATIONS : carences, excès, pathologie
+VIII- CONCLUSION`},
+ 'b-biophys':{n:"Biophysique des rayonnements", ep:'bio', ex:'effets des rayonnements ionisants, radioprotection', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- RAPPELS PHYSIQUES : rayonnements, grandeurs et unités
+III- MÉCANISMES D'ACTION : effets directs et indirects
+IV- EFFETS SUR LES TISSUS : cellule, tissus, organisme ; effets déterministes et stochastiques
+V- FACTEURS DE RADIOSENSIBILITÉ
+VI- APPLICATIONS : radiothérapie, radioprotection, irradiation accidentelle
+VII- CONCLUSION`},
+ 'm-maladie':{n:"Maladie", ep:'med', ex:'paludisme, fièvre typhoïde, HTA, diabète, asthme', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt : fréquence, gravité, diagnostic, traitement, prévention
+II- SIGNES
+  II.1- TDD : forme commune de l'adulte
+    II.1.1- Clinique : début, phase d'état
+    II.1.2- Paraclinique
+    II.1.3- Évolution : éléments de surveillance, modalités évolutives, pronostic
+  II.2- Formes cliniques : symptomatiques, selon le terrain, étiologiques, associées
+III- DIAGNOSTIC
+  III.1- Diagnostic positif
+  III.2- Diagnostic différentiel
+  III.3- Diagnostic étiologique
+IV- TRAITEMENT
+  IV.1- Buts
+  IV.2- Moyens
+  IV.3- Indications
+  IV.4- Surveillance
+  IV.5- Prévention
+V- CONCLUSION`},
+ 'm-syndrome':{n:"Syndrome (démarche diagnostique)", ep:'med', ex:'anémies, ictères, adénopathies cervicales', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- DIAGNOSTIC POSITIF
+  II.1- Clinique
+  II.2- Paraclinique
+III- DIAGNOSTIC DIFFÉRENTIEL
+IV- DIAGNOSTIC DE GRAVITÉ
+V- DIAGNOSTIC ÉTIOLOGIQUE
+  V.1- Enquête étiologique
+  V.2- Étiologies
+VI- TRAITEMENT
+  VI.1- Buts
+  VI.2- Moyens
+  VI.3- Indications
+VII- CONCLUSION`},
+ 'm-urgence':{n:"Urgence médicale (oral)", ep:'med', ex:'état de mal épileptique, coma hépatique, intoxications, accidents des traitements', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt : urgence, pronostic vital
+II- SIGNES
+  II.1- TDD
+  II.2- Formes cliniques
+III- DIAGNOSTIC
+  III.1- Positif et de gravité
+  III.2- Différentiel
+  III.3- Étiologique
+IV- CONDUITE À TENIR
+  IV.1- Buts
+  IV.2- Gestes immédiats : voies aériennes, respiration, circulation
+  IV.3- Traitement spécifique
+  IV.4- Traitement de la cause
+  IV.5- Surveillance
+  IV.6- Prévention
+V- CONCLUSION`},
+ 'c-affection':{n:"Affection chirurgicale", ep:'chir', ex:'mal de Pott, anévrismes, hernies, ostéomyélites', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- SIGNES
+  II.1- TDD
+    II.1.1- Clinique
+    II.1.2- Paraclinique
+    II.1.3- Évolution
+  II.2- Formes cliniques
+III- DIAGNOSTIC
+  III.1- Positif
+  III.2- Différentiel
+  III.3- Étiologique
+IV- TRAITEMENT
+  IV.1- Buts
+  IV.2- Moyens : médicaux, chirurgicaux
+  IV.3- Indications
+  IV.4- Résultats
+V- CONCLUSION`},
+ 'c-trauma':{n:"Traumatisme, fracture", ep:'chir', ex:'traumatismes du crâne, du rachis, du bassin, de la jambe, de l\'épaule, du thorax', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE PATHOLOGIQUE : mécanismes, lésions, classifications
+III- SIGNES
+  III.1- TDD
+    III.1.1- Clinique
+    III.1.2- Paraclinique : imagerie
+    III.1.3- Évolution et complications
+  III.2- Formes cliniques
+IV- DIAGNOSTIC
+  IV.1- Positif
+  IV.2- Différentiel
+V- TRAITEMENT
+  V.1- Buts
+  V.2- Moyens : orthopédiques, chirurgicaux
+  V.3- Indications
+  V.4- Résultats et rééducation
+VI- CONCLUSION`},
+ 'c-tumeur':{n:"Tumeur, cancer", ep:'chir', ex:'cancers du sein, du côlon, du rectum, de la langue, de la thyroïde, tumeurs osseuses', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ÉPIDÉMIOLOGIE ET FACTEURS DE RISQUE
+III- ANATOMIE PATHOLOGIQUE : macroscopie, histologie, extension, classification TNM
+IV- SIGNES
+  IV.1- TDD
+    IV.1.1- Clinique
+    IV.1.2- Paraclinique : diagnostic, bilan d'extension, bilan préthérapeutique
+    IV.1.3- Évolution
+  IV.2- Formes cliniques
+V- DIAGNOSTIC
+  V.1- Positif
+  V.2- Différentiel
+VI- TRAITEMENT
+  VI.1- Buts
+  VI.2- Moyens : chirurgie, radiothérapie, chimiothérapie
+  VI.3- Indications
+  VI.4- Surveillance et pronostic
+VII- CONCLUSION`},
+ 'c-urgence':{n:"Urgence chirurgicale", ep:'chir', ex:'brûlures étendues, occlusions, plaies vasculaires', p:`I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt : urgence, pronostic vital
+II- SIGNES
+  II.1- TDD
+    II.1.1- Clinique
+    II.1.2- Paraclinique
+    II.1.3- Évolution
+  II.2- Formes cliniques
+III- DIAGNOSTIC
+  III.1- Positif et de gravité
+  III.2- Différentiel
+  III.3- Étiologique
+IV- TRAITEMENT
+  IV.1- Buts
+  IV.2- Moyens : réanimation, chirurgie
+  IV.3- Indications
+  IV.4- Résultats et surveillance
+  IV.5- Prévention
+V- CONCLUSION`}
 };
 
 // Programme officiel du concours d'internat des hôpitaux de Dakar (document « Programme internat » du Drive de la promo).
@@ -3499,7 +3471,7 @@ const INT=[
  ]}
 ];
 // Leçons rédigées (fichiers internat/lecons/<id>.md). Complété automatiquement à la publication.
-const INT_READY=['a-aorte','a-arteres-cerveau','a-bronches','a-carotide-interne','a-coeur','a-colon','a-diaphragme','a-estomac','a-facial','a-moteurs-oeil','a-oesophage','a-pancreas','a-phrenique','a-pyramidal','a-recurrent','a-reins','a-sous-maxillaire','a-surrenales','a-ventricules','a-vertebrales','a-voies-optiques','b-groupes','b-hemoglobine','b-hemostase','b-immunite-adaptative','b-immunite-innee','m-amibiase','m-anemies','m-asthme','m-cholera','m-cirrhose','m-coronaropathies','m-cushing','m-diabete','m-embolie','m-goutte','m-hepatites','m-hodgkin','m-hta','m-hyperthyroidie','m-hypothyroidie','m-ic','m-ictere','m-ira','m-irc','m-leucemies','m-lupus','m-myelome','m-palu','m-pancreatite','m-pneumonies','m-pr','m-sn','m-surrenale','m-tuberculose','m-tumeurs-poumon','m-typhoide','m-ulceres','m-vih'];
+const INT_READY=['a-aorte','a-arteres-cerveau','a-axillaire','a-bronches','a-carotide-interne','a-coeur','a-colon','a-deferent','a-diaphragme','a-estomac','a-facial','a-femorale','a-genou','a-hanche','a-moteurs-oeil','a-oesophage','a-ovaires','a-pancreas','a-pedicule-hepatique','a-phrenique','a-plexus-brachial','a-poplitee','a-pyramidal','a-rate','a-rectum','a-recurrent','a-reins','a-sous-maxillaire','a-surrenales','a-uretere','a-uterus','a-ventricules','a-vertebrales','a-vessie','a-voies-optiques','b-groupes','b-hemoglobine','b-hemostase','b-immunite-adaptative','b-immunite-innee','m-amibiase','m-anemies','m-asthme','m-cholera','m-cirrhose','m-coronaropathies','m-cushing','m-diabete','m-embolie','m-goutte','m-hepatites','m-hodgkin','m-hta','m-hyperthyroidie','m-hypothyroidie','m-ic','m-ictere','m-ira','m-irc','m-leucemies','m-lupus','m-myelome','m-palu','m-pancreatite','m-pneumonies','m-pr','m-sn','m-surrenale','m-tuberculose','m-tumeurs-poumon','m-typhoide','m-ulceres','m-vih'];
 const INTQ={}, L3INT={}, INTL={};
 const fold = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 // Mots d'un intitulé : sans accents, sans petits mots, au singulier.
@@ -3583,7 +3555,7 @@ function mdLesson(text){
     if(l.startsWith('|')){ const cells=l.replace(/^\||\|$/g,'').split('|').map(c=>c.trim()); if(/^[-: ]*$/.test(cells.join(''))) continue;
       if(!table){ close(); html+='<div class="tbl-mini"><table><thead><tr>'+cells.map(c=>'<th>'+inline(c)+'</th>').join('')+'</tr></thead><tbody>'; table=true; }
       else html+='<tr>'+cells.map(c=>'<td>'+inline(c)+'</td>').join('')+'</tr>'; continue; }
-    if((m=l.match(/^[-•]\s+(.*)/))){ if(!list){ close(); html+='<ul>'; list=true; } html+='<li>'+inline(m[1])+'</li>'; continue; }
+    if((m=l.match(/^[-•]\s+(.*)/))){ if(!list){ close(); html+='<ul>'; list=true; } html+='<li'+(raw.match(/^\s*/)[0].length>=2?' class="li2"':'')+'>'+inline(m[1])+'</li>'; continue; }
     close(); html+='<p>'+inline(l)+'</p>';
   }
   close(); return html;

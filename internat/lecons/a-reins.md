@@ -1,44 +1,44 @@
 @@plan
-I. Généralités
-  1. Définition
-  2. Intérêt
-II. Anatomie descriptive
-  1. Situation : la loge rénale
-  2. Forme, dimensions, orientation
-  3. Configuration interne
-  4. Moyens de fixité
-III. Rapports
-IV. Vaisseaux du rein
-  1. Artère rénale
-  2. Veine rénale
-  3. Lymphatiques et nerfs
-V. Applications cliniques
-Conclusion
+I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Situation : la loge rénale
+  II.2- Forme, dimensions, orientation
+  II.3- Configuration interne
+  II.4- Moyens de fixité
+III- RAPPORTS
+IV- VAISSEAUX DU REIN
+  IV.1- Artère rénale
+  IV.2- Veine rénale
+  IV.3- Lymphatiques et nerfs
+V- APPLICATIONS CLINIQUES
+VI- CONCLUSION
 
 @@lecon
-## I. Généralités
-### 1. Définition
+## I- INTRODUCTION
+### I.1- Définition
 Les reins sont deux ==organes rétropéritonéaux== situés dans les ==fosses lombaires==, de part et d'autre du rachis. Ce sont les ==glandes qui élaborent l'urine== et des ==glandes endocrines== (==rénine==, ==érythropoïétine==, forme active de la ==vitamine D==).
-### 2. Intérêt
+### I.2- Intérêt
 - Anatomique : ==vascularisation terminale== segmentaire, pédicule court et volumineux.
 - Clinique : ==insuffisance rénale==, ==lithiase==, ==tumeurs==, traumatismes, ==HTA rénovasculaire==, transplantation.
 
-## II. Anatomie descriptive
-### 1. Situation : la loge rénale
+## II- ANATOMIE DESCRIPTIVE
+### II.1- Situation : la loge rénale
 - Chaque rein est dans une ==loge== limitée par le ==fascia rénal== (lames prérénale et rétro-rénale), entouré de ==graisse périrénale==.
 - Il s'étend de ==T11-T12 à L2-L3== ; le ==rein droit est plus bas== d'environ 2 cm, à cause du foie.
-### 2. Forme, dimensions, orientation
+### II.2- Forme, dimensions, orientation
 - Forme de ==haricot== : deux faces, un bord latéral convexe, un ==bord médial== concave creusé par le ==hile==, deux pôles.
 - ==12 cm × 6 cm × 3 cm==, environ 150 g.
 - Grand axe oblique en bas et en dehors ; hile tourné en avant et en dedans.
-### 3. Configuration interne
+### II.3- Configuration interne
 - ==Capsule fibreuse==, ==cortex== périphérique avec les ==colonnes rénales==, ==médullaire== faite des ==pyramides de Malpighi== dont le sommet, la ==papille==, s'ouvre dans un ==calice mineur==.
 - ==Sinus rénal== : calices mineurs et majeurs, ==pelvis rénal== (bassinet), vaisseaux et graisse.
 - Unité fonctionnelle : le ==néphron== (environ un million par rein).
-### 4. Moyens de fixité
+### II.4- Moyens de fixité
 Loge et graisse périrénale, pédicule vasculaire, pression abdominale ; le rein reste un peu mobile avec la respiration.
 
-## III. Rapports
+## III- RAPPORTS
 **Face postérieure** (identique des deux côtés) : le ==diaphragme== et, au-dessus, le ==récessus pleural costo-diaphragmatique== ; la ==12e côte== ; les muscles ==psoas==, ==carré des lombes== et transverse ; les nerfs subcostal, ilio-hypogastrique et ilio-inguinal.
 
 **Face antérieure**
@@ -47,27 +47,27 @@ Loge et graisse périrénale, pédicule vasculaire, pression abdominale ; le rei
 
 **Bord médial** : le hile et le pédicule ; à droite, la ==veine cave inférieure== ; à gauche, l'==aorte== ; plus bas, l'==uretère==.
 
-## IV. Vaisseaux du rein
+## IV- VAISSEAUX DU REIN
 Dans le pédicule, d'avant en arrière : ==veine==, ==artère==, ==pelvis== (moyen mnémotechnique « VAU »).
-### 1. Artère rénale
+### IV.1- Artère rénale
 - Née de l'==aorte abdominale== en L1-L2, juste sous l'artère mésentérique supérieure ; la droite, plus longue, passe ==derrière la veine cave inférieure==.
 - Au hile, elle se divise en ==branche prépyélique== et ==branche rétropyélique==, puis en ==artères segmentaires== ==terminales== (pas d'anastomose : ==infarctus rénal== en cas d'occlusion).
 - Collatérales : artère surrénale inférieure, rameaux urétéraux.
 - ==Artères polaires== fréquentes ; une polaire inférieure peut comprimer la jonction pyélo-urétérale.
-### 2. Veine rénale
+### IV.2- Veine rénale
 - Elle se jette dans la ==veine cave inférieure==.
 - La ==veine rénale gauche== est longue : elle passe ==en avant de l'aorte==, sous l'artère mésentérique supérieure, et reçoit la ==veine génitale gauche== et la veine surrénale gauche.
-### 3. Lymphatiques et nerfs
+### IV.3- Lymphatiques et nerfs
 Lymphatiques vers les nœuds ==latéro-aortiques== ; ==plexus rénal== sympathique (douleur lombaire, colique néphrétique).
 
-## V. Applications cliniques
+## V- APPLICATIONS CLINIQUES
 - ==Colique néphrétique== par calcul : douleur lombaire irradiée vers les organes génitaux.
 - ==Tumeurs du rein== : ==adénocarcinome== de l'adulte (thrombus dans la ==veine rénale== et la veine cave ; ==varicocèle gauche== récente), ==néphroblastome== de l'enfant.
 - ==Traumatismes du rein==, ==HTA rénovasculaire== par sténose de l'artère rénale.
 - Gestes : ==ponction-biopsie rénale== au pôle inférieur ; ==lombotomie== avec risque d'ouvrir la plèvre ; ==néphrectomie== (on lie l'artère avant la veine) ; ==transplantation== dans la fosse iliaque.
 - Exploration : ==échographie==, ==uroscanner==, scintigraphie.
 
-## Conclusion
+## VI- CONCLUSION
 Organes rétropéritonéaux à la vascularisation terminale, les reins ont des rapports différents à droite et à gauche ; leur pédicule et leur loge guident toute la chirurgie rénale.
 
 @@explications

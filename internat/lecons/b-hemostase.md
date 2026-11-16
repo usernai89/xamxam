@@ -1,75 +1,75 @@
 @@plan
-Introduction
-  1. Définition
-  2. Intérêt
-I. Hémostase primaire
-  1. Acteurs
-  2. Déroulement : temps vasculaire, temps plaquettaire
-II. Coagulation
-  1. Acteurs
-  2. Déroulement : voie exogène, voie endogène, voie commune, fibrinoformation
-  3. Régulation : inhibiteurs physiologiques
-III. Fibrinolyse
-IV. Exploration
-V. Applications cliniques
-  1. Syndromes hémorragiques
-  2. Thromboses
-  3. Médicaments de l'hémostase
-Conclusion
+I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- HÉMOSTASE PRIMAIRE
+  II.1- Acteurs
+  II.2- Déroulement : temps vasculaire, temps plaquettaire
+III- COAGULATION
+  III.1- Acteurs
+  III.2- Déroulement : voie exogène, voie endogène, voie commune, fibrinoformation
+  III.3- Régulation : inhibiteurs physiologiques
+IV- FIBRINOLYSE
+V- EXPLORATION
+VI- APPLICATIONS CLINIQUES
+  VI.1- Syndromes hémorragiques
+  VI.2- Thromboses
+  VI.3- Médicaments de l'hémostase
+VII- CONCLUSION
 
 @@lecon
-## Introduction
-### 1. Définition
+## I- INTRODUCTION
+### I.1- Définition
 L'hémostase est l'==ensemble des mécanismes physiologiques== qui assurent l'==arrêt du saignement== après une brèche vasculaire tout en maintenant la ==fluidité du sang== dans les vaisseaux. Elle comprend trois temps intriqués : l'==hémostase primaire==, la ==coagulation== et la ==fibrinolyse==.
-### 2. Intérêt
+### I.2- Intérêt
 - Physiologique : ==équilibre== permanent entre facteurs procoagulants et anticoagulants.
 - Clinique : un défaut expose aux ==hémorragies==, un excès aux ==thromboses==.
 - Thérapeutique : cible des ==antiagrégants plaquettaires==, des ==anticoagulants== et des ==fibrinolytiques==.
 
-## I. Hémostase primaire
-### 1. Acteurs
+## II- HÉMOSTASE PRIMAIRE
+### II.1- Acteurs
 - La paroi vasculaire : ==endothélium== et ==sous-endothélium== riche en ==collagène==.
 - Les ==plaquettes== (150 à 400 G/L), avec leurs glycoprotéines de membrane ==GPIb== et ==GPIIb-IIIa==.
 - Le ==facteur Willebrand== et le ==fibrinogène==.
-### 2. Déroulement
+### II.2- Déroulement
 - ==Temps vasculaire== : ==vasoconstriction réflexe== immédiate du vaisseau lésé.
 - ==Temps plaquettaire== : ==adhésion== des plaquettes au sous-endothélium grâce au facteur Willebrand fixé sur la GPIb ; ==activation== avec changement de forme et ==sécrétion== (ADP, sérotonine, ==thromboxane A2==) ; ==agrégation== des plaquettes entre elles par le fibrinogène fixé sur la GPIIb-IIIa.
 - Résultat : le ==clou plaquettaire== ou thrombus blanc, fragile, que la coagulation doit consolider.
 
-## II. Coagulation
-### 1. Acteurs
+## III- COAGULATION
+### III.1- Acteurs
 - Les ==facteurs de la coagulation==, protéines plasmatiques synthétisées par le ==foie==.
 - Quatre facteurs sont ==vitamine K-dépendants== : ==II, VII, IX et X==, de même que les protéines C et S.
 - Le ==facteur tissulaire==, les ==phospholipides plaquettaires== et le ==calcium==.
-### 2. Déroulement
+### III.2- Déroulement
 - ==Voie exogène== : c'est elle qui déclenche la coagulation in vivo. Le facteur tissulaire, démasqué par la brèche, fixe et active le ==facteur VII== ; le complexe active le facteur X.
 - ==Voie endogène== : ==phase contact== (facteurs XII et XI), puis activation du ==facteur IX== qui, avec son cofacteur le ==facteur VIII==, active le facteur X.
 - ==Voie commune== : le ==facteur X activé==, avec le facteur V, le calcium et les phospholipides, forme la ==prothrombinase==, qui transforme la ==prothrombine en thrombine==.
 - ==Fibrinoformation== : la thrombine transforme le ==fibrinogène soluble en fibrine insoluble== ; le ==facteur XIII== stabilise le caillot. La thrombine amplifie sa propre formation.
-### 3. Régulation
+### III.3- Régulation
 Trois systèmes inhibiteurs limitent la coagulation au siège de la brèche : l'==antithrombine==, dont l'action est multipliée par l'héparine ; le système ==protéine C - protéine S==, qui inactive les facteurs V et VIII activés ; l'==inhibiteur de la voie du facteur tissulaire==.
 
-## III. Fibrinolyse
+## IV- FIBRINOLYSE
 Elle dissout le caillot quand la paroi est réparée. Le ==plasminogène== est transformé en ==plasmine== par l'==activateur tissulaire du plasminogène== et l'urokinase. La plasmine dégrade la fibrine en produits de dégradation, dont les ==D-dimères==. Elle est freinée par les inhibiteurs de l'activateur du plasminogène et par l'alpha-2 antiplasmine.
 
-## IV. Exploration
+## V- EXPLORATION
 - Hémostase primaire : ==numération des plaquettes==, temps d'occlusion plaquettaire, dosage du facteur Willebrand ; le ==temps de saignement== n'est plus guère utilisé.
 - Coagulation : ==temps de Quick==, exprimé en ==taux de prothrombine== ou en ==INR==, qui explore la voie exogène et la voie commune ; ==temps de céphaline avec activateur (TCA)==, qui explore la voie endogène et la voie commune ; dosage du ==fibrinogène== ; dosage spécifique des facteurs.
 - Fibrinolyse : dosage des ==D-dimères==.
 
-## V. Applications cliniques
-### 1. Syndromes hémorragiques
+## VI- APPLICATIONS CLINIQUES
+### VI.1- Syndromes hémorragiques
 - Anomalies de l'hémostase primaire : ==thrombopénies== et thrombopathies, qui donnent un ==purpura== ; ==maladie de Willebrand==.
 - Anomalies de la coagulation : ==hémophilie A== (déficit en facteur VIII) et ==hémophilie B== (déficit en facteur IX), ==carence en vitamine K==, ==insuffisance hépatocellulaire==, ==coagulation intravasculaire disséminée==.
-### 2. Thromboses
+### VI.2- Thromboses
 Déficits en antithrombine, en protéine C ou en protéine S ; ==maladie thromboembolique veineuse==.
-### 3. Médicaments de l'hémostase
+### VI.3- Médicaments de l'hémostase
 - ==Aspirine== : antiagrégant plaquettaire, elle bloque la synthèse du thromboxane A2.
 - ==Héparines== : elles agissent par l'antithrombine.
 - ==Antivitamines K== : surveillance par l'==INR==.
 - Thrombolytiques, vitamine K, facteurs de coagulation, concentrés de plaquettes.
 
-## Conclusion
+## VII- CONCLUSION
 L'hémostase est un ==équilibre dynamique== entre la formation et la destruction du caillot. Sa connaissance permet d'interpréter un ==bilan d'hémostase==, d'explorer un syndrome hémorragique et de conduire un traitement antithrombotique.
 
 @@explications

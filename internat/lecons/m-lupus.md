@@ -1,42 +1,42 @@
 @@plan
-I. Généralités
-  1. Définition
-  2. Intérêt
-  3. Physiopathologie
-II. Signes
-  1. TDD : poussée lupique de la femme jeune
-    a. Clinique : signes généraux, cutanés, articulaires, rénaux, autres atteintes
-    b. Paraclinique
-    c. Évolution et complications
-  2. Formes cliniques
-III. Diagnostic
-  1. Positif
-  2. Différentiel
-  3. Étiologique : facteurs déclenchants
-IV. Traitement
-  1. Buts
-  2. Moyens
-  3. Indications
-  4. Surveillance
-Conclusion
+I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+  I.3- Physiopathologie
+II- SIGNES
+  II.1- TDD : poussée lupique de la femme jeune
+    II.1.1- Clinique : signes généraux, cutanés, articulaires, rénaux, autres atteintes
+    II.1.2- Paraclinique
+    II.1.3- Évolution et complications
+  II.2- Formes cliniques
+III- DIAGNOSTIC
+  III.1- Positif
+  III.2- Différentiel
+  III.3- Étiologique : facteurs déclenchants
+IV- TRAITEMENT
+  IV.1- Buts
+  IV.2- Moyens
+  IV.3- Indications
+  IV.4- Surveillance
+V- CONCLUSION
 
 @@lecon
-## I. Généralités
-### 1. Définition
+## I- INTRODUCTION
+### I.1- Définition
 Le lupus érythémateux systémique est une ==maladie auto-immune== chronique, ==systémique==, qui évolue par ==poussées==. Il est caractérisé par la production d'==anticorps antinucléaires==, en particulier d'==anticorps anti-ADN natif==, et par des atteintes de nombreux organes.
-### 2. Intérêt
+### I.2- Intérêt
 - Maladie de la ==femme jeune==, plus fréquente et plus sévère chez les sujets noirs.
 - Grand ==polymorphisme clinique==.
 - Gravité de l'==atteinte rénale== et de l'atteinte neurologique.
 - Problème particulier de la ==grossesse==.
-### 3. Physiopathologie
+### I.3- Physiopathologie
 - Terrain ==génétique== et facteurs d'environnement : ==rayons ultraviolets==, ==œstrogènes==, certains médicaments, infections virales.
 - Production d'auto-anticorps dirigés contre les constituants du noyau.
 - Formation de ==complexes immuns== qui se déposent dans les tissus (rein, peau) et activent le ==complément==, d'où l'inflammation.
 
-## II. Signes
-### 1. TDD : poussée lupique de la femme jeune
-#### a. Clinique
+## II- SIGNES
+### II.1- TDD : poussée lupique de la femme jeune
+#### II.1.1- Clinique
 - Signes généraux : ==fièvre==, asthénie, amaigrissement.
 - Signes cutanés et muqueux : ==érythème du visage en ailes de papillon== (vespertilio), sur les pommettes et le nez ; ==photosensibilité== ; lésions de lupus discoïde ; ==ulcérations buccales== ; ==alopécie== ; syndrome de Raynaud.
 - Signes articulaires : ==polyarthrite== bilatérale et symétrique des petites articulations, ==non destructrice==.
@@ -45,7 +45,7 @@ Le lupus érythémateux systémique est une ==maladie auto-immune== chronique, =
 - Atteinte neuropsychiatrique : convulsions, troubles psychiques.
 - Atteinte hématologique : ==anémie hémolytique==, ==leucopénie==, ==thrombopénie==.
 - Atteintes cardiaque, pulmonaire, vasculaire.
-#### b. Paraclinique
+#### II.1.2- Paraclinique
 - Vitesse de sédimentation élevée, avec une ==protéine C réactive souvent normale==.
 - Hémogramme : cytopénies.
 - ==Anticorps antinucléaires== : presque constants, mais peu spécifiques.
@@ -54,40 +54,40 @@ Le lupus érythémateux systémique est une ==maladie auto-immune== chronique, =
 - ==Baisse du complément== pendant les poussées.
 - ==Anticorps antiphospholipides==.
 - Systématiquement : ==bandelette urinaire==, protéinurie, créatinine.
-#### c. Évolution et complications
+#### II.1.3- Évolution et complications
 - Évolution par poussées et rémissions.
 - Complications : ==insuffisance rénale chronique== ; ==infections==, favorisées par les traitements ; athérosclérose précoce ; ==thromboses== ; complications de la corticothérapie.
-### 2. Formes cliniques
+### II.2- Formes cliniques
 - ==Lupus et grossesse== : risque de poussée, de fausse couche, de prématurité ; la grossesse doit être programmée en période de rémission.
 - ==Syndrome des antiphospholipides== associé : thromboses veineuses ou artérielles, pertes fœtales.
 - ==Lupus induit== par un médicament : il régresse à l'arrêt.
 - Lupus cutané pur ; formes de l'enfant et de l'homme.
 
-## III. Diagnostic
-### 1. Positif
+## III- DIAGNOSTIC
+### III.1- Positif
 Association de signes cliniques évocateurs et d'anomalies immunologiques, selon des critères de classification internationaux.
-### 2. Différentiel
+### III.2- Différentiel
 ==Polyarthrite rhumatoïde==, autres connectivites, infections (VIH, endocardite, tuberculose), hémopathies, rhumatisme articulaire aigu.
-### 3. Étiologique : facteurs déclenchants
+### III.3- Étiologique : facteurs déclenchants
 Exposition solaire, grossesse, prise d'œstrogènes, infection, arrêt du traitement.
 
-## IV. Traitement
-### 1. Buts
+## IV- TRAITEMENT
+### IV.1- Buts
 Contrôler les poussées, prévenir les rechutes et les séquelles, limiter les effets des traitements.
-### 2. Moyens
+### IV.2- Moyens
 - Mesures générales : ==protection solaire==, arrêt du tabac, contraception sans œstrogènes, vaccinations, éducation.
 - ==Hydroxychloroquine== : traitement de fond, avec surveillance ophtalmologique.
 - Anti-inflammatoires non stéroïdiens.
 - ==Corticoïdes==, par voie orale ou en perfusions à forte dose.
 - ==Immunosuppresseurs== (cyclophosphamide, mycophénolate mofétil, azathioprine) ; biothérapies.
 - Anticoagulants en cas de thrombose.
-### 3. Indications
+### IV.3- Indications
 - Formes cutanées et articulaires : hydroxychloroquine, anti-inflammatoires, corticoïdes à faible dose si besoin.
 - Formes viscérales graves, rénales ou neurologiques : corticoïdes à forte dose associés à un immunosuppresseur.
-### 4. Surveillance
+### IV.4- Surveillance
 Clinique, pression artérielle, bandelette urinaire, créatinine, hémogramme, anticorps anti-ADN, complément.
 
-## Conclusion
+## V- CONCLUSION
 Le lupus est une maladie auto-immune de la femme jeune, aux visages multiples. L'atteinte rénale en fait le pronostic : elle doit être recherchée à chaque consultation.
 
 @@explications

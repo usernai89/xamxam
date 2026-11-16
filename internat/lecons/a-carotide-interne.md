@@ -1,42 +1,42 @@
 @@plan
-I. Généralités
-  1. Définition
-  2. Intérêt
-II. Anatomie descriptive
-  1. Origine
-  2. Trajet : segments cervical, pétreux, caverneux, cérébral
-  3. Terminaison
-  4. Calibre et particularités : sinus carotidien
-III. Rapports segment par segment
-IV. Distribution
-  1. Branches collatérales
-  2. Branches terminales
-  3. Anastomoses
-V. Applications cliniques
-Conclusion
+I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Origine
+  II.2- Trajet : segments cervical, pétreux, caverneux, cérébral
+  II.3- Terminaison
+  II.4- Calibre et particularités : sinus carotidien
+III- RAPPORTS SEGMENT PAR SEGMENT
+IV- DISTRIBUTION
+  IV.1- Branches collatérales
+  IV.2- Branches terminales
+  IV.3- Anastomoses
+V- APPLICATIONS CLINIQUES
+VI- CONCLUSION
 
 @@lecon
-## I. Généralités
-### 1. Définition
+## I- INTRODUCTION
+### I.1- Définition
 L'artère carotide interne est une des deux ==branches de bifurcation== de l'==artère carotide commune==. Elle est destinée à l'==encéphale== et à l'==orbite== : elle irrigue la plus grande partie des ==hémisphères cérébraux== et l'œil.
-### 2. Intérêt
+### I.2- Intérêt
 - Anatomique : ==aucune branche au cou== ; trajet en baïonnette dans le crâne (==siphon carotidien==).
 - Clinique : la ==sténose athéromateuse de la bifurcation carotidienne== est une grande cause d'==AVC ischémique== ; les anévrismes de sa terminaison donnent des hémorragies méningées.
 
-## II. Anatomie descriptive
-### 1. Origine
+## II- ANATOMIE DESCRIPTIVE
+### II.1- Origine
 Au ==bord supérieur du cartilage thyroïde== (vertèbre C4), par bifurcation de la carotide commune.
-### 2. Trajet
+### II.2- Trajet
 - ==Segment cervical== : vertical, de la bifurcation à la base du crâne, dans l'==espace rétro-stylien==.
 - ==Segment pétreux== : dans le ==canal carotidien== du rocher, d'abord vertical puis horizontal, en avant et en dedans, jusqu'à l'apex du rocher.
 - ==Segment caverneux== : dans le ==sinus caverneux==, en forme de S couché : le ==siphon carotidien==.
 - ==Segment cérébral== : elle perfore la dure-mère en dedans du processus clinoïde antérieur et gagne la substance perforée antérieure.
-### 3. Terminaison
+### II.3- Terminaison
 En dehors du ==chiasma optique==, sous la ==substance perforée antérieure==, en ==artère cérébrale antérieure== et ==artère cérébrale moyenne==.
-### 4. Sinus carotidien
+### II.4- Sinus carotidien
 L'origine de l'artère est dilatée : c'est le ==sinus carotidien==, qui contient des ==barorécepteurs== (nerf de Hering, branche du ==nerf glosso-pharyngien==). Le ==corps carotidien== (glomus), à la bifurcation, contient des ==chémorécepteurs==.
 
-## III. Rapports
+## III- RAPPORTS
 **Au cou**
 - Elle est dans la ==gaine carotidienne== avec la ==veine jugulaire interne== en dehors et le ==nerf vague== en arrière, entre les deux.
 - D'abord en arrière et en dehors de la carotide externe, elle passe ensuite en dedans d'elle ; le ==rideau stylien== (muscles stylo-pharyngien et stylo-glosse) les sépare.
@@ -50,19 +50,19 @@ L'origine de l'artère est dilatée : c'est le ==sinus carotidien==, qui contien
 
 **Dans le crâne** : le ==nerf optique== en dedans, le ==nerf oculomoteur== en dehors, le lobe temporal.
 
-## IV. Distribution
-### 1. Branches collatérales
+## IV- DISTRIBUTION
+### IV.1- Branches collatérales
 - Au cou : ==aucune==.
 - Dans le rocher : rameaux carotico-tympaniques.
 - Dans le sinus : rameaux pour l'hypophyse et la dure-mère.
 - Dans le crâne : ==artère ophtalmique== (dans le ==canal optique==, sous le nerf optique ; elle donne l'==artère centrale de la rétine==), ==artère communicante postérieure==, ==artère choroïdienne antérieure==.
-### 2. Branches terminales
+### IV.2- Branches terminales
 ==Cérébrale antérieure== (face médiale de l'hémisphère) et ==cérébrale moyenne== (face latérale, noyaux gris centraux, capsule interne).
-### 3. Anastomoses
+### IV.3- Anastomoses
 - ==Polygone de Willis== avec le côté opposé et le système vertébro-basilaire.
 - Avec la carotide externe par l'artère ophtalmique et l'artère faciale (artère angulaire) : voie de ==suppléance== en cas d'occlusion.
 
-## V. Applications cliniques
+## V- APPLICATIONS CLINIQUES
 - ==Sténose carotidienne athéromateuse== : ==AIT==, ==cécité monoculaire transitoire== (amaurose fugace, par l'artère ophtalmique), AVC sylvien ; souffle cervical ; ==écho-Doppler== de dépistage ; ==endartériectomie== ou stent pour les sténoses serrées symptomatiques.
 - ==Dissection carotidienne== : douleur cervicale, ==syndrome de Claude Bernard-Horner==, puis AVC.
 - ==Anévrismes== : carrefour avec la communicante postérieure (paralysie du III), bifurcation ; ==hémorragie méningée==.
@@ -70,7 +70,7 @@ L'origine de l'artère est dilatée : c'est le ==sinus carotidien==, qui contien
 - ==Massage sinocarotidien== : ralentit le cœur (tachycardie jonctionnelle), risqué chez le sujet âgé.
 - Plaies du cou et chirurgie amygdalienne : risque d'hémorragie grave ; la ligature de la carotide interne expose à l'hémiplégie.
 
-## Conclusion
+## VI- CONCLUSION
 Artère de l'encéphale et de l'œil, sans branche au cou, la carotide interne est surtout menacée à sa bifurcation : son exploration fait partie du bilan de tout AVC ischémique.
 
 @@explications

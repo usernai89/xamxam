@@ -1,62 +1,62 @@
 @@plan
-I. Généralités
-  1. Définition
-  2. Intérêt
-II. Anatomie descriptive
-  1. Situation et forme
-  2. Constitution : centre phrénique et partie musculaire
-  3. Insertions : vertébrales, costales, sternales
-  4. Orifices et zones de faiblesse
-III. Rapports
-IV. Vascularisation et innervation
-V. Anatomie fonctionnelle
-VI. Applications cliniques
-Conclusion
+I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Situation et forme
+  II.2- Constitution : centre phrénique et partie musculaire
+  II.3- Insertions : vertébrales, costales, sternales
+  II.4- Orifices et zones de faiblesse
+III- RAPPORTS
+IV- VASCULARISATION ET INNERVATION
+V- ANATOMIE FONCTIONNELLE
+VI- APPLICATIONS CLINIQUES
+VII- CONCLUSION
 
 @@lecon
-## I. Généralités
-### 1. Définition
+## I- INTRODUCTION
+### I.1- Définition
 Le diaphragme est une ==cloison musculo-tendineuse== mince, en forme de ==double coupole==, qui sépare la ==cavité thoracique== de la ==cavité abdominale==. C'est le ==principal muscle inspiratoire==.
-### 2. Intérêt
+### I.2- Intérêt
 - Anatomique : il est traversé par des éléments importants (aorte, œsophage, veine cave inférieure).
 - Clinique : ==hernies diaphragmatiques==, ==paralysie phrénique==, ruptures traumatiques, douleurs projetées à l'épaule.
 
-## II. Anatomie descriptive
-### 1. Situation et forme
+## II- ANATOMIE DESCRIPTIVE
+### II.1- Situation et forme
 - À la base du thorax, ==convexe vers le haut==.
 - En expiration, la ==coupole droite== est plus haute (4e espace intercostal) que la gauche (5e espace), à cause du foie.
-### 2. Constitution
+### II.2- Constitution
 - Une partie centrale tendineuse : le ==centre phrénique==, en forme de trèfle à trois folioles (antérieure, droite, gauche).
 - Une ==partie musculaire== périphérique, dont les fibres convergent vers le centre phrénique.
-### 3. Insertions
+### II.3- Insertions
 - ==Partie lombaire== : les ==piliers== ; le ==pilier droit==, plus épais, s'insère sur ==L1 à L3==, le ==pilier gauche== sur L1 et L2 ; les ==arcades== du psoas (ligament arqué médial) et du carré des lombes (ligament arqué latéral).
 - ==Partie costale== : face interne des ==six dernières côtes== et de leurs cartilages.
 - ==Partie sternale== : face postérieure du ==processus xiphoïde==.
 - Toutes ces fibres se terminent sur le centre phrénique.
-### 4. Orifices et zones de faiblesse
+### II.4- Orifices et zones de faiblesse
 - ==Hiatus aortique== (==T12==) : entre les piliers, sous le ligament arqué médian ; il laisse passer l'==aorte== et le ==canal thoracique==. Il n'est pas comprimé par la contraction.
 - ==Hiatus œsophagien== (==T10==) : formé par les fibres du pilier droit ; il laisse passer l'==œsophage== et les ==troncs vagaux==.
 - ==Orifice de la veine cave inférieure== (==T8==) : dans le centre phrénique, avec des rameaux du nerf phrénique droit.
 - Orifices accessoires : nerfs ==splanchniques==, chaîne sympathique, veines azygos, ==vaisseaux épigastriques supérieurs== (fente sterno-costale).
 - Zones de faiblesse : la ==fente de Larrey== en avant (hernie de ==Morgagni==) et le ==triangle lombo-costal de Bochdalek== en arrière (hernie de ==Bochdalek==).
 
-## III. Rapports
+## III- RAPPORTS
 - Face supérieure : ==plèvre diaphragmatique== et ==bases des poumons== (récessus costo-diaphragmatiques), ==péricarde== adhérent au centre phrénique, cœur.
 - Face inférieure : ==péritoine== ; à droite, le ==foie== (et son area nuda), la surrénale et le rein droits ; à gauche, le lobe gauche du foie, la ==grosse tubérosité de l'estomac==, la ==rate==, l'angle colique gauche, la surrénale et le rein gauches.
 - Les piliers sont en rapport avec l'==aorte== et le ==tronc cœliaque==.
 
-## IV. Vascularisation et innervation
+## IV- VASCULARISATION ET INNERVATION
 - Artères : ==artères diaphragmatiques inférieures== (de l'aorte abdominale), diaphragmatiques supérieures, ==péricardo-phréniques== et musculo-phréniques (de l'artère thoracique interne), intercostales.
 - Innervation motrice : les ==nerfs phréniques== (==C3, C4, C5==), un pour chaque hémi-diaphragme.
 - Sensibilité : centre par le phrénique, périphérie par les ==nerfs intercostaux==.
 
-## V. Anatomie fonctionnelle
+## V- ANATOMIE FONCTIONNELLE
 - ==Inspiration== : sa contraction abaisse les coupoles et augmente le ==diamètre vertical== du thorax ; il assure la plus grande partie de la ventilation de repos.
 - ==Pression abdominale== : défécation, miction, ==accouchement==, vomissement, toux.
 - ==Barrière anti-reflux== : le pilier droit serre l'œsophage.
 - Aide au ==retour veineux== par les variations de pression.
 
-## VI. Applications cliniques
+## VI- APPLICATIONS CLINIQUES
 - ==Hernies congénitales== : hernie de Bochdalek (le plus souvent à gauche) avec ==détresse respiratoire néonatale== et ==hypoplasie pulmonaire== ; hernie de Morgagni.
 - ==Hernie hiatale== : par glissement (la plus fréquente, avec reflux) ou par roulement.
 - ==Rupture traumatique==, surtout à gauche (le foie protège la droite).
@@ -65,7 +65,7 @@ Le diaphragme est une ==cloison musculo-tendineuse== mince, en forme de ==double
 - Ponction pleurale : ne pas descendre trop bas en arrière (risque de traverser le diaphragme).
 - Exploration : radiographie, radioscopie, échographie, scanner.
 
-## Conclusion
+## VII- CONCLUSION
 Muscle vital de la respiration, cloison percée d'orifices étagés, le diaphragme intéresse le pneumologue, le chirurgien et le pédiatre.
 
 @@explications

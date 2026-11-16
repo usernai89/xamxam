@@ -1,38 +1,38 @@
 @@plan
-I. Généralités
-  1. Définition
-  2. Intérêt
-II. Anatomie descriptive
-  1. Origine
-  2. Trajet : aorte ascendante, crosse, aorte descendante
-  3. Terminaison
-  4. Calibre
-III. Rapports segment par segment
-IV. Distribution : branches collatérales
-V. Applications cliniques
-Conclusion
+I- INTRODUCTION
+  I.1- Définition
+  I.2- Intérêt
+II- ANATOMIE DESCRIPTIVE
+  II.1- Origine
+  II.2- Trajet : aorte ascendante, crosse, aorte descendante
+  II.3- Terminaison
+  II.4- Calibre
+III- RAPPORTS SEGMENT PAR SEGMENT
+IV- DISTRIBUTION : BRANCHES COLLATÉRALES
+V- APPLICATIONS CLINIQUES
+VI- CONCLUSION
 
 @@lecon
-## I. Généralités
-### 1. Définition
+## I- INTRODUCTION
+### I.1- Définition
 L'aorte thoracique est la portion de l'==aorte== située dans le thorax, de l'==orifice aortique du ventricule gauche== jusqu'au ==hiatus aortique du diaphragme==. Elle comprend trois segments : l'==aorte ascendante==, la ==crosse de l'aorte== et l'==aorte thoracique descendante==.
-### 2. Intérêt
+### I.2- Intérêt
 - Anatomique : artère d'origine de toute la ==circulation systémique== ; rapports médiastinaux nombreux.
 - Clinique : ==dissection aortique==, ==anévrismes==, ==coarctation==, ==rupture traumatique de l'isthme==.
 
-## II. Anatomie descriptive
-### 1. Origine
+## II- ANATOMIE DESCRIPTIVE
+### II.1- Origine
 À l'==orifice aortique du ventricule gauche==, en regard du 3e espace intercostal gauche, au bord gauche du sternum ; elle présente à son origine trois dilatations, les ==sinus aortiques== (de Valsalva).
-### 2. Trajet
+### II.2- Trajet
 - ==Aorte ascendante== (5 à 6 cm) : oblique en haut, en avant et à droite, ==dans le péricarde==, jusqu'à la 2e articulation sterno-costale droite.
 - ==Crosse de l'aorte== : elle se porte en arrière et à gauche, ==au-dessus de la bronche principale gauche== et du pédicule pulmonaire gauche, jusqu'au flanc gauche de ==T4== ; son point le plus haut est à environ 2 cm sous la fourchette sternale.
 - ==Aorte thoracique descendante== : elle descend dans le ==médiastin postérieur==, sur le flanc gauche du rachis, puis se rapproche de la ligne médiane.
-### 3. Terminaison
+### II.3- Terminaison
 Au ==hiatus aortique== du diaphragme, en avant de ==T12==, où elle devient l'aorte abdominale.
-### 4. Calibre
+### II.4- Calibre
 Environ 3 cm à l'origine, 2,5 cm en bas ; un rétrécissement, l'==isthme aortique==, siège juste après l'origine de l'artère subclavière gauche, au niveau du ==ligament artériel==.
 
-## III. Rapports
+## III- RAPPORTS
 **Aorte ascendante** (intrapéricardique)
 - En avant : le ==tronc pulmonaire== à son origine, l'auricule droite, le sternum.
 - À droite : la ==veine cave supérieure== et l'atrium droit.
@@ -50,14 +50,14 @@ Environ 3 cm à l'origine, 2,5 cm en bas ; un rétrécissement, l'==isthme aorti
 - À droite : l'œsophage, le ==canal thoracique==, la ==veine azygos==.
 - À gauche : plèvre et poumon gauches.
 
-## IV. Distribution
+## IV- DISTRIBUTION
 - Aorte ascendante : les ==artères coronaires== droite et gauche.
 - Crosse : le ==tronc artériel brachio-céphalique== (qui donne la subclavière droite et la carotide commune droite), la ==carotide commune gauche== et la ==subclavière gauche==.
 - Aorte descendante : ==artères intercostales postérieures== (3e à 11e) et subcostales, ==artères bronchiques== gauches, ==artères œsophagiennes==, médiastinales, diaphragmatiques supérieures.
 - Une artère intercostale ou lombaire basse donne souvent l'==artère d'Adamkiewicz==, principale artère de la moelle thoraco-lombaire.
 - Variantes : artère subclavière droite rétro-œsophagienne, artère thyroïdienne moyenne.
 
-## V. Applications cliniques
+## V- APPLICATIONS CLINIQUES
 - ==Dissection aortique== : douleur thoracique déchirante, migratrice, ==asymétrie tensionnelle== ; type A (aorte ascendante) : ==urgence chirurgicale== ; type B : traitement médical ou endoprothèse.
 - ==Anévrismes== : athérome, ==syphilis== (aortite), maladie de Marfan ; ils compriment les organes voisins (==dysphonie== par le récurrent, dysphagie, toux) ou se rompent.
 - ==Coarctation de l'aorte== (isthme) : ==HTA aux membres supérieurs==, ==pouls fémoraux faibles==, circulation collatérale par les intercostales (==encoches costales==).
@@ -65,7 +65,7 @@ Environ 3 cm à l'origine, 2,5 cm en bas ; un rétrécissement, l'==isthme aorti
 - Chirurgie et endoprothèses : risque de ==paraplégie== par atteinte de l'artère d'Adamkiewicz.
 - Exploration : radiographie (bouton aortique), ==échocardiographie trans-œsophagienne==, ==angio-scanner==, IRM.
 
-## Conclusion
+## VI- CONCLUSION
 Segment initial de la grande circulation, l'aorte thoracique a des rapports médiastinaux étroits ; ses urgences (dissection, rupture) imposent un diagnostic rapide par l'imagerie.
 
 @@explications
