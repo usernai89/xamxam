@@ -912,6 +912,8 @@ function inkFor(hex){ return lum(hex)>0.42?'#14111B':'#FFFFFF'; }
 function lsGet(k){ try{ return localStorage.getItem(k); }catch{ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch{ return false; } }
 let toastTimer;
+function appUrl(){ try{ return new URL('./', location.href).href; }catch{ return location.href; } }
+async function copyLink(t){ try{ await navigator.clipboard.writeText(t); toast('Lien copié : '+t, 3600); }catch{ window.prompt('Copie ce lien :', t); } }
 function toast(msg, ms=2600){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.hidden=true, ms); }
 async function copyText(text, fallbackEl){
   try{ await navigator.clipboard.writeText(text); toast('Copié'); }
@@ -1747,6 +1749,10 @@ function viewMe(){
    <button class="btn" data-act="import-json">Importer une sauvegarde</button>
    ${hasEx?`<button class="btn danger" data-act="del-examples">Supprimer les cartes d'exemple</button>`:''}
   </section>
+  ${PWA?`<section class="panel stack"><h3>Faire découvrir XamXam</h3>
+   <p class="small">Envoie le lien de l'appli à un camarade (WhatsApp, SMS…). Tes cartes et ta progression restent à toi.</p>
+   <div class="row"><button class="btn btn-primary" style="flex:1" data-act="share-app">Envoyer XamXam</button><button class="btn" style="flex:1" data-act="copy-app">Copier le lien</button></div>
+   <p class="small muted" style="word-break:break-all">${esc(appUrl())}</p></section>`:''}
   ${PWA?`<section class="panel stack"><h3>Installer sur ton téléphone</h3>
    ${window.matchMedia('(display-mode: standalone)').matches?'<p class="small">XamXam est installée sur ce téléphone. Elle marche aussi sans internet.</p>'
    :`<p class="small">Installe XamXam pour l'ouvrir depuis ton écran d'accueil, en plein écran, même sans internet.</p>
@@ -3472,7 +3478,7 @@ const INT=[
  ]}
 ];
 // Leçons rédigées (fichiers internat/lecons/<id>.md). Complété automatiquement à la publication.
-const INT_READY=['a-aorte','a-arteres-cerveau','a-axillaire','a-bronches','a-carotide-interne','a-coeur','a-colon','a-deferent','a-diaphragme','a-estomac','a-facial','a-femorale','a-genou','a-hanche','a-moteurs-oeil','a-oesophage','a-ovaires','a-pancreas','a-pedicule-hepatique','a-phrenique','a-plexus-brachial','a-poplitee','a-pyramidal','a-rate','a-rectum','a-recurrent','a-reins','a-sous-maxillaire','a-surrenales','a-uretere','a-uterus','a-ventricules','a-vertebrales','a-vessie','a-voies-optiques','b-absorption','b-acide-base','b-aldosterone','b-ammoniogenese','b-androgenes','b-auto-immunite','b-automatisme-cardiaque','b-calcium','b-carcinogenese','b-cetogenese','b-clearances','b-compartiments','b-concentration-urine','b-corticotrophine','b-cortisol','b-croissance-osseuse','b-debit-cardiaque','b-defense-cellulaire','b-defense-humorale','b-differenciation-sexuelle','b-digestion-gastrique','b-digestion-intestinale','b-filtration','b-glycemie','b-glycogenique','b-greffe','b-groupes','b-hematose','b-hemodynamique','b-hemoglobine','b-hemostase','b-hypothalamus','b-immunite-adaptative','b-immunite-innee','b-insuline','b-lymphe','b-menstruation','b-mitose','b-oestrogenes','b-pancreas-exocrine','b-potassium','b-pression-arterielle','b-progestatives','b-rayonnements','b-reticule','b-sodium','b-synthese-proteique','b-thyroidiennes','b-transmission','b-tubule','b-ventilation','b-vitamine-b1','b-vitamine-c','b-vitamine-d','c-appendicite','c-brulures','c-cancer-colon','c-cancer-rectum','c-cancer-sein','c-complications-ugd','c-contusions-abdo','c-geu','c-hernies-aine','c-lithiase-biliaire','c-occlusions','c-trauma-crane','m-amibiase','m-anemies','m-asthme','m-cholera','m-cirrhose','m-coronaropathies','m-cushing','m-diabete','m-embolie','m-goutte','m-hepatites','m-hodgkin','m-hta','m-hyperthyroidie','m-hypothyroidie','m-ic','m-ictere','m-ira','m-irc','m-leucemies','m-lupus','m-myelome','m-palu','m-pancreatite','m-pneumonies','m-pr','m-sn','m-surrenale','m-tuberculose','m-tumeurs-poumon','m-typhoide','m-ulceres','m-vih'];
+const INT_READY=['a-aorte','a-arteres-cerveau','a-axillaire','a-bronches','a-carotide-interne','a-coeur','a-colon','a-deferent','a-diaphragme','a-estomac','a-facial','a-femorale','a-genou','a-hanche','a-moteurs-oeil','a-oesophage','a-ovaires','a-pancreas','a-pedicule-hepatique','a-phrenique','a-plexus-brachial','a-poplitee','a-pyramidal','a-rate','a-rectum','a-recurrent','a-reins','a-sous-maxillaire','a-surrenales','a-uretere','a-uterus','a-ventricules','a-vertebrales','a-vessie','a-voies-optiques','b-absorption','b-acide-base','b-aldosterone','b-ammoniogenese','b-androgenes','b-auto-immunite','b-automatisme-cardiaque','b-calcium','b-carcinogenese','b-cetogenese','b-clearances','b-compartiments','b-concentration-urine','b-corticotrophine','b-cortisol','b-croissance-osseuse','b-debit-cardiaque','b-defense-cellulaire','b-defense-humorale','b-differenciation-sexuelle','b-digestion-gastrique','b-digestion-intestinale','b-filtration','b-glycemie','b-glycogenique','b-greffe','b-groupes','b-hematose','b-hemodynamique','b-hemoglobine','b-hemostase','b-hypothalamus','b-immunite-adaptative','b-immunite-innee','b-insuline','b-lymphe','b-menstruation','b-mitose','b-oestrogenes','b-pancreas-exocrine','b-potassium','b-pression-arterielle','b-progestatives','b-rayonnements','b-reticule','b-sodium','b-synthese-proteique','b-thyroidiennes','b-transmission','b-tubule','b-ventilation','b-vitamine-b1','b-vitamine-c','b-vitamine-d','c-adp-cervicales','c-anevrismes-art','c-anevrismes-av','c-appendicite','c-avortements','c-brulures','c-cancer-colon','c-cancer-langue','c-cancer-rectum','c-cancer-sein','c-cancer-testicule','c-cancer-thyroide','c-cancers-uterus','c-complications-ugd','c-contusions-abdo','c-fibromes','c-geu','c-hernies-aine','c-lithiase-biliaire','c-occlusions','c-tb-urogenitale','c-trauma-crane','c-tumeurs-ovaire','c-tumeurs-rein','m-amibiase','m-anemies','m-asthme','m-cholera','m-cirrhose','m-coronaropathies','m-cushing','m-diabete','m-embolie','m-goutte','m-hepatites','m-hodgkin','m-hta','m-hyperthyroidie','m-hypothyroidie','m-ic','m-ictere','m-ira','m-irc','m-leucemies','m-lupus','m-myelome','m-palu','m-pancreatite','m-pneumonies','m-pr','m-sn','m-surrenale','m-tuberculose','m-tumeurs-poumon','m-typhoide','m-ulceres','m-vih'];
 const INTQ={}, L3INT={}, INTL={};
 const fold = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 // Mots d'un intitulé : sans accents, sans petits mots, au singulier.
@@ -3961,6 +3967,10 @@ document.addEventListener('click', async e=>{
     case 'syn-lang': UI.syn.lang=d.v; paintSheet(true); break;
     case 'syn-add': { const n=synAdd(d.id); UI.synOpen=d.id; updateDueDot(); paintSheet(true); toast(n?n+' cartes ajoutées à tes révisions':'Déjà dans tes révisions'); break; }
     case 'syn-add-all': { let n=0; for(const x of SYNDROMES){ if(UI.syn.sys==='all'||x.sys===UI.syn.sys) n+=synAdd(x.id); } updateDueDot(); paintSheet(true); toast(n+' cartes ajoutées. Elles arriveront peu à peu dans tes révisions du jour.'); break; }
+    case 'share-app': { const url=appUrl(), text="XamXam, l'appli de révision de médecine (L1 à D2, internat). Ouvre le lien dans Chrome puis menu ⋮ → « Installer l'application ».";
+      if(navigator.share){ try{ await navigator.share({title:'XamXam', text, url}); break; }catch(e){ if(e&&e.name==='AbortError') break; } }
+      await copyLink(url); break; }
+    case 'copy-app': await copyLink(appUrl()); break;
     case 'pwa-install': if(installEvt){ installEvt.prompt(); try{ await installEvt.userChoice; }catch{} installEvt=null; rerender(); } break;
     case 'tab': UI.tab=d.tab; lsSet('xamxam.tab',d.tab); window.scrollTo(0,0); render(); break;
     case 'week': openSheet(weekSheet); break;
