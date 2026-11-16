@@ -397,7 +397,9 @@ details.peek>summary::-webkit-details-marker{display:none}
 .lvl-t strong{font-family:var(--font-display);font-size:1.125rem}
 .lvl-t .bar{height:6px;margin-top:4px}
 .badge.mine-b{background:var(--hl);color:var(--hl-ink)}
-.lvlpick{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.lvlrow{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center}
+.lvlpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+h3.cyc{font-size:1.0625rem;margin:6px 0 0;padding-bottom:4px;border-bottom:1px solid var(--line2)}
 .lvlpick button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 2px;border:0;border-radius:4px 10px 10px 4px;background:var(--c);color:var(--ci);font-size:0.6875rem;box-shadow:inset 6px 0 0 rgba(0,0,0,.2)}
 .lvlpick strong{font-family:var(--font-display);font-size:1.125rem}
 .icopick{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
@@ -590,16 +592,20 @@ const MI={
 const miSvg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MI[k]||MI.book}</svg>`;
 
 // ---------- Niveaux : de la Licence 1 au Doctorat 2 ----------
+// Médecine en 7 ans : Licence (L1 à L3), Master (M1, M2), Doctorat (D1, D2).
 // Le programme détaillé ci-dessus est celui de la Licence 3, semestre 1 (S5).
 // Les autres années forment un programme modèle, modifiable dans l'appli (ajouter, masquer, compléter).
 // Format : « =L1 1 » = niveau et semestre ; « # id | nom | nom court | icône | couleur » = une matière ;
 // « - id | nom | cours|cours|… » = une sous-matière et ses cours.
 const LEVELS=[
- {id:'L1', name:'Licence 1', an:'1re année', old:'PCEM1', color:1},
- {id:'L2', name:'Licence 2', an:'2e année', old:'PCEM2', color:6},
- {id:'L3', name:'Licence 3', an:'3e année', old:'DCEM1', color:2},
- {id:'D1', name:'Doctorat 1', an:'4e année', old:'DCEM2', color:0, note:"année du concours de l'internat"},
- {id:'D2', name:'Doctorat 2', an:'5e année', old:'DCEM3', color:4}];
+ {id:'L1', cyc:'Licence', name:'Licence 1', an:'1re année', old:'ancien PCEM1', color:1},
+ {id:'L2', cyc:'Licence', name:'Licence 2', an:'2e année', old:'ancien PCEM2', color:6},
+ {id:'L3', cyc:'Licence', name:'Licence 3', an:'3e année', old:'ancien DCEM1', color:2},
+ {id:'M1', cyc:'Master', name:'Master 1', an:'4e année', old:'ancien DCEM2', color:0, note:"année du concours de l'internat"},
+ {id:'M2', cyc:'Master', name:'Master 2', an:'5e année', old:'ancien DCEM3', color:5},
+ {id:'D1', cyc:'Doctorat', name:'Doctorat 1', an:'6e année', old:'ancien DCEM4', color:4},
+ {id:'D2', cyc:'Doctorat', name:'Doctorat 2', an:'7e année', old:'stages et thèse', color:7}];
+const CYCLES=['Licence','Master','Doctorat'];
 const LV={}; LEVELS.forEach((l,i)=>{ l.i=i; LV[l.id]=l; });
 const COVERS=['#B4432F','#2E5E9E','#2F7A4F','#C9922B','#6B4A9E','#CF6A2E','#1F7F86','#A33E6B','#4F5B6B','#7A5A2E'];
 const coverInk = i => i===3 ? '#1E1C18' : '#FFFFFF';
@@ -689,66 +695,86 @@ const CURR_TXT=`
 # l3-sp | Santé publique | Santé publique | globe | 3
 - l3-sp | Santé publique | Démographie et santé|Politique de santé au Sénégal|Soins de santé primaires|Programme élargi de vaccination|Santé de la reproduction|Nutrition et malnutrition|Hygiène hospitalière|Éducation pour la santé|Économie de la santé|Méthodologie de la recherche
 
+=M1 1
+# m1-cardio | Cardiologie et chirurgie vasculaire | Cardiologie | heart | 0
+- m1-cardio | Cardiologie | Insuffisance cardiaque|Hypertension artérielle|Cardiopathies ischémiques|Rhumatisme articulaire aigu|Valvulopathies mitrales|Valvulopathies aortiques|Endocardite infectieuse|Péricardites|Cardiomyopathies|Troubles du rythme|Troubles de la conduction|Cœur pulmonaire chronique|Cardiopathies congénitales
+- m1-chirvasc | Chirurgie cardio-vasculaire | Artériopathie oblitérante des membres inférieurs|Ischémie aiguë des membres|Anévrismes artériels|Fistules artério-veineuses|Plaies vasculaires|Thromboses veineuses profondes|Varices des membres inférieurs
+# m1-pneumo | Pneumologie et chirurgie thoracique | Pneumologie | lungs | 1
+- m1-pneumo | Pneumologie | Pneumonies aiguës|Tuberculose pulmonaire|Pleurésies|Pneumothorax|Asthme|Bronchopneumopathie chronique obstructive|Dilatation des bronches|Abcès du poumon|Cancer bronchique|Embolie pulmonaire|Insuffisance respiratoire|Atteintes pulmonaires du VIH
+- m1-chirthor | Chirurgie thoracique | Traumatismes thoraciques|Hémothorax|Pleurésies purulentes : drainage|Hernies diaphragmatiques|Tumeurs du médiastin
+# m1-gastro | Gastro-entérologie et chirurgie digestive | Digestif | stomach | 5
+- m1-gastro | Gastro-entérologie et hépatologie | Ulcères gastro-duodénaux|Reflux gastro-œsophagien|Hémorragies digestives|Diarrhées aiguës|Diarrhées chroniques|Hépatites virales|Cirrhoses|Carcinome hépatocellulaire|Abcès du foie|Pancréatites|Ictères|Maladies inflammatoires de l'intestin|Parasitoses digestives
+- m1-chirdig | Chirurgie digestive | Appendicite aiguë|Péritonites aiguës|Occlusions intestinales|Hernies de l'aine|Éventrations|Lithiase biliaire|Cancer de l'estomac|Cancer du côlon|Cancer du rectum|Cancer de l'œsophage|Pathologie proctologique|Traumatismes de l'abdomen
+# m1-nephro | Néphrologie et urologie | Néphro-urologie | kidney | 3
+- m1-nephro | Néphrologie | Insuffisance rénale aiguë|Insuffisance rénale chronique|Syndrome néphrotique|Glomérulonéphrites|Infections urinaires|Néphropathies vasculaires|Troubles hydroélectrolytiques|Troubles acido-basiques|Dialyse et transplantation
+- m1-uro | Urologie | Lithiase urinaire|Adénome de la prostate|Cancer de la prostate|Rétention aiguë d'urine|Tumeurs du rein|Tumeurs de la vessie|Bilharziose urinaire et ses complications|Traumatismes de l'appareil urinaire|Cancers du testicule|Torsion du testicule|Rétrécissements de l'urètre
+# m1-infectio | Maladies infectieuses et tropicales | Infectiologie | virus | 2
+- m1-infectio | Maladies infectieuses et tropicales | Paludisme|Fièvre typhoïde|Infection à VIH|Tuberculose|Choléra|Amibiase|Méningites bactériennes|Tétanos|Rage|Rougeole|Fièvre jaune|Dengue et arboviroses|Bilharzioses|Leishmanioses|Trypanosomiase|Septicémies|Infections sexuellement transmissibles|Fièvre prolongée inexpliquée|Antibiothérapie : principes
+
+=M1 2
+# m1-neuro | Neurologie et neurochirurgie | Neurologie | brain | 4
+- m1-neuro | Neurologie | Accidents vasculaires cérébraux|Épilepsies|Comas|Méningo-encéphalites|Céphalées|Maladie de Parkinson|Neuropathies périphériques|Compressions médullaires|Myasthénie|Sclérose en plaques|Démences|Neuropaludisme
+- m1-neurochir | Neurochirurgie | Traumatismes crânio-cérébraux|Hématomes intracrâniens|Traumatismes du rachis|Tumeurs cérébrales|Hypertension intracrânienne|Hydrocéphalie|Hernies discales|Mal de Pott
+# m1-endoc | Endocrinologie et métabolisme | Endocrinologie | gland | 6
+- m1-endoc | Endocrinologie, diabétologie, nutrition | Diabète sucré|Complications aiguës du diabète|Complications chroniques du diabète|Hyperthyroïdies|Hypothyroïdies|Goitres et nodules thyroïdiens|Insuffisance surrénale|Hypercorticismes|Phéochromocytome|Pathologies hypophysaires|Obésité|Dyslipidémies|Malnutrition de l'adulte
+# m1-locom | Rhumatologie et orthopédie | Appareil locomoteur | joint | 9
+- m1-rhumato | Rhumatologie | Polyarthrite rhumatoïde|Lupus érythémateux systémique|Spondylarthrites|Goutte|Arthrose|Ostéoporose|Arthrites septiques|Lombalgies et sciatiques|Ostéomyélites|Manifestations ostéo-articulaires de la drépanocytose
+- m1-ortho | Orthopédie-traumatologie | Généralités sur les fractures|Fractures ouvertes|Fractures de l'extrémité supérieure du fémur|Traumatismes de la jambe|Traumatismes de l'épaule|Fractures de l'avant-bras et du poignet|Traumatismes du bassin|Entorses et luxations|Tumeurs osseuses primitives|Ostéomyélites aiguës|Pied bot et malformations
+# m1-hemato | Hématologie clinique | Hématologie | drop | 0
+- m1-hemato | Hématologie clinique | Anémies|Drépanocytose|Thalassémies|Leucémies|Maladie de Hodgkin|Lymphomes non hodgkiniens|Myélome multiple|Syndromes hémorragiques|Hémophilies|Purpuras thrombopéniques|Coagulation intravasculaire disséminée|Transfusion sanguine en pratique
+# m1-dermato | Dermatologie | Dermatologie | skin | 5
+- m1-dermato | Dermatologie-vénéréologie | Lésions élémentaires et démarche diagnostique|Infections bactériennes de la peau|Dermatophyties et candidoses|Gale et pédiculoses|Lèpre|Ulcère de Buruli|Eczémas|Psoriasis|Toxidermies|Manifestations cutanées du VIH|Infections sexuellement transmissibles|Cancers de la peau
+# m1-anapath | Anatomie pathologique spéciale | Anapath | microscope | 7
+- m1-anapath | Anatomie pathologique spéciale | Pathologie du col de l'utérus|Pathologie du sein|Pathologie de l'estomac|Pathologie du côlon|Pathologie du foie|Pathologie de la prostate|Pathologie des ganglions|Pathologie de la thyroïde|Tumeurs osseuses|Tuberculose et bilharziose en anatomie pathologique
+
+=M2 1
+# m2-pedia | Pédiatrie | Pédiatrie | baby | 3
+- m2-pedia | Pédiatrie | Croissance et développement de l'enfant|Alimentation du nourrisson|Malnutrition aiguë|Déshydratation de l'enfant|Diarrhées du nourrisson|Infections respiratoires aiguës|Paludisme de l'enfant|Méningites de l'enfant|Rougeole et maladies éruptives|Drépanocytose de l'enfant|Anémies de l'enfant|Convulsions de l'enfant|Programme élargi de vaccination|Prise en charge intégrée des maladies de l'enfant|Nouveau-né normal|Ictère du nouveau-né|Infections néonatales|Prématurité|Asphyxie néonatale|Cardiopathies congénitales
+- m2-chirped | Chirurgie pédiatrique | Invagination intestinale aiguë|Sténose du pylore|Hernies de l'enfant|Malformations ano-rectales|Ectopie testiculaire|Ostéomyélite de l'enfant|Brûlures de l'enfant
+# m2-gyneco | Gynécologie-obstétrique | Gynéco-obstétrique | female | 7
+- m2-obst | Obstétrique | Diagnostic de la grossesse|Consultation prénatale|Accouchement normal|Hémorragies du premier trimestre|Grossesse extra-utérine|Hémorragies du troisième trimestre|Hémorragies du post-partum|Prééclampsie et éclampsie|Rupture utérine|Dystocies|Paludisme et grossesse|VIH et grossesse|Infections du post-partum|Césarienne|Mortalité maternelle
+- m2-gyn | Gynécologie | Infections génitales|Stérilité du couple|Contraception|Fibromes utérins|Cancer du col de l'utérus|Cancer du sein|Kystes et tumeurs de l'ovaire|Aménorrhées|Fistules obstétricales|Mutilations génitales féminines|Ménopause
+=M2 2
+# m2-psy | Psychiatrie | Psychiatrie | mind | 4
+- m2-psy | Psychiatrie | Examen psychiatrique|Schizophrénies|Troubles bipolaires|Dépressions|Troubles anxieux|Bouffées délirantes aiguës|Addictions|Troubles psychiatriques du post-partum|Urgences psychiatriques|Psychotropes en pratique|Psychiatrie et culture au Sénégal
+# m2-orl | ORL et chirurgie cervico-faciale | ORL | ear | 6
+- m2-orl | ORL | Otites|Angines et leurs complications|Sinusites|Épistaxis|Corps étrangers des voies aériennes|Dyspnées laryngées|Cancers ORL|Surdités|Paralysie faciale|Adénopathies cervicales|Cancer de la thyroïde|Cancer de la langue
+# m2-ophtalmo | Ophtalmologie | Ophtalmologie | eye | 1
+- m2-ophtalmo | Ophtalmologie | Œil rouge|Baisse de l'acuité visuelle|Cataracte|Glaucomes|Conjonctivites|Trachome|Traumatismes oculaires|Rétinopathies diabétique et hypertensive|Carence en vitamine A|Onchocercose oculaire|Strabisme|Rétinoblastome
+# m2-stomato | Stomatologie | Stomatologie | tooth | 9
+- m2-stomato | Stomatologie et chirurgie maxillo-faciale | Infections d'origine dentaire|Cellulites cervico-faciales|Noma|Traumatismes de la face|Tumeurs des maxillaires|Fentes labio-palatines
+
 =D1 1
-# d1-cardio | Cardiologie et chirurgie vasculaire | Cardiologie | heart | 0
-- d1-cardio | Cardiologie | Insuffisance cardiaque|Hypertension artérielle|Cardiopathies ischémiques|Rhumatisme articulaire aigu|Valvulopathies mitrales|Valvulopathies aortiques|Endocardite infectieuse|Péricardites|Cardiomyopathies|Troubles du rythme|Troubles de la conduction|Cœur pulmonaire chronique|Cardiopathies congénitales
-- d1-chirvasc | Chirurgie cardio-vasculaire | Artériopathie oblitérante des membres inférieurs|Ischémie aiguë des membres|Anévrismes artériels|Fistules artério-veineuses|Plaies vasculaires|Thromboses veineuses profondes|Varices des membres inférieurs
-# d1-pneumo | Pneumologie et chirurgie thoracique | Pneumologie | lungs | 1
-- d1-pneumo | Pneumologie | Pneumonies aiguës|Tuberculose pulmonaire|Pleurésies|Pneumothorax|Asthme|Bronchopneumopathie chronique obstructive|Dilatation des bronches|Abcès du poumon|Cancer bronchique|Embolie pulmonaire|Insuffisance respiratoire|Atteintes pulmonaires du VIH
-- d1-chirthor | Chirurgie thoracique | Traumatismes thoraciques|Hémothorax|Pleurésies purulentes : drainage|Hernies diaphragmatiques|Tumeurs du médiastin
-# d1-gastro | Gastro-entérologie et chirurgie digestive | Digestif | stomach | 5
-- d1-gastro | Gastro-entérologie et hépatologie | Ulcères gastro-duodénaux|Reflux gastro-œsophagien|Hémorragies digestives|Diarrhées aiguës|Diarrhées chroniques|Hépatites virales|Cirrhoses|Carcinome hépatocellulaire|Abcès du foie|Pancréatites|Ictères|Maladies inflammatoires de l'intestin|Parasitoses digestives
-- d1-chirdig | Chirurgie digestive | Appendicite aiguë|Péritonites aiguës|Occlusions intestinales|Hernies de l'aine|Éventrations|Lithiase biliaire|Cancer de l'estomac|Cancer du côlon|Cancer du rectum|Cancer de l'œsophage|Pathologie proctologique|Traumatismes de l'abdomen
-# d1-nephro | Néphrologie et urologie | Néphro-urologie | kidney | 3
-- d1-nephro | Néphrologie | Insuffisance rénale aiguë|Insuffisance rénale chronique|Syndrome néphrotique|Glomérulonéphrites|Infections urinaires|Néphropathies vasculaires|Troubles hydroélectrolytiques|Troubles acido-basiques|Dialyse et transplantation
-- d1-uro | Urologie | Lithiase urinaire|Adénome de la prostate|Cancer de la prostate|Rétention aiguë d'urine|Tumeurs du rein|Tumeurs de la vessie|Bilharziose urinaire et ses complications|Traumatismes de l'appareil urinaire|Cancers du testicule|Torsion du testicule|Rétrécissements de l'urètre
-# d1-infectio | Maladies infectieuses et tropicales | Infectiologie | virus | 2
-- d1-infectio | Maladies infectieuses et tropicales | Paludisme|Fièvre typhoïde|Infection à VIH|Tuberculose|Choléra|Amibiase|Méningites bactériennes|Tétanos|Rage|Rougeole|Fièvre jaune|Dengue et arboviroses|Bilharzioses|Leishmanioses|Trypanosomiase|Septicémies|Infections sexuellement transmissibles|Fièvre prolongée inexpliquée|Antibiothérapie : principes
+# d1-rea | Anesthésie, réanimation et urgences | Réanimation | syringe | 0
+- d1-rea | Anesthésie-réanimation | Arrêt cardio-respiratoire|États de choc|Détresses respiratoires aiguës|Comas|Polytraumatisé|Brûlures étendues|Intoxications aiguës|Envenimations|Anesthésie générale : principes|Anesthésie locorégionale|Remplissage vasculaire et transfusion|Douleur aiguë
+# d1-medint | Médecine interne et gériatrie | Médecine interne | stetho | 2
+- d1-medint | Médecine interne | Fièvre prolongée|Altération de l'état général|Polyadénopathies|Maladies systémiques|Vascularites|Sarcoïdose|Amylose|Particularités de la personne âgée|Chutes du sujet âgé|Iatrogénie
+# d1-thera | Thérapeutique | Thérapeutique | pill | 1
+- d1-thera | Thérapeutique et prescription | Rédiger une ordonnance|Prescription chez l'enfant|Prescription chez la femme enceinte et allaitante|Prescription chez le sujet âgé|Prescription chez l'insuffisant rénal et hépatique|Antibiothérapie en pratique|Corticothérapie en pratique|Anticoagulants en pratique|Insulinothérapie|Traitement de la douleur|Transfusion en pratique|Médicaments essentiels et génériques|Pharmacovigilance et effets indésirables|Interactions médicamenteuses
 
 =D1 2
-# d1-neuro | Neurologie et neurochirurgie | Neurologie | brain | 4
-- d1-neuro | Neurologie | Accidents vasculaires cérébraux|Épilepsies|Comas|Méningo-encéphalites|Céphalées|Maladie de Parkinson|Neuropathies périphériques|Compressions médullaires|Myasthénie|Sclérose en plaques|Démences|Neuropaludisme
-- d1-neurochir | Neurochirurgie | Traumatismes crânio-cérébraux|Hématomes intracrâniens|Traumatismes du rachis|Tumeurs cérébrales|Hypertension intracrânienne|Hydrocéphalie|Hernies discales|Mal de Pott
-# d1-endoc | Endocrinologie et métabolisme | Endocrinologie | gland | 6
-- d1-endoc | Endocrinologie, diabétologie, nutrition | Diabète sucré|Complications aiguës du diabète|Complications chroniques du diabète|Hyperthyroïdies|Hypothyroïdies|Goitres et nodules thyroïdiens|Insuffisance surrénale|Hypercorticismes|Phéochromocytome|Pathologies hypophysaires|Obésité|Dyslipidémies|Malnutrition de l'adulte
-# d1-locom | Rhumatologie et orthopédie | Appareil locomoteur | joint | 9
-- d1-rhumato | Rhumatologie | Polyarthrite rhumatoïde|Lupus érythémateux systémique|Spondylarthrites|Goutte|Arthrose|Ostéoporose|Arthrites septiques|Lombalgies et sciatiques|Ostéomyélites|Manifestations ostéo-articulaires de la drépanocytose
-- d1-ortho | Orthopédie-traumatologie | Généralités sur les fractures|Fractures ouvertes|Fractures de l'extrémité supérieure du fémur|Traumatismes de la jambe|Traumatismes de l'épaule|Fractures de l'avant-bras et du poignet|Traumatismes du bassin|Entorses et luxations|Tumeurs osseuses primitives|Ostéomyélites aiguës|Pied bot et malformations
-# d1-hemato | Hématologie clinique | Hématologie | drop | 0
-- d1-hemato | Hématologie clinique | Anémies|Drépanocytose|Thalassémies|Leucémies|Maladie de Hodgkin|Lymphomes non hodgkiniens|Myélome multiple|Syndromes hémorragiques|Hémophilies|Purpuras thrombopéniques|Coagulation intravasculaire disséminée|Transfusion sanguine en pratique
-# d1-dermato | Dermatologie | Dermatologie | skin | 5
-- d1-dermato | Dermatologie-vénéréologie | Lésions élémentaires et démarche diagnostique|Infections bactériennes de la peau|Dermatophyties et candidoses|Gale et pédiculoses|Lèpre|Ulcère de Buruli|Eczémas|Psoriasis|Toxidermies|Manifestations cutanées du VIH|Infections sexuellement transmissibles|Cancers de la peau
-# d1-anapath | Anatomie pathologique spéciale | Anapath | microscope | 7
-- d1-anapath | Anatomie pathologique spéciale | Pathologie du col de l'utérus|Pathologie du sein|Pathologie de l'estomac|Pathologie du côlon|Pathologie du foie|Pathologie de la prostate|Pathologie des ganglions|Pathologie de la thyroïde|Tumeurs osseuses|Tuberculose et bilharziose en anatomie pathologique
+# d1-onco | Oncologie | Oncologie | ribbon | 7
+- d1-onco | Cancérologie | Épidémiologie des cancers au Sénégal|Diagnostic d'un cancer|Bilan d'extension et classification TNM|Chimiothérapie : principes|Radiothérapie : principes|Soins palliatifs|Douleur cancéreuse|Dépistage des cancers|Cancer du foie|Lymphome de Burkitt|Sarcome de Kaposi
+# d1-medleg | Médecine légale et du travail | Médecine légale | scales | 8
+- d1-medleg | Médecine légale | Certificats médicaux|Levée de corps et autopsie|Coups et blessures|Violences sexuelles|Secret médical|Responsabilité médicale|Droits du malade
+- d1-medtrav | Médecine du travail | Organisation de la médecine du travail|Accidents du travail|Maladies professionnelles|Risques professionnels des soignants
+# d1-sp | Santé publique | Santé publique | globe | 1
+- d1-sp | Santé publique et épidémiologie | Planification sanitaire|Gestion d'un district sanitaire|Investigation d'une épidémie|Maladies à potentiel épidémique|Lutte contre le paludisme|Lutte contre la tuberculose|Lutte contre le VIH|Santé maternelle et infantile|Nutrition|Hygiène du milieu|Évaluation des programmes de santé
 
 =D2 1
-# d2-pedia | Pédiatrie | Pédiatrie | baby | 3
-- d2-pedia | Pédiatrie | Croissance et développement de l'enfant|Alimentation du nourrisson|Malnutrition aiguë|Déshydratation de l'enfant|Diarrhées du nourrisson|Infections respiratoires aiguës|Paludisme de l'enfant|Méningites de l'enfant|Rougeole et maladies éruptives|Drépanocytose de l'enfant|Anémies de l'enfant|Convulsions de l'enfant|Programme élargi de vaccination|Prise en charge intégrée des maladies de l'enfant|Nouveau-né normal|Ictère du nouveau-né|Infections néonatales|Prématurité|Asphyxie néonatale|Cardiopathies congénitales
-- d2-chirped | Chirurgie pédiatrique | Invagination intestinale aiguë|Sténose du pylore|Hernies de l'enfant|Malformations ano-rectales|Ectopie testiculaire|Ostéomyélite de l'enfant|Brûlures de l'enfant
-# d2-gyneco | Gynécologie-obstétrique | Gynéco-obstétrique | female | 7
-- d2-obst | Obstétrique | Diagnostic de la grossesse|Consultation prénatale|Accouchement normal|Hémorragies du premier trimestre|Grossesse extra-utérine|Hémorragies du troisième trimestre|Hémorragies du post-partum|Prééclampsie et éclampsie|Rupture utérine|Dystocies|Paludisme et grossesse|VIH et grossesse|Infections du post-partum|Césarienne|Mortalité maternelle
-- d2-gyn | Gynécologie | Infections génitales|Stérilité du couple|Contraception|Fibromes utérins|Cancer du col de l'utérus|Cancer du sein|Kystes et tumeurs de l'ovaire|Aménorrhées|Fistules obstétricales|Mutilations génitales féminines|Ménopause
-# d2-orl | ORL et chirurgie cervico-faciale | ORL | ear | 6
-- d2-orl | ORL | Otites|Angines et leurs complications|Sinusites|Épistaxis|Corps étrangers des voies aériennes|Dyspnées laryngées|Cancers ORL|Surdités|Paralysie faciale|Adénopathies cervicales|Cancer de la thyroïde|Cancer de la langue
-# d2-ophtalmo | Ophtalmologie | Ophtalmologie | eye | 1
-- d2-ophtalmo | Ophtalmologie | Œil rouge|Baisse de l'acuité visuelle|Cataracte|Glaucomes|Conjonctivites|Trachome|Traumatismes oculaires|Rétinopathies diabétique et hypertensive|Carence en vitamine A|Onchocercose oculaire|Strabisme|Rétinoblastome
-# d2-stomato | Stomatologie | Stomatologie | tooth | 9
-- d2-stomato | Stomatologie et chirurgie maxillo-faciale | Infections d'origine dentaire|Cellulites cervico-faciales|Noma|Traumatismes de la face|Tumeurs des maxillaires|Fentes labio-palatines
+# d2-stages | Stages cliniques | Stages | hospital | 8
+- d2-st-med | Stage de médecine | Observation médicale complète|Présentation d'un malade à la visite|Examen clinique par appareil|Interprétation d'un hémogramme|Interprétation d'un ionogramme|Lecture d'un électrocardiogramme|Lecture d'une radiographie thoracique|Ponction lombaire|Ponction pleurale|Ponction d'ascite
+- d2-st-chir | Stage de chirurgie | Asepsie et lavage chirurgical des mains|Sutures et pansements|Soins des plaies|Pose d'une sonde nasogastrique|Pose d'une sonde urinaire|Préparation d'un malade à l'intervention|Surveillance postopératoire|Immobilisation des fractures|Drainage d'un abcès
+- d2-st-ped | Stage de pédiatrie | Examen du nouveau-né|Courbes de croissance|Évaluation de l'état nutritionnel|Réhydratation de l'enfant|Calcul des doses chez l'enfant|Calendrier des vaccinations|Prise en charge du paludisme de l'enfant
+- d2-st-gyn | Stage de gynécologie-obstétrique | Consultation prénatale|Examen obstétrical|Surveillance du travail : partogramme|Accouchement normal|Délivrance et révision utérine|Soins du post-partum|Planification familiale
+- d2-st-urg | Stage d'urgences | Tri des urgences|Réanimation cardio-pulmonaire|Prise en charge d'un état de choc|Prise en charge d'un polytraumatisé|Prise en charge d'un coma|Oxygénothérapie|Voies veineuses
+- d2-st-comm | Stage de santé communautaire | Organisation d'un district sanitaire|Poste et centre de santé|Consultation curative en zone rurale|Activités de vaccination|Éducation pour la santé|Surveillance épidémiologique au district|Gestion des médicaments
 
 =D2 2
-# d2-psy | Psychiatrie | Psychiatrie | mind | 4
-- d2-psy | Psychiatrie | Examen psychiatrique|Schizophrénies|Troubles bipolaires|Dépressions|Troubles anxieux|Bouffées délirantes aiguës|Addictions|Troubles psychiatriques du post-partum|Urgences psychiatriques|Psychotropes en pratique|Psychiatrie et culture au Sénégal
-# d2-rea | Anesthésie, réanimation et urgences | Réanimation | syringe | 0
-- d2-rea | Anesthésie-réanimation | Arrêt cardio-respiratoire|États de choc|Détresses respiratoires aiguës|Comas|Polytraumatisé|Brûlures étendues|Intoxications aiguës|Envenimations|Anesthésie générale : principes|Anesthésie locorégionale|Remplissage vasculaire et transfusion|Douleur aiguë
-# d2-medint | Médecine interne et gériatrie | Médecine interne | stetho | 2
-- d2-medint | Médecine interne | Fièvre prolongée|Altération de l'état général|Polyadénopathies|Maladies systémiques|Vascularites|Sarcoïdose|Amylose|Particularités de la personne âgée|Chutes du sujet âgé|Iatrogénie
-# d2-onco | Oncologie | Oncologie | ribbon | 7
-- d2-onco | Cancérologie | Épidémiologie des cancers au Sénégal|Diagnostic d'un cancer|Bilan d'extension et classification TNM|Chimiothérapie : principes|Radiothérapie : principes|Soins palliatifs|Douleur cancéreuse|Dépistage des cancers|Cancer du foie|Lymphome de Burkitt|Sarcome de Kaposi
-# d2-medleg | Médecine légale et du travail | Médecine légale | scales | 8
-- d2-medleg | Médecine légale | Certificats médicaux|Levée de corps et autopsie|Coups et blessures|Violences sexuelles|Secret médical|Responsabilité médicale|Droits du malade
-- d2-medtrav | Médecine du travail | Organisation de la médecine du travail|Accidents du travail|Maladies professionnelles|Risques professionnels des soignants
-# d2-sp | Santé publique | Santé publique | globe | 1
-- d2-sp | Santé publique et épidémiologie | Planification sanitaire|Gestion d'un district sanitaire|Investigation d'une épidémie|Maladies à potentiel épidémique|Lutte contre le paludisme|Lutte contre la tuberculose|Lutte contre le VIH|Santé maternelle et infantile|Nutrition|Hygiène du milieu|Évaluation des programmes de santé
+# d2-synth | Synthèse clinique | Synthèse clinique | stetho | 2
+- d2-synth | Cas cliniques par symptôme | Fièvre de l'adulte|Fièvre de l'enfant|Douleur thoracique|Dyspnée aiguë|Douleur abdominale aiguë|Hémorragie digestive|Coma|Convulsions|Céphalées|Ictère|Anémie|Œdèmes|Hématurie|Toux chronique|Diarrhée|Altération de l'état général|Douleur articulaire|Éruption cutanée|Troubles du comportement|Saignement au cours de la grossesse
+# d2-these | Thèse de doctorat | Thèse | book | 9
+- d2-these | Thèse de doctorat en médecine | Choisir un sujet et un directeur|Recherche bibliographique|Rédiger un protocole|Questions éthiques et consentement|Recueil des données|Analyse statistique|Rédiger la thèse|Citer les références|Préparer la soutenance
 `;
 function parseCurr(txt){
   const out=[]; let lvl='L1', sem=1, m=null;
@@ -3465,14 +3491,15 @@ function viewProg(){
   const sem = UI.pvSem===2||UI.pvSem===1 ? UI.pvSem : (lvl===S.prefs.level ? mySem() : 1);
   return viewLevel(lvl, sem);
 }
+function lvlCard(l, mine){ const mods=modsOf(l.id,0), p=progOf(mods.flatMap(modChaps));
+  return `<button class="lvl${l.id===mine?' mine':''}" data-act="pv-lvl" data-l="${l.id}"><span class="lvl-no" style="${cov(l.color)}">${l.id}</span>
+   <span class="lvl-t"><strong>${l.name}</strong><span class="small muted">${l.an} · ${l.old}${l.note?' · '+l.note:''}</span><span class="small muted">${plural(mods.length,'matière')} · ${plural(p.n,'cours','cours')}${p.pct?' · '+p.pct+' % appris':''}</span>${p.n&&p.pct?stBar(p):''}</span>
+   ${l.id===mine?'<span class="badge mine-b">Mon année</span>':I.chev}</button>`; }
 function viewLevels(){
   const mine=S.prefs.level;
-  return `<header class="stack" style="gap:4px"><p class="eyebrow">Médecine · de la Licence 1 au Doctorat 2</p><h1>Niveaux</h1></header>${progSeg()}
+  return `<header class="stack" style="gap:4px"><p class="eyebrow">Médecine · 7 ans de la L1 à la D2</p><h1>Niveaux</h1></header>${progSeg()}
    ${mine?'':`<div class="notice">En quelle année es-tu ? Choisis-la : l'accueil, tes révisions et tes examens suivront ce programme.</div>`}
-   <div class="lvls">${LEVELS.map(l=>{ const mods=modsOf(l.id,0), p=progOf(mods.flatMap(modChaps));
-     return `<button class="lvl${l.id===mine?' mine':''}" data-act="pv-lvl" data-l="${l.id}"><span class="lvl-no" style="${cov(l.color)}">${l.id}</span>
-      <span class="lvl-t"><strong>${l.name}</strong><span class="small muted">${l.an} · ancien ${l.old}${l.note?' · '+l.note:''}</span><span class="small muted">${plural(mods.length,'matière')} · ${plural(p.n,'cours','cours')}${p.pct?' · '+p.pct+' % appris':''}</span>${p.n&&p.pct?stBar(p):''}</span>
-      ${l.id===mine?'<span class="badge mine-b">Mon année</span>':I.chev}</button>`; }).join('')}</div>
+   ${CYCLES.map(c=>`<section class="stack" style="gap:10px"><h3 class="cyc">${c}</h3><div class="lvls">${LEVELS.filter(l=>l.cyc===c).map(l=>lvlCard(l,mine)).join('')}</div></section>`).join('')}
    <p class="small muted">Le programme de la Licence 3, semestre 1, est celui de ta faculté. Celui des autres années est un modèle établi d'après les cours habituels de chaque année : ajoute, masque ou complète les matières pour qu'il colle à ton emploi du temps.</p>`;
 }
 function viewLevel(lvl, sem){
@@ -3489,7 +3516,7 @@ function viewLevel(lvl, sem){
     return html+(hits.length?`<p class="small muted">${plural(hits.length,'cours trouvé','cours trouvés')}</p><div class="listbox">${hits.slice(0,80).map(c=>chapRow(c,K,true)).join('')}</div>`:'<p class="muted">Aucun cours ne correspond.</p>'); }
   html+=`<div class="cahiers">${mods.map(m=>cahierCard(m)).join('')}<button class="cahier add" data-act="mod-add" data-l="${lvl}" data-s="${sem}">${I.plus}<span>Ajouter une matière</span></button></div>`;
   if(hid.length) html+=`<details class="peek"><summary>${plural(hid.length,'matière masquée','matières masquées')}</summary><div class="chips" style="margin-top:6px">${hid.map(m=>`<button class="chip" data-act="mod-unhide" data-id="${m.id}">Réafficher ${esc(m.short)}</button>`).join('')}</div></details>`;
-  if(lvl==='L3'||lvl==='D1'||lvl==='D2') html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button>`;
+  if(LV[lvl].i>=2) html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button>`;
   return html;
 }
 function modSheet(){
@@ -3535,7 +3562,7 @@ function subAddSheet(){ const m=MODS[UI.subAddMod];
    <button class="btn btn-primary btn-lg" data-act="sub-add-go">Ajouter</button>`; }
 function levelPickHome(){ return `<section class="panel stack"><h3 style="margin:0">En quelle année es-tu ?</h3>
    <p class="small muted">Tes cours, tes révisions et tes examens suivront le programme de ton année. Tu pourras changer dans Moi.</p>
-   <div class="lvlpick">${LEVELS.map(l=>`<button data-act="set-level" data-l="${l.id}" style="${cov(l.color)}"><strong>${l.id}</strong><span>${l.an}</span></button>`).join('')}</div></section>`; }
+   ${CYCLES.map(c=>`<div class="lvlrow"><span class="small muted">${c}</span><div class="lvlpick">${LEVELS.filter(l=>l.cyc===c).map(l=>`<button data-act="set-level" data-l="${l.id}" style="${cov(l.color)}"><strong>${l.id}</strong><span>${l.an}</span></button>`).join('')}</div></div>`).join('')}</section>`; }
 function removeCustom(pred){ const gone=new Set(); for(const c of S.custom){ if(!c.del && pred(c)){ c.del=true; c.t=now(); gone.add(c.id); } } return gone; }
 function orphanCards(test){ for(const c of Object.values(S.cards)){ const ch=CH[c.chap]; if(ch && test(ch)){ c.chap=''; saveCard(c); } } }
 function goMod(id, subId){ const m=MODS[id]; if(!m) return; UI.tab='prog'; lsSet('xamxam.tab','prog'); UI.progView='l3'; UI.pvLvl=m.lvl; UI.pvSem=m.sem; UI.progQuery=''; UI.sheetStack=[]; window.scrollTo(0,0); render();
