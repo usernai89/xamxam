@@ -48,6 +48,20 @@ Bibliothèques incluses dans `lib/` : pdf.js 4.10.38 (Apache-2.0) et Tesseract.j
 - **Partager** (examen, chapitre, ou sélection dans Réviser) : crée un fichier `.json` avec seulement les questions.
   Pour le recevoir : Créer → Importer → Fichier XamXam, ou Partager → XamXam depuis WhatsApp (Android, appli installée).
 
+## Niveaux et matières (Licence 1 à Doctorat 2)
+
+Onglet **Cours** : Niveaux › année › semestre, puis une grille de matières présentées comme des cahiers de couleur.
+
+- 5 années (L1, L2, L3, D1, D2), 2 semestres chacune ; chaque matière a ses sous-matières, chaque sous-matière ses cours.
+- La Licence 3, semestre 1, reprend le programme de la faculté. Les autres années forment un programme modèle,
+  défini dans `CURR_TXT` (`index.html`) : `=L1 1` (niveau et semestre), `# id | nom | nom court | icône | couleur`
+  (matière), `- id | nom | cours|cours|…` (sous-matière).
+- **Mon année** (choisie au premier lancement, modifiable dans Moi) : l'accueil, les listes de Réviser et les examens
+  suivent les matières de cette année.
+- Dans l'appli : ajouter une matière (nom, icône, couleur), une sous-matière, un cours ; masquer une matière qu'on ne suit pas.
+  Ces ajouts sont synchronisés et sauvegardés avec le reste.
+- Les cours qui portent le même intitulé qu'une question d'internat y sont reliés automatiquement.
+
 ## Internat des hôpitaux
 
 **Programme → Internat** : le programme du concours (4 épreuves écrites de 2 h), relié aux cours de L3.

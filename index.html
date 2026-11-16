@@ -342,6 +342,69 @@ details.peek{border-top:1px solid var(--line);padding-top:6px}
 details.peek>summary{color:var(--link);font-weight:700;cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center}
 details.peek>summary::-webkit-details-marker{display:none}
 
+/* Niveaux et matières : chaque matière est un cahier */
+.crumbs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:0.875rem}
+.crumbs button{display:inline-flex;align-items:center;gap:3px;min-height:34px;padding:0 12px;border:1px solid var(--line2);border-radius:999px;background:var(--surface);color:var(--fg);font-weight:700}
+.crumbs button svg{width:15px;height:15px;margin-left:-4px}
+.crumbs button[aria-current=page]{background:var(--hl);border-color:var(--hl-ink);color:var(--hl-ink)}
+.crumbs>span{color:var(--muted)}
+.hero{position:relative;overflow:hidden;background:var(--accent);color:var(--accent-ink);border-radius:var(--r);padding:calc(18px*var(--sp)) 18px;display:flex;flex-direction:column;gap:6px}
+.hero h2{font-size:1.75rem;position:relative}
+.hero p{position:relative}
+.hero .eyebrow{color:inherit;opacity:.75}
+.hero .ecg{position:absolute;right:-12px;top:-2px;width:50%;height:46px;color:var(--hl);opacity:.55;pointer-events:none}
+.hero-stats{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.hero-stats span{border:1.5px solid currentColor;border-radius:999px;padding:3px 12px;font-weight:700;font-size:0.875rem}
+.cahiers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (min-width:560px){.cahiers{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.cahier{position:relative;display:flex;flex-direction:column;gap:10px;text-align:left;min-height:200px;padding:11px 11px 12px 25px;border:0;border-radius:4px 12px 12px 4px;background:var(--c);color:var(--ci);overflow:hidden;
+  box-shadow:0 1px 0 rgba(0,0,0,.14),0 8px 16px -12px rgba(0,0,0,.55)}
+.cahier::before,.mod-cover::before{content:"";position:absolute;left:0;top:0;bottom:0;width:14px;background:rgba(0,0,0,.24)}
+.cahier::after,.mod-cover::after{content:"";position:absolute;left:5px;top:9px;bottom:9px;border-left:2px dashed rgba(255,255,255,.5)}
+.cahier-top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:0.6875rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.9}
+.cahier-top svg{width:16px;height:16px;flex:none}
+.cahier-ico{width:58px;height:58px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.4);color:var(--ci)}
+.cahier-ico svg{width:32px;height:32px}
+.etq{background:#FFFCF4;color:#1E1C18;border-radius:3px;padding:7px 9px 9px;box-shadow:0 1px 0 rgba(0,0,0,.18);
+  background-image:linear-gradient(to bottom,transparent calc(100% - 6px),rgba(39,66,160,.28) calc(100% - 6px),rgba(39,66,160,.28) calc(100% - 5px),transparent calc(100% - 5px))}
+.etq-t{font-family:var(--font-display);font-weight:700;font-size:1rem;line-height:1.2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.cahier-foot{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:auto;font-size:0.8125rem;font-weight:700}
+.cahier-foot .n{background:rgba(0,0,0,.2);border-radius:999px;padding:2px 10px}
+.cahier-bar{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.28);overflow:hidden}
+.cahier-bar i{display:block;height:100%;background:var(--hl)}
+.cahier.add{align-items:center;justify-content:center;gap:8px;background:transparent;color:var(--muted);border:2px dashed var(--line2);box-shadow:none;padding:12px;font-weight:700}
+.cahier.add::before,.cahier.add::after{display:none}
+.cahier.add svg{width:30px;height:30px}
+.mod-cover{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;padding:16px 16px 16px 30px;border-radius:4px 14px 14px 4px;background:var(--c);color:var(--ci);overflow:hidden}
+.mod-cover h2{font-size:1.4375rem;overflow-wrap:anywhere}
+.mod-cover .eyebrow{color:inherit;opacity:.8}
+.mod-cover .cahier-bar{grid-column:1/-1}
+.subrows{display:flex;flex-direction:column;gap:10px}
+.subrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:center;text-align:left;width:100%;padding:13px 14px 13px 16px;border:1px solid var(--line);border-left:7px solid var(--c);border-radius:var(--r-sm);background:var(--surface);color:var(--fg)}
+.subrow .st{display:flex;flex-direction:column;gap:3px;min-width:0}
+.subrow .t{font-weight:700;line-height:1.3}
+.subrow .m{font-size:0.8125rem;color:var(--muted)}
+.subrow .bar{grid-column:1/-1;height:6px}
+.dotc{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--c)}
+.listbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.listbox>:first-child{border-top:0}
+.add-chap.boxed{border:2px dashed var(--line2);border-radius:var(--r)}
+.lvls{display:flex;flex-direction:column;gap:10px}
+.lvl{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:14px;align-items:center;text-align:left;width:100%;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--fg)}
+.lvl.mine{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
+.lvl-no{width:56px;height:56px;border-radius:4px 12px 12px 4px;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:1.375rem;background:var(--c);color:var(--ci);box-shadow:inset 7px 0 0 rgba(0,0,0,.2)}
+.lvl-t{display:flex;flex-direction:column;gap:3px;min-width:0}
+.lvl-t strong{font-family:var(--font-display);font-size:1.125rem}
+.lvl-t .bar{height:6px;margin-top:4px}
+.badge.mine-b{background:var(--hl);color:var(--hl-ink)}
+.lvlpick{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.lvlpick button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 2px;border:0;border-radius:4px 10px 10px 4px;background:var(--c);color:var(--ci);font-size:0.6875rem;box-shadow:inset 6px 0 0 rgba(0,0,0,.2)}
+.lvlpick strong{font-family:var(--font-display);font-size:1.125rem}
+.icopick{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.icopick button{height:44px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--surface);color:var(--fg);display:grid;place-items:center}
+.icopick button svg{width:24px;height:24px}
+.icopick button[aria-pressed=true]{background:var(--hl);border-color:var(--hl-ink);color:var(--hl-ink)}
+
 /* Créer */
 .gen-card{border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:11px;background:var(--surface)}
 .gen-card[data-off=true]{opacity:.5}
@@ -430,7 +493,7 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 <nav class="tabbar" aria-label="Navigation">
   <div class="tabbar-in">
     <button class="tab" data-act="tab" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</button>
-    <button class="tab" data-act="tab" data-tab="prog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 19.5V5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20"/><path d="M8 7h8M8 11h6"/></svg>Programme</button>
+    <button class="tab" data-act="tab" data-tab="prog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 19.5V5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20"/><path d="M8 7h8M8 11h6"/></svg>Cours</button>
     <button class="tab" data-act="tab" data-tab="rev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/></svg>Réviser<span class="dot mono" id="dueDot" hidden></span></button>
     <button class="tab" data-act="tab" data-tab="new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M12 8v8M8 12h8"/></svg>Créer</button>
     <button class="tab" data-act="tab" data-tab="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.6-3.9 3.6-6 7.5-6s6.9 2.1 7.5 6"/></svg>Moi</button>
@@ -480,6 +543,228 @@ const PROGRAMME = [
   {id:'stage', name:'Stage hospitalier', ch:[]}
  ]}
 ];
+
+// Icônes des matières (traits, 24 × 24)
+const MI={
+ stetho:'<path d="M5 3v5a5 5 0 0 0 10 0V3"/><path d="M10 13v2.5a5 5 0 0 0 10 0V14"/><circle cx="20" cy="12" r="2"/>',
+ bone:'<path d="M8.6 7.2l8.2 8.2M7.2 8.6l8.2 8.2"/><path d="M8.6 7.2a2.2 2.2 0 1 0-2.9-.4 2.2 2.2 0 1 0 1.5 1.8"/><path d="M15.4 16.8a2.2 2.2 0 1 0 2.9.4 2.2 2.2 0 1 0-1.5-1.8"/>',
+ cell:'<ellipse cx="12" cy="12" rx="9" ry="7.5"/><circle cx="13" cy="11.5" r="3"/><path d="M5.5 14.5c1.4-1 2.8.5 4.2-.3"/><circle cx="7" cy="9" r=".7"/><circle cx="17.5" cy="15.5" r=".7"/>',
+ molecule:'<path d="M12 5.5l5.6 3.2v6.6L12 18.5l-5.6-3.2V8.7z"/><circle cx="12" cy="5.5" r="1.8"/><circle cx="17.6" cy="15.3" r="1.8"/><circle cx="6.4" cy="15.3" r="1.8"/><path d="M17.6 8.7l2.9-1.7"/><circle cx="21" cy="6.7" r=".9"/>',
+ atom:'<circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(120 12 12)"/>',
+ flask:'<path d="M9 3h6M10 3v6.2L4.6 18.6A1.6 1.6 0 0 0 6 21h12a1.6 1.6 0 0 0 1.4-2.4L14 9.2V3"/><path d="M7.2 15h9.6"/>',
+ chart:'<path d="M3 19.5h18"/><path d="M3.5 19c2.8 0 4-12.5 8.5-12.5S17.7 19 20.5 19"/><path d="M12 6.5v13" stroke-dasharray="2 2"/>',
+ people:'<circle cx="9" cy="8" r="3"/><path d="M3.5 20c.5-3.5 2.6-5.5 5.5-5.5s5 2 5.5 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.7 14.6c2.5-.3 4.4 1.5 4.8 4.9"/>',
+ microscope:'<path d="M5 21h14M8 21v-2.2h8"/><path d="M10.6 3.6l3.4 2-3.6 6.2-3.4-2z"/><path d="M13 8.6a5.6 5.6 0 0 1 3 10.2"/><path d="M8 16h4.5"/>',
+ embryo:'<circle cx="12" cy="12" r="9"/><path d="M13.8 7.4a3 3 0 1 0-1.3 5.6c-1.8 1-2.7 2.7-2.2 4.6"/><circle cx="12.6" cy="9.7" r=".6"/>',
+ heart:'<path d="M12 20s-7.5-4.6-7.5-10.2A4.1 4.1 0 0 1 12 7.3a4.1 4.1 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/><path d="M4.8 12.5h3.4l1.5-3 2.2 6 1.5-3h5.8"/>',
+ dna:'<path d="M8 3c0 6 8 6 8 9s-8 3-8 9"/><path d="M16 3c0 6-8 6-8 9s8 3 8 9"/><path d="M9.2 6h5.6M9.2 18h5.6M10.6 9.5h2.8M10.6 14.5h2.8"/>',
+ globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>',
+ bacteria:'<rect x="4.5" y="8.5" width="15" height="7" rx="3.5" transform="rotate(-35 12 12)"/><path d="M5.4 17.6 3 20M7.5 19.6l-1.2 2.6M18.6 6.4 21 4M16.5 4.4l1.2-2.6"/><circle cx="10.5" cy="13" r=".7"/><circle cx="13.5" cy="11" r=".7"/>',
+ virus:'<circle cx="12" cy="12" r="5.5"/><path d="M12 3v3.5M12 17.5V21M3 12h3.5M17.5 12H21M5.6 5.6l2.5 2.5M15.9 15.9l2.5 2.5M5.6 18.4l2.5-2.5M15.9 8.1l2.5-2.5"/><circle cx="10.4" cy="11" r=".9"/><circle cx="13.6" cy="13.4" r=".9"/>',
+ scalpel:'<path d="M21 3 10.5 13.5"/><path d="M10.5 13.5c-2.8 1.2-5.6 3.6-7.5 7.5 3.9-1.2 7-3.6 9.5-5.5z"/><path d="M17 7l2 2"/>',
+ xray:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 6v12M7.8 8.6c1.6-.8 2.7-.8 4.2-.3 1.5-.5 2.6-.5 4.2.3M7.4 12c1.8-.8 3-.8 4.6-.3 1.6-.5 2.8-.5 4.6.3M7.8 15.4c1.6-.7 2.7-.7 4.2-.3 1.5-.4 2.6-.4 4.2.3"/>',
+ pill:'<rect x="2.5" y="8.5" width="19" height="7" rx="3.5" transform="rotate(-40 12 12)"/><path d="M9.8 9.3 14.2 14.7"/>',
+ lungs:'<path d="M12 3v8.5M12 8.5c-.9 1-2.2 1.5-3.4 1.5M12 8.5c.9 1 2.2 1.5 3.4 1.5"/><path d="M8.6 6.6C5.6 7.2 3.5 11 3.5 16c0 2.4 1.4 3.5 3.4 3.5 1.9 0 3.1-1 3.1-3V9.2"/><path d="M15.4 6.6c3 .6 5.1 4.4 5.1 9.4 0 2.4-1.4 3.5-3.4 3.5-1.9 0-3.1-1-3.1-3V9.2"/>',
+ stomach:'<path d="M8.5 3v3.5c0 2-2.8 3.2-2.8 7.4 0 4.2 3.1 7.1 7.4 7.1 3.6 0 6.6-2.5 6.6-6.1 0-3-2-4.6-4.1-4.6-2.4 0-3 2.1-4.5 2.1-1.4 0-2.4-1-2.4-2.9V3"/><path d="M13.5 21v1.5"/>',
+ kidney:'<path d="M12.8 5.2C10.7 2.8 5.8 3.4 4.8 8.4s1.1 11 5.6 11.6c3 .3 4.1-2.5 2.9-4.7-1-1.9-1-3.6 0-5.4 1-1.8 1.1-3.3-.5-4.7z"/><path d="M13.4 12.5H17c2 0 3 1.4 3 3.4V21"/>',
+ brain:'<path d="M12 5a3 3 0 0 0-5.6 1.4A3 3 0 0 0 4.5 11a3 3 0 0 0 .8 4.6A3.2 3.2 0 0 0 9 19.5a3 3 0 0 0 3-1.5"/><path d="M12 5a3 3 0 0 1 5.6 1.4 3 3 0 0 1 1.9 4.6 3 3 0 0 1-.8 4.6 3.2 3.2 0 0 1-3.7 3.9 3 3 0 0 1-3-1.5"/><path d="M12 5v13M8.5 10.5c1 .4 1.8 1.2 2.2 2.3M15.5 10.5c-1 .4-1.8 1.2-2.2 2.3"/>',
+ gland:'<path d="M12 9.5c-1-3-4.6-4.5-6.5-3S4 11.5 5 15s4 4.5 5.5 3.2S12 13.5 12 9.5z"/><path d="M12 9.5c1-3 4.6-4.5 6.5-3S20 11.5 19 15s-4 4.5-5.5 3.2S12 13.5 12 9.5z"/><path d="M10 3.5 12 6l2-2.5"/>',
+ joint:'<path d="M9 3v5c-2 .6-3 1.8-3 3.5h12c0-1.7-1-2.9-3-3.5V3"/><path d="M6.5 14h11c0 1.2-.8 2-2 2.3V21M8.5 21v-4.7c-1.2-.3-2-1.1-2-2.3"/>',
+ drop:'<path d="M12 3s-6.5 7-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 10 12 3 12 3z"/><path d="M9 15a3 3 0 0 0 3 3"/>',
+ skin:'<path d="M3 9.5c3-1.5 6 1.5 9 0s6-1.5 9 0"/><path d="M3 14.5h18M3 19.5h18"/><path d="M8 9.5V5M15.5 9V4.5"/>',
+ baby:'<circle cx="12" cy="9.5" r="5.5"/><path d="M10 9.5h.01M14 9.5h.01"/><path d="M10.2 12c1.1.8 2.5.8 3.6 0"/><path d="M12 4c1 .8 1.3 1.7.8 2.6"/><path d="M7.5 21c.6-3 2.3-4.5 4.5-4.5s3.9 1.5 4.5 4.5"/>',
+ female:'<circle cx="12" cy="9" r="5.5"/><path d="M12 14.5V22M8.5 18.5h7"/>',
+ ear:'<path d="M7.5 9a5.2 5.2 0 0 1 10.4 0c0 3.2-2.6 4.1-3.6 6.2-.9 1.9-1 4.3-3.7 4.3a3.2 3.2 0 0 1-3.1-3"/><path d="M10.6 9.4a2.1 2.1 0 0 1 4.2 0c0 1.6-1.6 2.1-2.1 3.2"/>',
+ eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r=".8"/>',
+ tooth:'<path d="M7.2 3.5c-2.6 0-3.7 2.1-3.2 5.1.4 2.6 1.6 3.9 2 6.9.4 3 .8 5.3 2 5.3 1.3 0 1.6-2.5 2.1-4.5.4-1.7.8-2.3 1.9-2.3s1.5.6 1.9 2.3c.5 2 .8 4.5 2.1 4.5 1.2 0 1.6-2.3 2-5.3.4-3 1.6-4.3 2-6.9.5-3-.6-5.1-3.2-5.1-2 0-3 1-4.8 1s-2.8-1-4.8-1z"/>',
+ mind:'<path d="M10 21v-3H7.2a1.2 1.2 0 0 1-1.2-1.2V14l-1.7-.7a.5.5 0 0 1-.2-.8L6 9.8a7 7 0 0 1 13.4-2.3c1.3 3.2.3 6.3-1.4 8.4V21"/><path d="M12.4 9.6a1.4 1.4 0 1 1 1.4 1.4 2.8 2.8 0 1 1 2.8-2.8"/>',
+ syringe:'<path d="M16.5 3.5l4 4M18.5 5.5 8 16l-3-3L15.5 2.5"/><path d="M5 16l-2.5 2.5v3h3L8 19"/><path d="M10 11l1.5 1.5M12.5 8.5 14 10"/>',
+ ribbon:'<path d="M12 12C9.5 9.5 8.5 7.5 8.5 5.5a3.5 3.5 0 0 1 7 0c0 2-1 4-3.5 6.5z"/><path d="M12 12l-5 9 2.6-.3 1.3 2.3L15 15.6M12 12l5 9-2.6-.3-1.3 2.3-2.2-3.8"/>',
+ scales:'<path d="M12 3v18M7.5 21h9M5 7h14"/><path d="M5 7l-3 6.5a3 3 0 0 0 6 0zM19 7l-3 6.5a3 3 0 0 0 6 0z"/>',
+ leaf:'<path d="M5 19.5C5 11.5 10 5.2 20 4c-1 10-7 15.5-15 15.5z"/><path d="M5 19.5l8.5-8.5"/>',
+ hospital:'<path d="M4 21V7.5L12 3l8 4.5V21M2 21h20"/><path d="M12 8v6M9 11h6"/><path d="M10 21v-4h4v4"/>',
+ book:'<path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H20v15H5.5A1.5 1.5 0 0 0 4 19.5zM4 19.5A1.5 1.5 0 0 0 5.5 21H20"/><path d="M8 7h8M8 10.5h5"/>',
+ lang:'<path d="M4 5h16v10H10l-4 4v-4H4z"/><path d="M8 9h8M8 12h5"/>',
+ laptop:'<rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/>'
+};
+const miSvg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MI[k]||MI.book}</svg>`;
+
+// ---------- Niveaux : de la Licence 1 au Doctorat 2 ----------
+// Le programme détaillé ci-dessus est celui de la Licence 3, semestre 1 (S5).
+// Les autres années forment un programme modèle, modifiable dans l'appli (ajouter, masquer, compléter).
+// Format : « =L1 1 » = niveau et semestre ; « # id | nom | nom court | icône | couleur » = une matière ;
+// « - id | nom | cours|cours|… » = une sous-matière et ses cours.
+const LEVELS=[
+ {id:'L1', name:'Licence 1', an:'1re année', old:'PCEM1', color:1},
+ {id:'L2', name:'Licence 2', an:'2e année', old:'PCEM2', color:6},
+ {id:'L3', name:'Licence 3', an:'3e année', old:'DCEM1', color:2},
+ {id:'D1', name:'Doctorat 1', an:'4e année', old:'DCEM2', color:0, note:"année du concours de l'internat"},
+ {id:'D2', name:'Doctorat 2', an:'5e année', old:'DCEM3', color:4}];
+const LV={}; LEVELS.forEach((l,i)=>{ l.i=i; LV[l.id]=l; });
+const COVERS=['#B4432F','#2E5E9E','#2F7A4F','#C9922B','#6B4A9E','#CF6A2E','#1F7F86','#A33E6B','#4F5B6B','#7A5A2E'];
+const coverInk = i => i===3 ? '#1E1C18' : '#FFFFFF';
+const cov = i => { i=((+i||0)%10+10)%10; return `--c:${COVERS[i]};--ci:${coverInk(i)}`; };
+const semNo = (lvl,sem) => (LV[lvl]?LV[lvl].i:2)*2+sem;
+const CURR_TXT=`
+=L1 1
+# l1-anat | Anatomie | Anatomie | bone | 0
+- l1-anat-gen | Anatomie générale | Introduction à l'anatomie et terminologie|Plans, axes et mouvements|Généralités sur les os|Généralités sur les articulations|Généralités sur les muscles|Généralités sur les vaisseaux|Généralités sur le système nerveux|Méthodes d'étude : dissection et imagerie
+- l1-anat-ms | Membre supérieur | Clavicule|Scapula|Humérus|Radius et ulna|Os de la main|Articulations sterno-claviculaire et acromio-claviculaire|Articulation de l'épaule|Articulation du coude|Articulations du poignet et de la main|Muscles de l'épaule|Muscles du bras|Muscles de l'avant-bras|Muscles de la main|Creux axillaire|Plexus brachial|Artères du membre supérieur|Veines et lymphatiques du membre supérieur|Nerfs du membre supérieur : axillaire, musculo-cutané, médian, ulnaire, radial
+# l1-biocell | Biologie cellulaire | Bio. cellulaire | cell | 2
+- l1-biocell | Biologie cellulaire | Méthodes d'étude de la cellule|Cellules procaryotes et eucaryotes|Membrane plasmique : structure|Transports membranaires|Jonctions cellulaires et matrice extracellulaire|Réticulum endoplasmique et ribosomes|Appareil de Golgi|Lysosomes et peroxysomes|Mitochondrie|Cytosquelette|Noyau et chromatine|Cycle cellulaire|Mitose|Méiose|Mort cellulaire : nécrose et apoptose|Signalisation cellulaire|Différenciation cellulaire et cellules souches
+# l1-biochim | Biochimie structurale | Biochimie | molecule | 3
+- l1-biochim | Biochimie structurale | Eau, pH et tampons biologiques|Oses|Osides et polyosides|Acides gras|Lipides complexes et stérols|Acides aminés|Peptides et structure des protéines|Propriétés des protéines|Enzymes : propriétés générales|Cinétique enzymatique|Coenzymes et vitamines|Nucléotides et acides nucléiques|Bioénergétique : ATP et oxydations biologiques
+# l1-biophys | Biophysique | Biophysique | atom | 4
+- l1-biophys | Biophysique | Grandeurs, unités et mesures|États de la matière|Solutions : concentrations et propriétés|Diffusion|Osmose et pression osmotique|Équilibre de Donnan|Électricité et potentiel de membrane|Mécanique des fluides et circulation|Tension superficielle|Optique géométrique et vision|Acoustique et audition|Structure de l'atome et du noyau|Radioactivité|Interactions des rayonnements avec la matière
+# l1-chimie | Chimie | Chimie | flask | 5
+- l1-chimgen | Chimie générale | Atome et classification périodique|Liaisons chimiques|Thermodynamique chimique|Cinétique chimique|Équilibres chimiques|Acides et bases|Oxydo-réduction|Solubilité et précipitation
+- l1-chimorg | Chimie organique | Nomenclature|Isomérie et stéréochimie|Effets électroniques|Hydrocarbures|Alcools, phénols et amines|Aldéhydes et cétones|Acides carboxyliques et dérivés|Hétérocycles d'intérêt biologique
+# l1-maths | Mathématiques et biostatistiques | Biostatistiques | chart | 1
+- l1-maths | Mathématiques et biostatistiques | Fonctions usuelles, logarithme et exponentielle|Dérivées et études de fonctions|Intégrales|Équations différentielles|Statistique descriptive|Probabilités|Variables aléatoires et lois usuelles|Loi normale|Échantillonnage et estimation|Tests statistiques : principes|Comparaison de moyennes et de pourcentages|Corrélation et régression
+# l1-shs | Sciences humaines et UE transversales | Sciences humaines | people | 8
+- l1-shs | Sciences humaines et sociales | Histoire de la médecine|Introduction à la psychologie|Développement psychologique de l'enfant|Sociologie de la santé|Anthropologie de la maladie en Afrique|Communication et relation soignant-soigné|Éthique et déontologie médicale|Méthodologie du travail universitaire
+- l1-angl | Anglais médical | Medical vocabulary|Anatomical terms|Reading a scientific article|Presenting a clinical case
+- l1-info | Informatique | Outils bureautiques|Recherche documentaire|Internet et santé
+
+=L1 2
+# l1-anat2 | Anatomie | Anatomie | bone | 0
+- l1-anat-mi | Membre inférieur | Os coxal|Fémur|Patella|Tibia et fibula|Os du pied|Articulation de la hanche|Articulation du genou|Articulation de la cheville|Articulations du pied|Muscles de la région glutéale|Muscles de la cuisse|Muscles de la jambe|Muscles du pied|Trigone fémoral et canal des adducteurs|Fosse poplitée|Plexus lombaire|Plexus sacré|Artères du membre inférieur|Veines et lymphatiques du membre inférieur|Nerfs du membre inférieur : fémoral, obturateur, sciatique
+- l1-anat-tronc | Tronc et crâne | Colonne vertébrale : généralités|Vertèbres cervicales, thoraciques et lombaires|Sacrum et coccyx|Articulations de la colonne vertébrale|Côtes et sternum|Os du crâne|Os de la face|Articulation temporo-mandibulaire
+# l1-histo | Histologie générale | Histologie | microscope | 7
+- l1-histo | Histologie générale | Techniques histologiques|Épithéliums de revêtement|Épithéliums glandulaires|Tissu conjonctif|Tissu adipeux|Tissu cartilagineux|Tissu osseux et ossification|Tissu musculaire|Tissu nerveux|Sang et lymphe|Peau et annexes
+# l1-embryo | Embryologie générale | Embryologie | embryo | 4
+- l1-embryo | Embryologie générale | Appareil génital et cycle sexuel|Spermatogenèse|Ovogenèse et folliculogenèse|Fécondation|Segmentation et nidation|Deuxième semaine : disque bidermique|Troisième semaine : gastrulation|Neurulation|Délimitation de l'embryon|Annexes embryonnaires et placenta|Grossesses gémellaires|Tératogenèse et malformations
+# l1-physio | Physiologie générale | Physiologie | heart | 2
+- l1-physio | Physiologie générale | Homéostasie et milieu intérieur|Compartiments liquidiens de l'organisme|Échanges entre compartiments|Potentiel de repos|Potentiel d'action|Transmission synaptique|Contraction du muscle squelettique|Muscle lisse|Thermorégulation|Physiologie du sang : généralités
+# l1-genet | Génétique | Génétique | dna | 6
+- l1-genet | Génétique | Gènes et génome humain|Chromosomes et caryotype|Anomalies chromosomiques de nombre|Anomalies chromosomiques de structure|Lois de Mendel|Transmission autosomique dominante et récessive|Transmission liée au chromosome X|Hérédité multifactorielle|Mutations et polymorphismes|Génétique des populations : loi de Hardy-Weinberg|Conseil génétique
+# l1-sp | Santé publique | Santé publique | globe | 1
+- l1-sp | Introduction à la santé publique | Concepts de santé et de maladie|Déterminants de la santé|Système de santé du Sénégal|Hygiène et assainissement|Premiers secours|Démographie : notions de base
+
+=L2 1
+# l2-anat | Anatomie | Anatomie | bone | 0
+- l2-anat-tc | Tête et cou | Régions du cou|Muscles du cou|Pharynx|Larynx|Glande thyroïde et parathyroïdes|Artères carotides|Veines jugulaires|Lymphatiques de la tête et du cou|Fosses nasales et sinus|Cavité orale et langue|Glandes salivaires|Orbite et œil|Oreille
+- l2-anat-th | Thorax | Paroi thoracique|Diaphragme|Plèvres|Poumons|Trachée et bronches|Médiastin : organisation|Cœur : configuration externe|Cœur : configuration interne|Vascularisation et innervation du cœur|Péricarde|Aorte thoracique|Veines caves et système azygos|Œsophage thoracique|Conduit thoracique|Nerfs vagues et phréniques
+# l2-physio | Physiologie | Physiologie | heart | 2
+- l2-phys-cv | Physiologie cardiovasculaire | Propriétés du muscle cardiaque|Activité électrique du cœur|Cycle cardiaque|Débit cardiaque et sa régulation|Pression artérielle et sa régulation|Circulation veineuse|Microcirculation et échanges capillaires|Circulations régionales : coronaire, cérébrale
+- l2-phys-resp | Physiologie respiratoire | Mécanique ventilatoire|Volumes et débits pulmonaires|Échanges gazeux alvéolo-capillaires|Transport de l'oxygène|Transport du gaz carbonique|Régulation de la ventilation|Équilibre acido-basique : rôle du poumon
+- l2-phys-ren | Physiologie rénale | Filtration glomérulaire|Clairances|Fonctions tubulaires|Régulation de l'eau|Régulation du sodium|Régulation du potassium|Rein et équilibre acido-basique|Hormones et rein
+# l2-histo | Histologie et embryologie spéciales | Histo-embryologie | microscope | 7
+- l2-histo-sp | Histologie des organes | Appareil cardiovasculaire|Appareil respiratoire|Tube digestif|Glandes annexes du tube digestif|Appareil urinaire|Organes lymphoïdes|Glandes endocrines|Appareil génital masculin|Appareil génital féminin|Système nerveux|Organes des sens
+- l2-embryo-sp | Embryologie spéciale | Développement du cœur et des vaisseaux|Développement de l'appareil respiratoire|Développement du tube digestif|Développement de l'appareil urinaire|Développement de l'appareil génital|Développement de la face et du cou|Développement du système nerveux
+# l2-biochim | Biochimie métabolique | Biochimie | molecule | 3
+- l2-biochim | Biochimie métabolique | Introduction au métabolisme|Glycolyse|Cycle de Krebs|Chaîne respiratoire et phosphorylation oxydative|Néoglucogenèse|Glycogène : synthèse et dégradation|Voie des pentoses phosphates|Régulation de la glycémie|Bêta-oxydation des acides gras|Corps cétoniques|Lipogenèse|Cholestérol et lipoprotéines|Métabolisme des acides aminés|Cycle de l'urée|Métabolisme des purines et des pyrimidines|Métabolisme de l'hème et de la bilirubine|Intégration des métabolismes
+
+=L2 2
+# l2-anat2 | Anatomie | Anatomie | bone | 0
+- l2-anat-abd | Abdomen | Paroi abdominale|Canal inguinal|Péritoine|Œsophage abdominal et estomac|Duodénum|Pancréas|Foie|Voies biliaires|Rate|Jéjunum et iléon|Côlon et rectum|Aorte abdominale et ses branches|Veine porte|Veine cave inférieure|Reins|Uretères|Glandes surrénales
+- l2-anat-pel | Pelvis et périnée | Bassin osseux|Vessie|Urètre|Prostate|Testicules et voies spermatiques|Utérus|Ovaires et trompes|Vagin|Périnée
+- l2-neuroanat | Neuroanatomie | Moelle épinière|Tronc cérébral|Cervelet|Diencéphale|Hémisphères cérébraux|Noyaux gris centraux|Ventricules cérébraux et liquide cérébro-spinal|Méninges|Vascularisation de l'encéphale|Nerfs crâniens|Faisceau pyramidal et voies motrices|Voies sensitives|Système nerveux autonome
+# l2-physio2 | Physiologie | Physiologie | heart | 2
+- l2-phys-dig | Physiologie digestive | Motricité digestive|Sécrétion salivaire|Sécrétion gastrique|Sécrétion pancréatique|Sécrétion biliaire|Digestion et absorption des nutriments|Physiologie du côlon
+- l2-phys-endo | Physiologie endocrinienne | Hormones : généralités|Axe hypothalamo-hypophysaire|Thyroïde|Surrénales|Pancréas endocrine|Métabolisme phosphocalcique|Croissance
+- l2-phys-neuro | Neurophysiologie | Organisation du système nerveux|Réflexes médullaires|Motricité|Sensibilité somatique et douleur|Vision|Audition et équilibre|Sommeil et vigilance|Système nerveux autonome
+- l2-phys-repro | Physiologie de la reproduction | Fonction testiculaire|Cycle menstruel|Grossesse|Lactation
+# l2-microb | Microbiologie générale | Microbiologie | bacteria | 6
+- l2-bact-gen | Bactériologie générale | Structure de la bactérie|Physiologie et croissance bactériennes|Génétique bactérienne|Pouvoir pathogène des bactéries|Antibiotiques : modes d'action|Résistance aux antibiotiques|Diagnostic bactériologique
+- l2-viro-gen | Virologie générale | Structure des virus|Multiplication virale|Physiopathologie des infections virales|Diagnostic virologique|Antiviraux et vaccins
+# l2-biophys | Biophysique | Biophysique | atom | 4
+- l2-biophys | Biophysique | Biophysique cardiaque|Biophysique respiratoire|Biophysique rénale|Bases physiques de l'imagerie|Médecine nucléaire : principes|Effets biologiques des rayonnements|Radioprotection
+# l2-sp | Santé publique et psychologie | Santé publique | globe | 1
+- l2-epid | Épidémiologie | Mesures de fréquence : incidence et prévalence|Indicateurs de santé|Types d'études épidémiologiques|Biais et facteurs de confusion|Dépistage|Surveillance épidémiologique
+- l2-psy | Psychologie médicale | Personnalité|Relation médecin-malade|Psychologie du malade|Annonce d'une mauvaise nouvelle|Stress et adaptation
+
+=L3 2
+# l3-bactviro | Bactériologie et virologie | Bactério-virologie | bacteria | 6
+- l3-bact | Bactériologie spéciale | Staphylocoques|Streptocoques et pneumocoques|Neisseria : méningocoque et gonocoque|Entérobactéries : généralités|Salmonella et Shigella|Escherichia coli|Vibrio cholerae|Pseudomonas|Haemophilus et Bordetella|Corynebactéries|Clostridium : tétanos et botulisme|Mycobactéries : tuberculose et lèpre|Tréponèmes : syphilis|Chlamydia et mycoplasmes|Rickettsies
+- l3-viro | Virologie spéciale | Virus de l'immunodéficience humaine|Virus des hépatites|Virus de la grippe|Virus de la rougeole|Poliovirus et entérovirus|Virus herpès|Virus de la rage|Arbovirus : dengue et fièvre jaune|Virus des fièvres hémorragiques : Ebola|Coronavirus|Papillomavirus|Rotavirus
+# l3-anapath | Anatomie pathologique générale | Anapath | microscope | 7
+- l3-anapath | Anatomie pathologique générale | Techniques en anatomie pathologique|Lésions cellulaires élémentaires|Adaptations cellulaires|Dépôts et surcharges|Inflammation aiguë|Inflammation chronique et granulomes|Cicatrisation et réparation|Œdème, congestion et hémorragie|Thrombose et embolie|Ischémie et infarctus|Tumeurs : généralités|Tumeurs bénignes et malignes|Classification des tumeurs|Extension des cancers|Lésions précancéreuses
+# l3-semiochir | Sémiologie chirurgicale | Sémio. chirurgicale | scalpel | 0
+- l3-semiochir | Sémiologie chirurgicale | Observation médicale en chirurgie|Examen de l'abdomen|Abdomen aigu chirurgical|Syndrome occlusif|Syndrome péritonéal|Hernies de la paroi abdominale|Sémiologie des tuméfactions et des adénopathies|Sémiologie du sein|Sémiologie de la thyroïde|Sémiologie urologique|Sémiologie des bourses|Sémiologie ostéo-articulaire et traumatologique|Plaies et brûlures|Sémiologie vasculaire chirurgicale|Sémiologie proctologique
+# l3-imagerie | Imagerie médicale | Imagerie | xray | 8
+- l3-imagerie | Radiologie et imagerie | Bases physiques des rayons X|Échographie et Doppler|Scanner|Imagerie par résonance magnétique|Produits de contraste|Radioprotection des patients|Sémiologie radiologique thoracique|Sémiologie radiologique de l'abdomen|Sémiologie radiologique osseuse|Imagerie du système nerveux|Imagerie de la femme
+# l3-pharmaco2 | Pharmacologie spéciale | Pharmacologie | pill | 1
+- l3-pharmaco2 | Pharmacologie spéciale | Antibiotiques|Antiparasitaires et antipaludiques|Antifongiques|Antiviraux et antirétroviraux|Antalgiques|Anti-inflammatoires non stéroïdiens|Corticoïdes|Antihypertenseurs|Diurétiques|Anticoagulants et antiagrégants|Antidiabétiques|Psychotropes|Médicaments du système nerveux autonome|Vaccins et sérums
+# l3-sp | Santé publique | Santé publique | globe | 3
+- l3-sp | Santé publique | Démographie et santé|Politique de santé au Sénégal|Soins de santé primaires|Programme élargi de vaccination|Santé de la reproduction|Nutrition et malnutrition|Hygiène hospitalière|Éducation pour la santé|Économie de la santé|Méthodologie de la recherche
+
+=D1 1
+# d1-cardio | Cardiologie et chirurgie vasculaire | Cardiologie | heart | 0
+- d1-cardio | Cardiologie | Insuffisance cardiaque|Hypertension artérielle|Cardiopathies ischémiques|Rhumatisme articulaire aigu|Valvulopathies mitrales|Valvulopathies aortiques|Endocardite infectieuse|Péricardites|Cardiomyopathies|Troubles du rythme|Troubles de la conduction|Cœur pulmonaire chronique|Cardiopathies congénitales
+- d1-chirvasc | Chirurgie cardio-vasculaire | Artériopathie oblitérante des membres inférieurs|Ischémie aiguë des membres|Anévrismes artériels|Fistules artério-veineuses|Plaies vasculaires|Thromboses veineuses profondes|Varices des membres inférieurs
+# d1-pneumo | Pneumologie et chirurgie thoracique | Pneumologie | lungs | 1
+- d1-pneumo | Pneumologie | Pneumonies aiguës|Tuberculose pulmonaire|Pleurésies|Pneumothorax|Asthme|Bronchopneumopathie chronique obstructive|Dilatation des bronches|Abcès du poumon|Cancer bronchique|Embolie pulmonaire|Insuffisance respiratoire|Atteintes pulmonaires du VIH
+- d1-chirthor | Chirurgie thoracique | Traumatismes thoraciques|Hémothorax|Pleurésies purulentes : drainage|Hernies diaphragmatiques|Tumeurs du médiastin
+# d1-gastro | Gastro-entérologie et chirurgie digestive | Digestif | stomach | 5
+- d1-gastro | Gastro-entérologie et hépatologie | Ulcères gastro-duodénaux|Reflux gastro-œsophagien|Hémorragies digestives|Diarrhées aiguës|Diarrhées chroniques|Hépatites virales|Cirrhoses|Carcinome hépatocellulaire|Abcès du foie|Pancréatites|Ictères|Maladies inflammatoires de l'intestin|Parasitoses digestives
+- d1-chirdig | Chirurgie digestive | Appendicite aiguë|Péritonites aiguës|Occlusions intestinales|Hernies de l'aine|Éventrations|Lithiase biliaire|Cancer de l'estomac|Cancer du côlon|Cancer du rectum|Cancer de l'œsophage|Pathologie proctologique|Traumatismes de l'abdomen
+# d1-nephro | Néphrologie et urologie | Néphro-urologie | kidney | 3
+- d1-nephro | Néphrologie | Insuffisance rénale aiguë|Insuffisance rénale chronique|Syndrome néphrotique|Glomérulonéphrites|Infections urinaires|Néphropathies vasculaires|Troubles hydroélectrolytiques|Troubles acido-basiques|Dialyse et transplantation
+- d1-uro | Urologie | Lithiase urinaire|Adénome de la prostate|Cancer de la prostate|Rétention aiguë d'urine|Tumeurs du rein|Tumeurs de la vessie|Bilharziose urinaire et ses complications|Traumatismes de l'appareil urinaire|Cancers du testicule|Torsion du testicule|Rétrécissements de l'urètre
+# d1-infectio | Maladies infectieuses et tropicales | Infectiologie | virus | 2
+- d1-infectio | Maladies infectieuses et tropicales | Paludisme|Fièvre typhoïde|Infection à VIH|Tuberculose|Choléra|Amibiase|Méningites bactériennes|Tétanos|Rage|Rougeole|Fièvre jaune|Dengue et arboviroses|Bilharzioses|Leishmanioses|Trypanosomiase|Septicémies|Infections sexuellement transmissibles|Fièvre prolongée inexpliquée|Antibiothérapie : principes
+
+=D1 2
+# d1-neuro | Neurologie et neurochirurgie | Neurologie | brain | 4
+- d1-neuro | Neurologie | Accidents vasculaires cérébraux|Épilepsies|Comas|Méningo-encéphalites|Céphalées|Maladie de Parkinson|Neuropathies périphériques|Compressions médullaires|Myasthénie|Sclérose en plaques|Démences|Neuropaludisme
+- d1-neurochir | Neurochirurgie | Traumatismes crânio-cérébraux|Hématomes intracrâniens|Traumatismes du rachis|Tumeurs cérébrales|Hypertension intracrânienne|Hydrocéphalie|Hernies discales|Mal de Pott
+# d1-endoc | Endocrinologie et métabolisme | Endocrinologie | gland | 6
+- d1-endoc | Endocrinologie, diabétologie, nutrition | Diabète sucré|Complications aiguës du diabète|Complications chroniques du diabète|Hyperthyroïdies|Hypothyroïdies|Goitres et nodules thyroïdiens|Insuffisance surrénale|Hypercorticismes|Phéochromocytome|Pathologies hypophysaires|Obésité|Dyslipidémies|Malnutrition de l'adulte
+# d1-locom | Rhumatologie et orthopédie | Appareil locomoteur | joint | 9
+- d1-rhumato | Rhumatologie | Polyarthrite rhumatoïde|Lupus érythémateux systémique|Spondylarthrites|Goutte|Arthrose|Ostéoporose|Arthrites septiques|Lombalgies et sciatiques|Ostéomyélites|Manifestations ostéo-articulaires de la drépanocytose
+- d1-ortho | Orthopédie-traumatologie | Généralités sur les fractures|Fractures ouvertes|Fractures de l'extrémité supérieure du fémur|Traumatismes de la jambe|Traumatismes de l'épaule|Fractures de l'avant-bras et du poignet|Traumatismes du bassin|Entorses et luxations|Tumeurs osseuses primitives|Ostéomyélites aiguës|Pied bot et malformations
+# d1-hemato | Hématologie clinique | Hématologie | drop | 0
+- d1-hemato | Hématologie clinique | Anémies|Drépanocytose|Thalassémies|Leucémies|Maladie de Hodgkin|Lymphomes non hodgkiniens|Myélome multiple|Syndromes hémorragiques|Hémophilies|Purpuras thrombopéniques|Coagulation intravasculaire disséminée|Transfusion sanguine en pratique
+# d1-dermato | Dermatologie | Dermatologie | skin | 5
+- d1-dermato | Dermatologie-vénéréologie | Lésions élémentaires et démarche diagnostique|Infections bactériennes de la peau|Dermatophyties et candidoses|Gale et pédiculoses|Lèpre|Ulcère de Buruli|Eczémas|Psoriasis|Toxidermies|Manifestations cutanées du VIH|Infections sexuellement transmissibles|Cancers de la peau
+# d1-anapath | Anatomie pathologique spéciale | Anapath | microscope | 7
+- d1-anapath | Anatomie pathologique spéciale | Pathologie du col de l'utérus|Pathologie du sein|Pathologie de l'estomac|Pathologie du côlon|Pathologie du foie|Pathologie de la prostate|Pathologie des ganglions|Pathologie de la thyroïde|Tumeurs osseuses|Tuberculose et bilharziose en anatomie pathologique
+
+=D2 1
+# d2-pedia | Pédiatrie | Pédiatrie | baby | 3
+- d2-pedia | Pédiatrie | Croissance et développement de l'enfant|Alimentation du nourrisson|Malnutrition aiguë|Déshydratation de l'enfant|Diarrhées du nourrisson|Infections respiratoires aiguës|Paludisme de l'enfant|Méningites de l'enfant|Rougeole et maladies éruptives|Drépanocytose de l'enfant|Anémies de l'enfant|Convulsions de l'enfant|Programme élargi de vaccination|Prise en charge intégrée des maladies de l'enfant|Nouveau-né normal|Ictère du nouveau-né|Infections néonatales|Prématurité|Asphyxie néonatale|Cardiopathies congénitales
+- d2-chirped | Chirurgie pédiatrique | Invagination intestinale aiguë|Sténose du pylore|Hernies de l'enfant|Malformations ano-rectales|Ectopie testiculaire|Ostéomyélite de l'enfant|Brûlures de l'enfant
+# d2-gyneco | Gynécologie-obstétrique | Gynéco-obstétrique | female | 7
+- d2-obst | Obstétrique | Diagnostic de la grossesse|Consultation prénatale|Accouchement normal|Hémorragies du premier trimestre|Grossesse extra-utérine|Hémorragies du troisième trimestre|Hémorragies du post-partum|Prééclampsie et éclampsie|Rupture utérine|Dystocies|Paludisme et grossesse|VIH et grossesse|Infections du post-partum|Césarienne|Mortalité maternelle
+- d2-gyn | Gynécologie | Infections génitales|Stérilité du couple|Contraception|Fibromes utérins|Cancer du col de l'utérus|Cancer du sein|Kystes et tumeurs de l'ovaire|Aménorrhées|Fistules obstétricales|Mutilations génitales féminines|Ménopause
+# d2-orl | ORL et chirurgie cervico-faciale | ORL | ear | 6
+- d2-orl | ORL | Otites|Angines et leurs complications|Sinusites|Épistaxis|Corps étrangers des voies aériennes|Dyspnées laryngées|Cancers ORL|Surdités|Paralysie faciale|Adénopathies cervicales|Cancer de la thyroïde|Cancer de la langue
+# d2-ophtalmo | Ophtalmologie | Ophtalmologie | eye | 1
+- d2-ophtalmo | Ophtalmologie | Œil rouge|Baisse de l'acuité visuelle|Cataracte|Glaucomes|Conjonctivites|Trachome|Traumatismes oculaires|Rétinopathies diabétique et hypertensive|Carence en vitamine A|Onchocercose oculaire|Strabisme|Rétinoblastome
+# d2-stomato | Stomatologie | Stomatologie | tooth | 9
+- d2-stomato | Stomatologie et chirurgie maxillo-faciale | Infections d'origine dentaire|Cellulites cervico-faciales|Noma|Traumatismes de la face|Tumeurs des maxillaires|Fentes labio-palatines
+
+=D2 2
+# d2-psy | Psychiatrie | Psychiatrie | mind | 4
+- d2-psy | Psychiatrie | Examen psychiatrique|Schizophrénies|Troubles bipolaires|Dépressions|Troubles anxieux|Bouffées délirantes aiguës|Addictions|Troubles psychiatriques du post-partum|Urgences psychiatriques|Psychotropes en pratique|Psychiatrie et culture au Sénégal
+# d2-rea | Anesthésie, réanimation et urgences | Réanimation | syringe | 0
+- d2-rea | Anesthésie-réanimation | Arrêt cardio-respiratoire|États de choc|Détresses respiratoires aiguës|Comas|Polytraumatisé|Brûlures étendues|Intoxications aiguës|Envenimations|Anesthésie générale : principes|Anesthésie locorégionale|Remplissage vasculaire et transfusion|Douleur aiguë
+# d2-medint | Médecine interne et gériatrie | Médecine interne | stetho | 2
+- d2-medint | Médecine interne | Fièvre prolongée|Altération de l'état général|Polyadénopathies|Maladies systémiques|Vascularites|Sarcoïdose|Amylose|Particularités de la personne âgée|Chutes du sujet âgé|Iatrogénie
+# d2-onco | Oncologie | Oncologie | ribbon | 7
+- d2-onco | Cancérologie | Épidémiologie des cancers au Sénégal|Diagnostic d'un cancer|Bilan d'extension et classification TNM|Chimiothérapie : principes|Radiothérapie : principes|Soins palliatifs|Douleur cancéreuse|Dépistage des cancers|Cancer du foie|Lymphome de Burkitt|Sarcome de Kaposi
+# d2-medleg | Médecine légale et du travail | Médecine légale | scales | 8
+- d2-medleg | Médecine légale | Certificats médicaux|Levée de corps et autopsie|Coups et blessures|Violences sexuelles|Secret médical|Responsabilité médicale|Droits du malade
+- d2-medtrav | Médecine du travail | Organisation de la médecine du travail|Accidents du travail|Maladies professionnelles|Risques professionnels des soignants
+# d2-sp | Santé publique | Santé publique | globe | 1
+- d2-sp | Santé publique et épidémiologie | Planification sanitaire|Gestion d'un district sanitaire|Investigation d'une épidémie|Maladies à potentiel épidémique|Lutte contre le paludisme|Lutte contre la tuberculose|Lutte contre le VIH|Santé maternelle et infantile|Nutrition|Hygiène du milieu|Évaluation des programmes de santé
+`;
+function parseCurr(txt){
+  const out=[]; let lvl='L1', sem=1, m=null;
+  for(const raw of txt.split('\n')){ const l=raw.trim(); if(!l) continue;
+    if(l[0]==='='){ const [a,b]=l.slice(1).trim().split(/\s+/); lvl=a; sem=+b===2?2:1; m=null; continue; }
+    const parts=l.slice(1).split('|').map(x=>x.trim());
+    if(l[0]==='#'){ m={id:parts[0], name:parts[1], short:parts[2]||parts[1], icon:parts[3]||'book', color:+parts[4]||0, lvl, sem, subs:[]}; out.push(m); }
+    else if(l[0]==='-' && m) m.subs.push({id:parts[0], name:parts[1], ch:parts.slice(2).filter(Boolean)});
+  }
+  return out;
+}
+(function(){
+  const l3={semio:['stetho',2], hib:['drop',0], pm:['microscope',4], pb:['pill',1], stage:['hospital',8]};
+  for(const m of PROGRAMME){ const x=l3[m.id]||['book',8]; Object.assign(m,{lvl:'L3', sem:1, icon:x[0], color:x[1]}); }
+  PROGRAMME.push(...parseCurr(CURR_TXT));
+})();
 
 // Emploi du temps (semestre 5). 1 = lundi … 6 = samedi
 const EDT = {
@@ -600,14 +885,21 @@ const clozeBack = s => md(s).replace(/\{\{(.+?)\}\}/g,'<mark class="filled">$1</
 const plain = s => String(s||'').replace(/\{\{(.+?)\}\}/g,'[$1]').replace(/[*#=]/g,'').replace(/\s+/g,' ').trim();
 
 // ---------- Index du programme ----------
-const MODS={}, SUBS={}, CH={};
+const MODS={}, SUBS={}, CH={}, ALLMODS=[];
+const byCreated=(x,y)=>(x.created||0)-(y.created||0);
 function buildIndex(){
-  for(const k in CH) delete CH[k];
-  for(const m of PROGRAMME){ MODS[m.id]=m; for(const s of m.subs){ s.mod=m.id; SUBS[s.id]=s;
-    const list=s.ch.map((t,i)=>({id:s.id+'-'+(i+1), title:t, sub:s.id, mod:m.id, custom:false}));
-    const extra=(S.custom||[]).filter(c=>c.sub===s.id && !c.del).sort((a,b)=>a.created-b.created).map(c=>({id:c.id, title:c.title, sub:s.id, mod:m.id, custom:true}));
-    s.all=list.concat(extra); s.all.forEach((c,i)=>{ c.n=i+1; CH[c.id]=c; });
-  }}
+  for(const o of [CH,MODS,SUBS]) for(const k in o) delete o[k];
+  ALLMODS.length=0;
+  const cus=(S.custom||[]).filter(c=>c && !c.del);
+  const cmods=cus.filter(c=>c.kind==='mod').sort(byCreated).map(c=>({id:c.id, name:c.title, short:c.title, lvl:LV[c.lvl]?c.lvl:'L3', sem:c.sem===2?2:1, icon:MI[c.icon]?c.icon:'book', color:+c.color||0, custom:true, subs:[]}));
+  for(const m of PROGRAMME.concat(cmods)){ MODS[m.id]=m; ALLMODS.push(m);
+    m.allSubs=m.subs.concat(cus.filter(c=>c.kind==='sub'&&c.mod===m.id).sort(byCreated).map(c=>({id:c.id, name:c.title, ch:[], custom:true})));
+    for(const s of m.allSubs){ s.mod=m.id; SUBS[s.id]=s;
+      const list=s.ch.map((t,i)=>({id:s.id+'-'+(i+1), title:t, sub:s.id, mod:m.id, custom:false}));
+      const extra=cus.filter(c=>!c.kind && c.sub===s.id).sort(byCreated).map(c=>({id:c.id, title:c.title, sub:s.id, mod:m.id, custom:true}));
+      s.all=list.concat(extra); s.all.forEach((c,i)=>{ c.n=i+1; CH[c.id]=c; });
+    }
+  }
   buildInt();
 }
 const allChapters = () => Object.values(CH);
@@ -626,7 +918,7 @@ function loadLocal(){
 }
 // Passage au style « Cahier » : une seule fois (les anciens thèmes restent dans Moi → Apparence).
 // « ui » n'est volontairement pas dans DEFAULT_PREFS : son absence signale des réglages d'avant ce style.
-function migratePrefs(){ const p=S.prefs; if(p.ui!==2){ p.theme='cahier'; p.accent=''; p.font='nunito'; p.heads='expressive'; p.radius='soft'; p.density='normal'; p.ui=2; } }
+function migratePrefs(){ const p=S.prefs; if(!p.level && (Object.keys(S.progress||{}).length || Object.keys(S.cards||{}).length)){ p.level='L3'; p.levelSem=1; } if(p.ui!==2){ p.theme='cahier'; p.accent=''; p.font='nunito'; p.heads='expressive'; p.radius='soft'; p.density='normal'; p.ui=2; } }
 let localTimer;
 function saveLocal(){ clearTimeout(localTimer); localTimer=setTimeout(writeLocal, 250); }
 function writeLocal(){
@@ -1087,6 +1379,7 @@ function viewHome(){
   const hello=(h<5||h>=18)?'Bonsoir':'Bonjour';
   let html=`<header class="home-head"><div class="stack" style="gap:6px"><p class="eyebrow">${esc(fmtLong(new Date()))}</p><h1>${hello}${p.name?' '+esc(p.name):''}</h1></div>
     <button class="streak" data-act="tab" data-tab="me" aria-label="Série de jours de révision">${I.flame}<span class="mono">${streak()}</span><span class="small muted">j</span></button></header>`;
+  if(!S.prefs.level) html+=levelPickHome();
   for(const [key,on] of p.home){ if(on && HOME_SECTIONS[key]) html+=homeSection(key); }
   return html;
 }
@@ -1138,6 +1431,7 @@ function homeSection(k){
     return `<section class="count-grid">${left}${right}</section>`;
   }
   if(k==='edt'){
+    if(!(myLvl()==='L3' && mySem()===1)) return '';
     const d=new Date(); const wd=d.getDay(); const list=EDT[wd]||[];
     const hm=pad(d.getHours())+':'+pad(d.getMinutes());
     const rows=list.map(([a,b,lbl,room,subs])=>`<div class="edt-row ${hm>=a&&hm<b?'now':''}"><div class="edt-main"><span class="edt-time">${a.replace(':00','h')} – ${b.replace(':00','h')}</span>
@@ -1149,15 +1443,15 @@ function homeSection(k){
   }
   if(k==='progress'){
     let rows='';
-    for(const m of PROGRAMME){
-      const chs=m.subs.flatMap(s=>s.all); const n=chs.length;
+    for(const m of modsOf(myLvl(),mySem())){
+      const chs=modChaps(m); const n=chs.length;
       const st=[0,0,0,0]; chs.forEach(c=>st[statusOf(c.id)]++);
       const nc=Object.values(S.cards).filter(c=>CH[c.chap]&&CH[c.chap].mod===m.id).length;
       const w=i=>n?(st[i]/n*100):0;
-      rows+=`<button class="mod-prog" data-act="goto-mod" data-mod="${m.id}"><span class="spread"><strong>${esc(m.short)}</strong><span class="small muted">${n?`${st[2]+st[3]}/${n} appris`:'Pas de chapitre'} · ${plural(nc,'carte')} · ${m.credits} cr.</span></span>
+      rows+=`<button class="mod-prog" data-act="goto-mod" data-mod="${m.id}"><span class="spread"><strong>${esc(m.short)}</strong><span class="small muted">${n?`${st[2]+st[3]}/${n} appris`:'Pas de chapitre'} · ${plural(nc,'carte')}${m.credits?' · '+m.credits+' cr.':''}</span></span>
         <span class="bar" role="img" aria-label="${st[3]} maîtrisés, ${st[2]} appris, ${st[1]} vus sur ${n}">${st[3]?`<i class="b3" style="width:${w(3)}%"></i>`:''}${st[2]?`<i class="b2" style="width:${w(2)}%"></i>`:''}${st[1]?`<i class="b1" style="width:${w(1)}%"></i>`:''}</span></button>`;
     }
-    return `<section class="panel"><div class="section-title"><h3>Progression par module</h3></div>${rows}
+    return `<section class="panel"><div class="section-title"><h3>Progression par matière</h3><span class="small muted">${LV[myLvl()].id} · S${semNo(myLvl(),mySem())}</span></div>${rows}
       <div class="legend" style="margin-top:8px"><span><i class="lg3"></i>Maîtrisé</span><span><i class="lg2"></i>Appris</span><span><i class="lg1"></i>Vu en cours</span></div></section>`;
   }
   if(k==='heatmap'){
@@ -1177,7 +1471,7 @@ function homeSection(k){
       <div class="legend" style="margin-top:10px"><span>Moins</span><span><i style="background:var(--surface2)"></i><i style="background:var(--a28)"></i><i style="background:var(--a55)"></i><i style="background:var(--a78)"></i><i style="background:var(--accent)"></i></span><span>Plus</span></div></section>`;
   }
   if(k==='plan'){
-    const chs=allChapters(); const remaining=chs.filter(c=>statusOf(c.id)<2).length;
+    const chs=modsOf(myLvl(),mySem()).flatMap(modChaps); const remaining=chs.filter(c=>statusOf(c.id)<2).length;
     const ex=examDate(); const revStart=new Date(ex.date); revStart.setDate(revStart.getDate()-10);
     const from=daysUntil(semStart())>0?semStart():new Date();
     const days=Math.max(1, Math.round((midnight(revStart)-midnight(from))/DAY));
@@ -1204,33 +1498,6 @@ function weekSheet(){
 }
 
 // ---------- Vue : Programme ----------
-function viewProg(){
-  if(UI.progView==='int') return viewInt();
-  const f=UI.progFilter, q=UI.progQuery.trim().toLowerCase();
-  const filters=[['all','Tous'],['0','Pas vus'],['1','Vus'],['2','Appris'],['3','Maîtrisés']];
-  let html=`<header class="stack" style="gap:4px"><p class="eyebrow">Semestre 5 · ${allChapters().length} chapitres</p><h1>Programme</h1></header>${progSeg()}
-   <button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button>
-   <div class="search">${I.search}<input type="search" id="progSearch" placeholder="Chercher un chapitre" value="${esc(UI.progQuery)}" data-input="progq" aria-label="Chercher un chapitre"></div>
-   <div class="chips" role="group" aria-label="Filtrer">${filters.map(([k,l])=>`<button class="chip" data-act="progf" data-f="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</div>`;
-  const cardCount={}; for(const c of Object.values(S.cards)) cardCount[c.chap]=(cardCount[c.chap]||0)+1;
-  const docCount={}; for(const d of Object.values(S.docs)) docCount[d.chap]=(docCount[d.chap]||0)+1;
-  for(const m of PROGRAMME){
-    let inner=(!q && f==='all')?modExamsBlock(m):''; let shown=0;
-    for(const s of m.subs){
-      const chs=s.all.filter(c=>(f==='all'||String(statusOf(c.id))===f)&&(!q||c.title.toLowerCase().includes(q)||s.name.toLowerCase().includes(q)));
-      if(!chs.length && (q||f!=='all')) continue;
-      const learned=s.all.filter(c=>statusOf(c.id)>=2).length;
-      inner+=`<div class="sub-h"><h3>${esc(s.name)}</h3><span class="small muted mono">${learned}/${s.all.length}</span></div>`;
-      inner+=chs.map(c=>{ const st=statusOf(c.id); const n=cardCount[c.id]||0; return `<button class="chap" data-act="chap" data-id="${c.id}"><span class="chap-n">${pad(c.n)}</span><span class="chap-t">${esc(c.title)}${(()=>{ const m=[n?plural(n,'carte'):'', S.notes[c.id]&&S.notes[c.id].text?'notes':'', docCount[c.id]?plural(docCount[c.id],'document'):'', L3INT[c.id]?'internat':''].filter(Boolean).join(' · '); return m?`<span class="chap-meta">${m}</span>`:''; })()}</span><span class="pill s${st}">${STATUS[st]}</span></button>`; }).join('');
-      if(!q && f==='all') inner+=`<button class="add-chap" data-act="add-chap" data-sub="${s.id}">+ Ajouter un chapitre à ${esc(s.name)}</button>`;
-      shown+=chs.length;
-    }
-    if(!inner) continue;
-    const open=UI.open.has(m.id)||q||f!=='all';
-    html+=`<details class="mod" data-mod="${m.id}" ${open?'open':''}><summary><span class="stack" style="gap:2px"><strong style="font-family:var(--font-display);font-size:1.0625rem">${esc(m.name)}</strong><span class="small muted">${m.credits} crédits · ${plural(m.subs.reduce((a,s)=>a+s.all.length,0),'chapitre')}</span></span>${I.chev}</summary>${inner}</details>`;
-  }
-  return html;
-}
 function chapterSheet(id){
   const c=CH[id]; if(!c) return sheetTop('Chapitre')+'<p>Chapitre introuvable.</p>';
   const s=SUBS[c.sub], st=statusOf(id), note=(S.notes[id]||{}).text||'';
@@ -1269,11 +1536,11 @@ function cardRow(c){
 // ---------- Vue : Réviser ----------
 function scopeOptions(sel, withNone){
   let o=withNone?`<option value="" ${!sel?'selected':''}>Sans chapitre</option>`:`<option value="all" ${sel==='all'?'selected':''}>Tout le programme</option>`;
-  for(const m of PROGRAMME){
-    o+=`<optgroup label="${esc(m.name)}">`;
+  for(const m of myScopeMods()){
+    o+=`<optgroup label="${esc(m.name)}${m.lvl!==myLvl()?' ('+m.lvl+')':''}">`;
     if(!withNone) o+=`<option value="m:${m.id}" ${sel==='m:'+m.id?'selected':''}>${esc(m.name)} (tout)</option>`;
-    for(const s of m.subs){
-      if(!withNone && m.subs.length>1) o+=`<option value="s:${s.id}" ${sel==='s:'+s.id?'selected':''}>${esc(s.name)} (tout)</option>`;
+    for(const s of m.allSubs){
+      if(!withNone && m.allSubs.length>1) o+=`<option value="s:${s.id}" ${sel==='s:'+s.id?'selected':''}>${esc(s.name)} (tout)</option>`;
       for(const c of s.all){ const v=withNone?c.id:'c:'+c.id; o+=`<option value="${v}" ${sel===v?'selected':''}>${withNone?esc(s.name.replace('Sémiologie ','Sémio. '))+' · ':'   '}${pad(c.n)}. ${esc(c.title)}</option>`; }
     }
     o+='</optgroup>';
@@ -1403,7 +1670,9 @@ function viewMe(){
    <h3 style="margin-top:16px;font-size:0.9375rem">Cartes à revoir les 7 prochains jours</h3>
    <div class="fbars" style="margin-top:8px">${fc.map((n,i)=>{ const d=new Date(dayStart()+(i+1)*DAY); return `<span class="muted">${esc(fmtD(d,{weekday:'short',day:'numeric'}))}</span><span class="track"><i style="width:${n/fmax*100}%"></i></span><b class="mono">${n}</b>`; }).join('')}</div>
   </section>
-  <section class="panel stack"><h3>Dates et objectifs</h3>
+  <section class="panel stack"><h3>Mon année et mes objectifs</h3>
+   <label class="field">Mon année d'études<select data-input="pref-level">${LEVELS.map(l=>`<option value="${l.id}" ${myLvl()===l.id?'selected':''}>${l.name} · ${l.an}</option>`).join('')}</select></label>
+   <div class="seg" role="group" aria-label="Mon semestre">${[1,2].map(n=>`<button data-act="pref-lsem" data-s="${n}" aria-pressed="${mySem()===n}">Semestre ${n} · S${semNo(myLvl(),n)}</button>`).join('')}</div>
    <label class="field">Ton prénom <span class="field-hint">Pour l'accueil, facultatif.</span><input type="text" id="pName" data-input="pref" data-k="name" value="${esc(p.name)}" autocomplete="given-name"></label>
    <label class="field">Début des cours<input type="date" id="pSem" data-input="pref" data-k="semStart" value="${esc(p.semStart)}"></label>
    <label class="field">Début des examens <span class="field-hint">${ex.set?'':'Pas encore connue : estimation au '+esc(fmtShort(ex.date))+'. Mets la vraie date dès qu\'elle tombe.'}</span><input type="date" id="pExam" data-input="pref" data-k="examDate" value="${esc(p.examDate)}"></label>
@@ -2144,7 +2413,7 @@ function modExamsBlock(m){
 }
 function examPickSheet(){
   return sheetTop('Ajouter un examen')+`<p>Dans quel module ?</p>
-   <section class="panel"><div class="menu">${PROGRAMME.map(m=>{ const n=modExams(m.id).length; return `<button data-act="exam-new" data-mod="${m.id}">${I.exam}<span><span class="t">${esc(m.name)}</span><span class="d">${n?plural(n,'examen')+' déjà ajouté'+(n>1?'s':''):'Aucun examen pour l\'instant'}</span></span>${I.chev}</button>`; }).join('')}</div></section>`;
+   <section class="panel"><div class="menu">${modsOf(myLvl(),0).map(m=>{ const n=modExams(m.id).length; return `<button data-act="exam-new" data-mod="${m.id}">${I.exam}<span><span class="t">${esc(m.name)}</span><span class="d">${n?plural(n,'examen')+' déjà ajouté'+(n>1?'s':''):'Aucun examen pour l\'instant'}</span></span>${I.chev}</button>`; }).join('')}</div></section>`;
 }
 function startExamImport(mod, exam){
   const m=UI.imp; resetImpDoc(); m.kind='exam'; m.target='module'; m.mod=mod; m.blobs=[];
@@ -2863,6 +3132,10 @@ function buildInt(){
     for(const [g,items] of ep.groups) for(const [id,t,type,an,l3,note] of items){ const x={id,t,type,an,ep:ep.id,g,l3:(l3||'').split(' ').filter(Boolean),note:note||'',n:++n}; INTQ[id]=x; ep.all.push(x); }
     for(const c of (S.internat.custom||[])){ if(c.del||c.ep!==ep.id) continue; const x={id:c.id,t:c.title,type:c.type,an:'',ep:ep.id,g:'Mes questions',l3:[],note:'',n:++n,custom:true}; INTQ[c.id]=x; ep.all.push(x); }
   }
+  // les cours des autres années qui portent le même intitulé qu'une question sont reliés automatiquement
+  const idx=Object.values(CH).filter(c=>{ const m=MODS[c.mod]; return m && !(m.lvl==='L3'&&m.sem===1); }).map(c=>[c.id, fold(c.title)]);
+  for(const x of Object.values(INTQ)){ if(x.custom) continue; const q=fold(x.t); if(q.length<4) continue;
+    for(const [id,t] of idx) if((t===q || t.startsWith(q+' ') || q.startsWith(t+' ')) && !x.l3.includes(id)) x.l3.push(id); }
   for(const x of Object.values(INTQ)) for(const c of x.l3) (L3INT[c]=L3INT[c]||[]).push(x.id);
 }
 const intSt = id => (S.internat.prog[id]||{}).s||0;
@@ -2926,7 +3199,7 @@ function mdLesson(text){
 
 // --- Vue : Internat (dans l'onglet Programme) ---
 Object.assign(UI,{progView:lsGet('xamxam.progView')==='int'?'int':'l3', intFilter:'all', intQuery:'', intId:null, intTab:'plan', intEdit:null, intRecite:null});
-function progSeg(){ return `<div class="seg" role="group" aria-label="Quel programme"><button data-act="prog-view" data-v="l3" aria-pressed="${UI.progView!=='int'}">Cours de L3</button><button data-act="prog-view" data-v="int" aria-pressed="${UI.progView==='int'}">Internat</button></div>`; }
+function progSeg(){ return `<div class="seg" role="group" aria-label="Quel programme"><button data-act="prog-view" data-v="l3" aria-pressed="${UI.progView!=='int'}">Mes cours</button><button data-act="prog-view" data-v="int" aria-pressed="${UI.progView==='int'}">Internat</button></div>`; }
 function viewInt(){
   intPrefetch();
   const all=Object.values(INTQ), f=UI.intFilter, q=fold(UI.intQuery.trim()), c=intCounts(all); const nSeen=all.filter(intSeen).length;
@@ -3006,9 +3279,9 @@ function intSheet(){
     <p class="small muted">Coefficient ${ep.coef} · épreuve de ${INT_DUR/60} h${x.an?' · enseignée en '+INT_YEARS[x.an]:''}</p>
     ${x.note?`<p class="small" style="color:var(--hard)">${esc(x.note)}</p>`:''}</div>
    <div class="seg" role="group" aria-label="Où en es-tu ?">${INT_STATUS.map((l,i)=>`<button data-act="int-status" data-s="${i}" aria-pressed="${st===i}">${l}</button>`).join('')}</div>
-   ${links.length?`<section class="panel"><h3>Dans tes cours de L3</h3>
-     <p class="small muted" style="margin-bottom:8px">${links.some(c=>statusOf(c)>=1)?'Tu as déjà vu cette leçon en cours : apprends-la maintenant au format de l\'internat.':'Ces leçons de ton année préparent cette question : travaille-les ensemble.'}</p>
-     <div class="menu">${links.map(c=>`<button data-act="chap" data-id="${c}">${I.book}<span><span class="t">${esc(CH[c].title)}</span><span class="d">${esc(SUBS[CH[c].sub].name)} · ${STATUS[statusOf(c)]}</span></span>${I.chev}</button>`).join('')}</div></section>`:''}
+   ${links.length?`<section class="panel"><h3>Dans tes cours</h3>
+     <p class="small muted" style="margin-bottom:8px">${links.some(c=>statusOf(c)>=1)?'Tu as déjà vu cette leçon en cours : apprends-la maintenant au format de l\'internat.':'Ces cours préparent cette question : travaille-les ensemble.'}</p>
+     <div class="menu">${links.map(c=>`<button data-act="chap" data-id="${c}">${I.book}<span><span class="t">${esc(CH[c].title)}</span><span class="d">${MODS[CH[c].mod].lvl} · ${esc(SUBS[CH[c].sub].name)} · ${STATUS[statusOf(c)]}</span></span>${I.chev}</button>`).join('')}</div></section>`:''}
    <div class="seg" role="group" aria-label="Partie de la fiche">${[['plan','Plan'],['lecon','Leçon type'],['expl','Explications']].map(([k,l])=>`<button data-act="int-tab" data-t="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
    ${body}
    ${UI.intEdit?'':`<button class="btn btn-primary btn-lg" data-act="int-train" data-id="${id}">S'entraîner sur cette question · ${INT_DUR/60} h</button>
@@ -3163,6 +3436,147 @@ document.addEventListener('input', e=>{ const el=e.target; if(!el.dataset||el.da
   UI.intQuery=el.value; clearTimeout(UI.iq); UI.iq=setTimeout(()=>{ const pos=el.selectionStart; rerender(); const n=$('#intSearch'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch{} } }, 200); });
 document.addEventListener('toggle', e=>{ const el=e.target; if(el.matches && el.matches('details.peek') && el.open && ITR && !ITR.aid){ ITR.aid=true; itrSave(); } }, true);
 
+// ---------- Vue Cours : niveaux, semestres, matières, sous-matières ----------
+const myLvl = () => LV[S.prefs.level] ? S.prefs.level : 'L3';
+const mySem = () => S.prefs.levelSem===2 ? 2 : 1;
+const hiddenMods = () => Array.isArray(S.prefs.hide) ? S.prefs.hide : [];
+function modsOf(lvl, sem, all){ return ALLMODS.filter(m=>m.lvl===lvl && (!sem||m.sem===sem) && (all||!hiddenMods().includes(m.id))); }
+const modChaps = m => m.allSubs.flatMap(s=>s.all);
+function progOf(chs){ const st=[0,0,0,0]; chs.forEach(c=>st[statusOf(c.id)]++); const n=chs.length; return {n, st, pct:n?Math.round((st[2]+st[3])/n*100):0}; }
+function stBar(p){ const w=i=>p.n?p.st[i]/p.n*100:0; return `<span class="bar" role="img" aria-label="${p.st[3]} maîtrisés, ${p.st[2]} appris, ${p.st[1]} vus sur ${p.n}">${p.st[3]?`<i class="b3" style="width:${w(3)}%"></i>`:''}${p.st[2]?`<i class="b2" style="width:${w(2)}%"></i>`:''}${p.st[1]?`<i class="b1" style="width:${w(1)}%"></i>`:''}</span>`; }
+// matières proposées dans les listes de choix : celles de mon année, plus celles où j'ai déjà des cartes
+function myScopeMods(){ const set=new Set(modsOf(myLvl(),0).map(m=>m.id)); for(const c of Object.values(S.cards)){ const ch=CH[c.chap]; if(ch) set.add(ch.mod); } return ALLMODS.filter(m=>set.has(m.id)); }
+function chapMetaMaps(){ const cc={}, dc={}; for(const c of Object.values(S.cards)) cc[c.chap]=(cc[c.chap]||0)+1; for(const d of Object.values(S.docs)) dc[d.chap]=(dc[d.chap]||0)+1; return {cc, dc}; }
+function chapRow(c, K, path){ const st=statusOf(c.id), n=K.cc[c.id]||0;
+  const meta=[path?esc(MODS[c.mod].short+' › '+SUBS[c.sub].name):'', n?plural(n,'carte'):'', S.notes[c.id]&&S.notes[c.id].text?'notes':'', K.dc[c.id]?plural(K.dc[c.id],'document'):'', L3INT[c.id]?'internat':''].filter(Boolean).join(' · ');
+  return `<button class="chap" data-act="chap" data-id="${c.id}"><span class="chap-n">${pad(c.n)}</span><span class="chap-t">${esc(c.title)}${meta?`<span class="chap-meta">${meta}</span>`:''}</span><span class="pill s${st}">${STATUS[st]}</span></button>`; }
+function cahierCard(m, preview){ const p=progOf(modChaps(m)), ns=m.allSubs.length; const tag=preview?'div':'button';
+  return `<${tag} class="cahier" ${preview?'':`data-act="mod-open" data-id="${m.id}"`} style="${cov(m.color)}">
+   <span class="cahier-top"><span>Matière${ns>1?' · '+ns+' parties':''}</span>${I.chev}</span>
+   <span class="cahier-ico">${miSvg(m.icon)}</span>
+   <span class="etq"><span class="etq-t">${esc(m.name||'Nouvelle matière')}</span></span>
+   <span class="cahier-foot"><span class="n">${plural(p.n,'cours','cours')}</span>${p.pct?`<span>${p.pct} %</span>`:''}</span>
+   <span class="cahier-bar"><i style="width:${p.pct}%"></i></span></${tag}>`; }
+const ECG='<svg class="ecg" viewBox="0 0 300 70" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M0 46h112l9-26 13 44 11-34 8 16h147"/></svg>';
+function viewProg(){
+  if(UI.progView==='int') return viewInt();
+  const lvl = UI.pvLvl==='root' ? null : (LV[UI.pvLvl] ? UI.pvLvl : (S.prefs.level||null));
+  if(!lvl) return viewLevels();
+  const sem = UI.pvSem===2||UI.pvSem===1 ? UI.pvSem : (lvl===S.prefs.level ? mySem() : 1);
+  return viewLevel(lvl, sem);
+}
+function viewLevels(){
+  const mine=S.prefs.level;
+  return `<header class="stack" style="gap:4px"><p class="eyebrow">Médecine · de la Licence 1 au Doctorat 2</p><h1>Niveaux</h1></header>${progSeg()}
+   ${mine?'':`<div class="notice">En quelle année es-tu ? Choisis-la : l'accueil, tes révisions et tes examens suivront ce programme.</div>`}
+   <div class="lvls">${LEVELS.map(l=>{ const mods=modsOf(l.id,0), p=progOf(mods.flatMap(modChaps));
+     return `<button class="lvl${l.id===mine?' mine':''}" data-act="pv-lvl" data-l="${l.id}"><span class="lvl-no" style="${cov(l.color)}">${l.id}</span>
+      <span class="lvl-t"><strong>${l.name}</strong><span class="small muted">${l.an} · ancien ${l.old}${l.note?' · '+l.note:''}</span><span class="small muted">${plural(mods.length,'matière')} · ${plural(p.n,'cours','cours')}${p.pct?' · '+p.pct+' % appris':''}</span>${p.n&&p.pct?stBar(p):''}</span>
+      ${l.id===mine?'<span class="badge mine-b">Mon année</span>':I.chev}</button>`; }).join('')}</div>
+   <p class="small muted">Le programme de la Licence 3, semestre 1, est celui de ta faculté. Celui des autres années est un modèle établi d'après les cours habituels de chaque année : ajoute, masque ou complète les matières pour qu'il colle à ton emploi du temps.</p>`;
+}
+function viewLevel(lvl, sem){
+  const L=LV[lvl], mods=modsOf(lvl,sem), hid=modsOf(lvl,sem,true).filter(m=>hiddenMods().includes(m.id));
+  const p=progOf(mods.flatMap(modChaps)), isMine=S.prefs.level===lvl && mySem()===sem, q=fold(UI.progQuery.trim());
+  let html=`<header class="stack" style="gap:10px"><nav class="crumbs" aria-label="Où je suis"><button data-act="pv-root">${I.back}Niveaux</button><span aria-hidden="true">›</span><button data-act="pv-lvl" data-l="${lvl}">${L.name}</button><span aria-hidden="true">›</span><button aria-current="page">Semestre ${sem}</button></nav>
+     <h1>${L.name}</h1></header>${progSeg()}
+   <div class="seg" role="group" aria-label="Semestre">${[1,2].map(s=>`<button data-act="pv-sem" data-s="${s}" aria-pressed="${s===sem}">Semestre ${s} · S${semNo(lvl,s)}</button>`).join('')}</div>
+   <section class="hero">${ECG}<p class="eyebrow">${L.an}${isMine?' · mon semestre':''}${L.note&&sem===1?' · '+L.note:''}</p><h2>${L.name} · Semestre ${sem}</h2><p>Choisis une matière</p>
+     <div class="hero-stats"><span>${plural(p.n,'cours','cours')}</span><span>${plural(mods.length,'matière')}</span><span>${p.pct} % appris</span></div></section>
+   ${isMine?'':`<button class="btn" data-act="pv-mine" data-l="${lvl}" data-s="${sem}">${S.prefs.level?'Passer à ce semestre : c\'est le mien':'C\'est mon année et mon semestre'}</button>`}
+   <div class="search">${I.search}<input type="search" id="progSearch" placeholder="Chercher un cours en ${esc(L.name)}" value="${esc(UI.progQuery)}" data-input="progq" aria-label="Chercher un cours"></div>`;
+  if(q){ const K=chapMetaMaps(); const hits=modsOf(lvl,0).flatMap(modChaps).filter(c=>fold(c.title).includes(q)||fold(SUBS[c.sub].name).includes(q)||fold(MODS[c.mod].name).includes(q));
+    return html+(hits.length?`<p class="small muted">${plural(hits.length,'cours trouvé','cours trouvés')}</p><div class="listbox">${hits.slice(0,80).map(c=>chapRow(c,K,true)).join('')}</div>`:'<p class="muted">Aucun cours ne correspond.</p>'); }
+  html+=`<div class="cahiers">${mods.map(m=>cahierCard(m)).join('')}<button class="cahier add" data-act="mod-add" data-l="${lvl}" data-s="${sem}">${I.plus}<span>Ajouter une matière</span></button></div>`;
+  if(hid.length) html+=`<details class="peek"><summary>${plural(hid.length,'matière masquée','matières masquées')}</summary><div class="chips" style="margin-top:6px">${hid.map(m=>`<button class="chip" data-act="mod-unhide" data-id="${m.id}">Réafficher ${esc(m.short)}</button>`).join('')}</div></details>`;
+  if(lvl==='L3'||lvl==='D1'||lvl==='D2') html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button>`;
+  return html;
+}
+function modSheet(){
+  const m=MODS[UI.modId]; if(!m) return sheetTop('Matière')+'<p>Cette matière n\'existe plus.</p>';
+  const L=LV[m.lvl], subs=m.allSubs, p=progOf(modChaps(m)), K=chapMetaMaps();
+  const nCards=Object.values(S.cards).filter(c=>CH[c.chap]&&CH[c.chap].mod===m.id).length, cnt=counts('m:'+m.id);
+  let h=sheetTop(L.name+' · Semestre '+m.sem)+`
+   <section class="mod-cover" style="${cov(m.color)}"><span class="cahier-ico">${miSvg(m.icon)}</span>
+     <div class="stack" style="gap:3px;min-width:0"><p class="eyebrow">Matière · S${semNo(m.lvl,m.sem)}</p><h2>${esc(m.name)}</h2><p class="small">${plural(p.n,'cours','cours')}${subs.length>1?' · '+subs.length+' sous-matières':''} · ${p.pct} % appris</p></div>
+     <span class="cahier-bar"><i style="width:${p.pct}%"></i></span></section>
+   <button class="btn btn-primary btn-lg" data-act="start" data-mode="${cnt.rev+cnt.lrn+cnt.nw?'srs':'cram'}" data-scope="m:${m.id}" ${nCards?'':'disabled'}>${nCards?'Réviser cette matière · '+plural(nCards,'carte'):'Pas encore de carte dans cette matière'}</button>`;
+  if(subs.length>1) h+=`<div class="section-title" style="margin:0"><h3>Sous-matières</h3><span class="small muted">${subs.length}</span></div>
+   <div class="subrows">${subs.map(s=>{ const sp=progOf(s.all); return `<button class="subrow" data-act="sub-open" data-id="${s.id}" style="${cov(m.color)}"><span class="st"><span class="t">${esc(s.name)}</span><span class="m">${plural(s.all.length,'cours','cours')}${sp.pct?' · '+sp.pct+' % appris':''}</span></span>${I.chev}${stBar(sp)}</button>`; }).join('')}</div>`;
+  else if(subs.length===1) h+=`<div class="section-title" style="margin:0"><h3>Cours</h3><span class="small muted">${subs[0].all.length}</span></div>
+   <div class="listbox">${subs[0].all.map(c=>chapRow(c,K)).join('')}<button class="add-chap" data-act="add-chap" data-sub="${subs[0].id}">+ Ajouter un cours</button></div>`;
+  h+=`<button class="add-chap boxed" data-act="sub-add" data-mod="${m.id}">+ Ajouter une sous-matière</button>
+   <div class="listbox">${modExamsBlock(m)}</div>
+   ${m.custom?`<button class="btn danger" data-act="mod-del" data-id="${m.id}">Supprimer cette matière</button>`:`<button class="btn btn-ghost" data-act="mod-hide" data-id="${m.id}">Je ne suis pas cette matière : la masquer</button>`}`;
+  return h;
+}
+function subSheet(){
+  const s=SUBS[UI.subId]; if(!s) return sheetTop('Sous-matière')+'<p>Cette sous-matière n\'existe plus.</p>';
+  const m=MODS[s.mod], p=progOf(s.all), K=chapMetaMaps();
+  const nCards=Object.values(S.cards).filter(c=>CH[c.chap]&&CH[c.chap].sub===s.id).length, cnt=counts('s:'+s.id);
+  return sheetTop(m.short)+`
+   <div class="stack" style="gap:6px"><p class="eyebrow" style="display:flex;align-items:center;gap:6px"><span class="dotc" style="${cov(m.color)}"></span>${esc(m.name)} · S${semNo(m.lvl,m.sem)}</p><h2>${esc(s.name)}</h2>
+    <p class="small muted">${plural(s.all.length,'cours','cours')} · ${p.pct} % appris</p>${p.n?stBar(p):''}</div>
+   <button class="btn btn-primary btn-lg" data-act="start" data-mode="${cnt.rev+cnt.lrn+cnt.nw?'srs':'cram'}" data-scope="s:${s.id}" ${nCards?'':'disabled'}>${nCards?'Réviser · '+plural(nCards,'carte'):'Pas encore de carte ici'}</button>
+   <div class="listbox">${s.all.map(c=>chapRow(c,K)).join('')||''}<button class="add-chap" data-act="add-chap" data-sub="${s.id}">+ Ajouter un cours</button></div>
+   ${s.custom?`<button class="btn danger" data-act="sub-del" data-id="${s.id}">Supprimer cette sous-matière</button>`:''}`;
+}
+function modAddSheet(){ const a=UI.modAdd;
+  const prev={name:a.name, icon:a.icon, color:a.color, allSubs:[]};
+  return sheetTop('Nouvelle matière')+`<p>Ajoute une matière à <strong>${LV[a.lvl].name}, semestre ${a.sem}</strong>.</p>
+   <label class="field">Nom de la matière<input type="text" id="modAddName" data-input="mod-add-name" value="${esc(a.name)}" placeholder="Ex. Physiologie"></label>
+   <div class="field"><span>Icône</span><div class="icopick">${Object.keys(MI).map(k=>`<button data-act="mod-add-ico" data-k="${k}" aria-pressed="${a.icon===k}" aria-label="Icône ${k}">${miSvg(k)}</button>`).join('')}</div></div>
+   <div class="field"><span>Couleur du cahier</span><div class="colors">${COVERS.map((c,i)=>`<button data-act="mod-add-col" data-i="${i}" aria-pressed="${a.color===i}" aria-label="Couleur ${i+1}" style="background:${c}"></button>`).join('')}</div></div>
+   <div class="field"><span>Aperçu</span><div class="cahiers" style="grid-template-columns:minmax(0,190px)" id="modAddPrev">${cahierCard(prev,true)}</div></div>
+   <button class="btn btn-primary btn-lg" data-act="mod-add-go">Créer la matière</button>`; }
+function subAddSheet(){ const m=MODS[UI.subAddMod];
+  return sheetTop('Nouvelle sous-matière')+`<p>Ajoute une sous-matière à <strong>${esc(m.name)}</strong> : une partie du programme, un enseignant, des travaux dirigés…</p>
+   <label class="field">Nom<input type="text" id="subAddName" placeholder="Ex. Sémiologie respiratoire"></label>
+   <button class="btn btn-primary btn-lg" data-act="sub-add-go">Ajouter</button>`; }
+function levelPickHome(){ return `<section class="panel stack"><h3 style="margin:0">En quelle année es-tu ?</h3>
+   <p class="small muted">Tes cours, tes révisions et tes examens suivront le programme de ton année. Tu pourras changer dans Moi.</p>
+   <div class="lvlpick">${LEVELS.map(l=>`<button data-act="set-level" data-l="${l.id}" style="${cov(l.color)}"><strong>${l.id}</strong><span>${l.an}</span></button>`).join('')}</div></section>`; }
+function removeCustom(pred){ const gone=new Set(); for(const c of S.custom){ if(!c.del && pred(c)){ c.del=true; c.t=now(); gone.add(c.id); } } return gone; }
+function orphanCards(test){ for(const c of Object.values(S.cards)){ const ch=CH[c.chap]; if(ch && test(ch)){ c.chap=''; saveCard(c); } } }
+function goMod(id, subId){ const m=MODS[id]; if(!m) return; UI.tab='prog'; lsSet('xamxam.tab','prog'); UI.progView='l3'; UI.pvLvl=m.lvl; UI.pvSem=m.sem; UI.progQuery=''; UI.sheetStack=[]; window.scrollTo(0,0); render();
+  UI.modId=id; UI.sheetStack.push(modSheet); if(subId && SUBS[subId] && m.allSubs.length>1){ UI.subId=subId; UI.sheetStack.push(subSheet); } paintSheet(); }
+document.addEventListener('click', e=>{
+  const a=e.target.closest('[data-act]'); if(!a) return; const act=a.dataset.act, d=a.dataset;
+  if(!/^(pv-|mod-|sub-|set-level$|pref-lsem$)/.test(act)) return;
+  switch(act){
+    case 'pv-root': UI.pvLvl='root'; UI.progQuery=''; window.scrollTo(0,0); render(); break;
+    case 'pv-lvl': if(UI.pvLvl!==d.l){ UI.pvSem=(d.l===S.prefs.level)?mySem():1; } UI.pvLvl=d.l; UI.progQuery=''; window.scrollTo(0,0); render(); break;
+    case 'pv-sem': UI.pvSem=+d.s===2?2:1; rerender(); break;
+    case 'pv-mine': case 'set-level': { S.prefs.level=d.l; S.prefs.levelSem=+d.s===2?2:1; savePrefs(); UI.pvLvl=d.l; UI.pvSem=S.prefs.levelSem; updateDueDot();
+      toast(`C'est noté : ${LV[d.l].name}, semestre ${S.prefs.levelSem}.`); if(act==='set-level'){ UI.tab='prog'; UI.progView='l3'; lsSet('xamxam.tab','prog'); window.scrollTo(0,0); render(); } else rerender(); break; }
+    case 'pref-lsem': S.prefs.levelSem=+d.s===2?2:1; if(!S.prefs.level) S.prefs.level=myLvl(); savePrefs(); rerender(); break;
+    case 'mod-open': UI.modId=d.id; openSheet(modSheet); break;
+    case 'sub-open': UI.subId=d.id; openSheet(subSheet); break;
+    case 'mod-add': UI.modAdd={lvl:d.l, sem:+d.s===2?2:1, name:'', icon:'book', color:(modsOf(d.l,+d.s,true).length+3)%10}; openSheet(modAddSheet); break;
+    case 'mod-add-ico': UI.modAdd.icon=d.k; paintSheet(true); break;
+    case 'mod-add-col': UI.modAdd.color=+d.i; paintSheet(true); break;
+    case 'mod-add-go': { const A=UI.modAdd, name=(A.name||'').trim(); if(!name){ toast('Écris le nom de la matière.'); break; }
+      const id=uid('m'), t=now(); S.custom.push({id, kind:'mod', lvl:A.lvl, sem:A.sem, title:name, icon:A.icon, color:A.color, created:t, t});
+      S.custom.push({id:uid('s'), kind:'sub', mod:id, title:name, created:t+1, t}); saveLocal(); cloudPut('progress'); buildIndex();
+      UI.sheetStack.pop(); UI.modId=id; UI.sheetStack.push(modSheet); paintSheet(); rerender(); toast('Matière ajoutée. Ajoute maintenant ses cours.'); break; }
+    case 'sub-add': UI.subAddMod=d.mod; openSheet(subAddSheet); break;
+    case 'sub-add-go': { const name=(($('#subAddName')||{}).value||'').trim(); if(!name){ toast('Écris le nom de la sous-matière.'); break; }
+      const t=now(); S.custom.push({id:uid('s'), kind:'sub', mod:UI.subAddMod, title:name, created:t, t}); saveLocal(); cloudPut('progress'); buildIndex(); closeSheet(); toast('Sous-matière ajoutée'); break; }
+    case 'mod-hide': { const id=d.id; S.prefs.hide=hiddenMods().filter(x=>x!==id).concat(id); savePrefs(); closeSheet(); toast('Matière masquée. Tu peux la réafficher en bas de la page.', 3600); break; }
+    case 'mod-unhide': S.prefs.hide=hiddenMods().filter(x=>x!==d.id); savePrefs(); rerender(); break;
+    case 'mod-del': armConfirm(a,'Confirmer : supprimer la matière',()=>{ const id=d.id; const subs=new Set(MODS[id].allSubs.map(s=>s.id));
+      orphanCards(ch=>ch.mod===id); removeCustom(c=>c.id===id || (c.kind==='sub'&&c.mod===id) || (!c.kind&&subs.has(c.sub)));
+      saveLocal(); cloudPut('progress'); buildIndex(); closeSheet(); toast('Matière supprimée (ses cartes sont gardées sans chapitre)'); }); break;
+    case 'sub-del': armConfirm(a,'Confirmer : supprimer la sous-matière',()=>{ const id=d.id;
+      orphanCards(ch=>ch.sub===id); removeCustom(c=>c.id===id || (!c.kind&&c.sub===id));
+      saveLocal(); cloudPut('progress'); buildIndex(); closeSheet(); toast('Sous-matière supprimée'); }); break;
+  }
+});
+document.addEventListener('input', e=>{ const el=e.target; if(!el.dataset||el.dataset.input!=='mod-add-name') return;
+  UI.modAdd.name=el.value; const pv=$('#modAddPrev'); if(pv) pv.innerHTML=cahierCard({name:el.value, icon:UI.modAdd.icon, color:UI.modAdd.color, allSubs:[]}, true); });
+document.addEventListener('change', e=>{ const el=e.target; if(!el.dataset||el.dataset.input!=='pref-level') return;
+  S.prefs.level=el.value; if(!S.prefs.levelSem) S.prefs.levelSem=1; savePrefs(); UI.pvLvl=null; UI.pvSem=null; updateDueDot(); rerender(); });
+
 // ---------- Événements ----------
 function afterRender(){
   const n=$('#noteEdit'); if(n && !n.hidden) n.focus();
@@ -3181,8 +3595,8 @@ document.addEventListener('click', async e=>{
     case 'tab': UI.tab=d.tab; lsSet('xamxam.tab',d.tab); window.scrollTo(0,0); render(); break;
     case 'week': openSheet(weekSheet); break;
     case 'heat': toast(fmtShort(parseDate(d.k))+' : '+plural(+d.r,'carte')); break;
-    case 'goto-mod': UI.tab='prog'; UI.open.add(d.mod); UI.progFilter='all'; UI.progQuery=''; render(); { const el=$(`details[data-mod="${d.mod}"]`); if(el) el.scrollIntoView({block:'start'}); } break;
-    case 'goto-subs': { const sub=d.subs.split(',')[0]; const m=SUBS[sub]&&SUBS[sub].mod; UI.tab='prog'; if(m) UI.open.add(m); UI.progQuery=''; UI.progFilter='all'; render(); const el=m&&$(`details[data-mod="${m}"]`); if(el) el.scrollIntoView({block:'start'}); break; }
+    case 'goto-mod': goMod(d.mod); break;
+    case 'goto-subs': { const sub=d.subs.split(',')[0]; if(SUBS[sub]) goMod(SUBS[sub].mod, sub); break; }
     case 'progf': UI.progFilter=d.f; rerender(); break;
     case 'chap': UI.chapId=d.id; openSheet(()=>chapterSheet(UI.chapId)); break;
     case 'add-chap': UI.addSub=d.sub; openSheet(addChapSheet); break;
@@ -3374,7 +3788,7 @@ document.addEventListener('keydown', e=>{
   else if(SESS.cur.revealed && ['1','2','3','4'].includes(e.key)){ const g=+e.key; if(SESS.mode!=='srs'&&(g===2||g===4)) return; grade(g); }
 });
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ writeLocal(); flushAll(); if(EXR) exrSave(); } });
-function addChapSheet(){ const s=SUBS[UI.addSub]; return sheetTop('Nouveau chapitre')+`<p>Ajoute un chapitre à <strong>${esc(s.name)}</strong> : un cours supplémentaire, un TD, des notes de stage…</p><label class="field">Titre<input type="text" id="newChapTitle" placeholder="Ex. Examen clinique du patient au lit"></label><button class="btn btn-primary btn-lg" data-act="add-chap-go">Ajouter</button>`; }
+function addChapSheet(){ const s=SUBS[UI.addSub]; return sheetTop('Nouveau cours')+`<p>Ajoute un cours à <strong>${esc(s.name)}</strong> : un cours supplémentaire, un TD, des notes de stage…</p><label class="field">Titre<input type="text" id="newChapTitle" placeholder="Ex. Examen clinique du patient au lit"></label><button class="btn btn-primary btn-lg" data-act="add-chap-go">Ajouter</button>`; }
 
 // ---------- Fiches syndromes ----------
 // Chaque fiche : n = nom, e = explication simple (comme à un enfant), h = version hospitalière (langage soutenu),
