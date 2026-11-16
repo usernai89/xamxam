@@ -218,6 +218,8 @@ details.mod>summary+.sub-h{border-top:0}
 .clist{display:flex;flex-direction:column}
 .citem{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;text-align:left;width:100%;padding:calc(12px*var(--sp)) 0;border:0;border-top:1px solid var(--line);background:transparent;color:var(--fg)}
 .citem:first-child{border-top:0}
+a.citem{text-decoration:none}
+.drv-h{font-size:0.8125rem;font-weight:700;color:var(--muted);margin:14px 0 4px;letter-spacing:.02em}
 .citem .q{font-weight:700;font-size:1rem;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0}
 .citem .meta{font-size:0.8125rem;color:var(--muted);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 
@@ -594,7 +596,8 @@ const miSvg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 // ---------- Niveaux : de la Licence 1 au Doctorat 2 ----------
 // Médecine en 7 ans : Licence (L1 à L3), Master (M1, M2), Doctorat (D1, D2).
 // Le programme détaillé ci-dessus est celui de la Licence 3, semestre 1 (S5).
-// Les autres années forment un programme modèle, modifiable dans l'appli (ajouter, masquer, compléter).
+// Les années L1 à D1 suivent les dossiers du Drive de la promo 103 (FMPOS Dakar) : matières, sous-matières, cours.
+// La D2 (stages et thèse) n'est pas dans ce Drive : c'est un programme modèle. Tout reste modifiable dans l'appli.
 // Format : « =L1 1 » = niveau et semestre ; « # id | nom | nom court | icône | couleur » = une matière ;
 // « - id | nom | cours|cours|… » = une sous-matière et ses cours.
 const LEVELS=[
@@ -614,152 +617,178 @@ const semNo = (lvl,sem) => (LV[lvl]?LV[lvl].i:2)*2+sem;
 const CURR_TXT=`
 =L1 1
 # l1-anat | Anatomie | Anatomie | bone | 0
-- l1-anat-gen | Anatomie générale | Introduction à l'anatomie et terminologie|Plans, axes et mouvements|Généralités sur les os|Généralités sur les articulations|Généralités sur les muscles|Généralités sur les vaisseaux|Généralités sur le système nerveux|Méthodes d'étude : dissection et imagerie
-- l1-anat-ms | Membre supérieur | Clavicule|Scapula|Humérus|Radius et ulna|Os de la main|Articulations sterno-claviculaire et acromio-claviculaire|Articulation de l'épaule|Articulation du coude|Articulations du poignet et de la main|Muscles de l'épaule|Muscles du bras|Muscles de l'avant-bras|Muscles de la main|Creux axillaire|Plexus brachial|Artères du membre supérieur|Veines et lymphatiques du membre supérieur|Nerfs du membre supérieur : axillaire, musculo-cutané, médian, ulnaire, radial
-# l1-biocell | Biologie cellulaire | Bio. cellulaire | cell | 2
-- l1-biocell | Biologie cellulaire | Méthodes d'étude de la cellule|Cellules procaryotes et eucaryotes|Membrane plasmique : structure|Transports membranaires|Jonctions cellulaires et matrice extracellulaire|Réticulum endoplasmique et ribosomes|Appareil de Golgi|Lysosomes et peroxysomes|Mitochondrie|Cytosquelette|Noyau et chromatine|Cycle cellulaire|Mitose|Méiose|Mort cellulaire : nécrose et apoptose|Signalisation cellulaire|Différenciation cellulaire et cellules souches
-# l1-biochim | Biochimie structurale | Biochimie | molecule | 3
-- l1-biochim | Biochimie structurale | Eau, pH et tampons biologiques|Oses|Osides et polyosides|Acides gras|Lipides complexes et stérols|Acides aminés|Peptides et structure des protéines|Propriétés des protéines|Enzymes : propriétés générales|Cinétique enzymatique|Coenzymes et vitamines|Nucléotides et acides nucléiques|Bioénergétique : ATP et oxydations biologiques
-# l1-biophys | Biophysique | Biophysique | atom | 4
-- l1-biophys | Biophysique | Grandeurs, unités et mesures|États de la matière|Solutions : concentrations et propriétés|Diffusion|Osmose et pression osmotique|Équilibre de Donnan|Électricité et potentiel de membrane|Mécanique des fluides et circulation|Tension superficielle|Optique géométrique et vision|Acoustique et audition|Structure de l'atome et du noyau|Radioactivité|Interactions des rayonnements avec la matière
-# l1-chimie | Chimie | Chimie | flask | 5
-- l1-chimgen | Chimie générale | Atome et classification périodique|Liaisons chimiques|Thermodynamique chimique|Cinétique chimique|Équilibres chimiques|Acides et bases|Oxydo-réduction|Solubilité et précipitation
-- l1-chimorg | Chimie organique | Nomenclature|Isomérie et stéréochimie|Effets électroniques|Hydrocarbures|Alcools, phénols et amines|Aldéhydes et cétones|Acides carboxyliques et dérivés|Hétérocycles d'intérêt biologique
-# l1-maths | Mathématiques et biostatistiques | Biostatistiques | chart | 1
-- l1-maths | Mathématiques et biostatistiques | Fonctions usuelles, logarithme et exponentielle|Dérivées et études de fonctions|Intégrales|Équations différentielles|Statistique descriptive|Probabilités|Variables aléatoires et lois usuelles|Loi normale|Échantillonnage et estimation|Tests statistiques : principes|Comparaison de moyennes et de pourcentages|Corrélation et régression
-# l1-shs | Sciences humaines et UE transversales | Sciences humaines | people | 8
-- l1-shs | Sciences humaines et sociales | Histoire de la médecine|Introduction à la psychologie|Développement psychologique de l'enfant|Sociologie de la santé|Anthropologie de la maladie en Afrique|Communication et relation soignant-soigné|Éthique et déontologie médicale|Méthodologie du travail universitaire
-- l1-angl | Anglais médical | Medical vocabulary|Anatomical terms|Reading a scientific article|Presenting a clinical case
-- l1-info | Informatique | Outils bureautiques|Recherche documentaire|Internet et santé
+- s1-anat-gen | Anatomie générale | Notions d'anatomie générale|Système circulatoire : vue d'ensemble|TP d'ostéologie
+- s1-anat-th | Cou et thorax | Anatomie topographique du cou|Topographie générale du thorax|Paroi antéro-latérale du thorax|Diaphragme|Trachée, bronches et poumons|Aorte, système cave et système azygos
+- s1-anat-abd | Abdomen | Topographie de l'abdomen|Estomac et ses vaisseaux|Duodéno-pancréas|Foie|Jéjuno-iléon|Côlon
+- s1-anat-pel | Pelvis | Topographie du pelvis|Utérus
+# l1-bcg | Biologie cellulaire et génétique | BCG | cell | 2
+- s1-bcg-cell | Biologie cellulaire | Introduction à la biologie cellulaire et génétique|Techniques d'étude de la cellule|Périphérie cellulaire|Réticulum endoplasmique|Appareil de Golgi|Endosomes et lysosomes|Mitochondries|Cytosquelette|Noyau interphasique|Divisions cellulaires
+- s1-bcg-gen | Génétique | Génétique et biologie moléculaire|Analyse généalogique|Malformations congénitales
 
 =L1 2
-# l1-anat2 | Anatomie | Anatomie | bone | 0
-- l1-anat-mi | Membre inférieur | Os coxal|Fémur|Patella|Tibia et fibula|Os du pied|Articulation de la hanche|Articulation du genou|Articulation de la cheville|Articulations du pied|Muscles de la région glutéale|Muscles de la cuisse|Muscles de la jambe|Muscles du pied|Trigone fémoral et canal des adducteurs|Fosse poplitée|Plexus lombaire|Plexus sacré|Artères du membre inférieur|Veines et lymphatiques du membre inférieur|Nerfs du membre inférieur : fémoral, obturateur, sciatique
-- l1-anat-tronc | Tronc et crâne | Colonne vertébrale : généralités|Vertèbres cervicales, thoraciques et lombaires|Sacrum et coccyx|Articulations de la colonne vertébrale|Côtes et sternum|Os du crâne|Os de la face|Articulation temporo-mandibulaire
-# l1-histo | Histologie générale | Histologie | microscope | 7
-- l1-histo | Histologie générale | Techniques histologiques|Épithéliums de revêtement|Épithéliums glandulaires|Tissu conjonctif|Tissu adipeux|Tissu cartilagineux|Tissu osseux et ossification|Tissu musculaire|Tissu nerveux|Sang et lymphe|Peau et annexes
-# l1-embryo | Embryologie générale | Embryologie | embryo | 4
-- l1-embryo | Embryologie générale | Appareil génital et cycle sexuel|Spermatogenèse|Ovogenèse et folliculogenèse|Fécondation|Segmentation et nidation|Deuxième semaine : disque bidermique|Troisième semaine : gastrulation|Neurulation|Délimitation de l'embryon|Annexes embryonnaires et placenta|Grossesses gémellaires|Tératogenèse et malformations
-# l1-physio | Physiologie générale | Physiologie | heart | 2
-- l1-physio | Physiologie générale | Homéostasie et milieu intérieur|Compartiments liquidiens de l'organisme|Échanges entre compartiments|Potentiel de repos|Potentiel d'action|Transmission synaptique|Contraction du muscle squelettique|Muscle lisse|Thermorégulation|Physiologie du sang : généralités
-# l1-genet | Génétique | Génétique | dna | 6
-- l1-genet | Génétique | Gènes et génome humain|Chromosomes et caryotype|Anomalies chromosomiques de nombre|Anomalies chromosomiques de structure|Lois de Mendel|Transmission autosomique dominante et récessive|Transmission liée au chromosome X|Hérédité multifactorielle|Mutations et polymorphismes|Génétique des populations : loi de Hardy-Weinberg|Conseil génétique
-# l1-sp | Santé publique | Santé publique | globe | 1
-- l1-sp | Introduction à la santé publique | Concepts de santé et de maladie|Déterminants de la santé|Système de santé du Sénégal|Hygiène et assainissement|Premiers secours|Démographie : notions de base
+# l1-biochim | Biochimie et chimie | Biochimie-chimie | molecule | 3
+- s2-chim | Chimie | Atome|Réactions chimiques|Thermodynamique chimique|Chimie physique générale|Fonctions et nomenclature|Stéréochimie
+- s2-biochim | Biochimie | Introduction à la biochimie|Glucides|Acides gras|Glycérophospholipides et sphingolipides|Cholestérol : structure et métabolisme|Lipoprotéines : études structurales|Enzymologie|Vitamines|Bioénergétique|Métabolisme énergétique|Glycolyse|Métabolisme du glycogène|Métabolisme des acides gras|Métabolisme des lipides et des lipoprotéines|Métabolisme des phosphoglycérides
+# l1-biophys | Biophysique et physique | Biophysique | atom | 4
+- s2-bp-sol | Solutions et équilibre acido-basique | Solutions|Propriétés colligatives|Systèmes tampons|Équilibre acido-basique
+- s2-bp-elec | Électricité et électrophysiologie | Électricité|Électrocinétique|Électrophysiologie cellulaire|Électrophysiologie de la cellule cardiaque
+- s2-bp-flu | Mécanique des fluides et hémodynamique | Mécanique des fluides|Hémodynamique|Écho-anatomie vasculaire
+- s2-bp-opt | Optique | Optique géométrique
+# l1-histoembryo | Histologie et embryologie | Histo-embryologie | microscope | 7
+- s2-embryo | Embryologie | Gamétogenèse|Première semaine du développement|Deuxième semaine du développement|Troisième semaine du développement|Quatrième et cinquième semaines|Intérêt du lécithocèle
+- s2-histo | Histologie | Épithélium de revêtement|Épithélium glandulaire|Tissu conjonctif|Tissu cartilagineux|Tissu osseux|Tissu musculaire|Tissu nerveux
+# l1-physio | Physiologie | Physiologie | heart | 2
+- s2-phys-gen | Physiologie générale | Milieu intérieur et compartiments liquidiens|Canaux ioniques|Bioénergétique et thermorégulation|Fonctionnement élémentaire du système nerveux|Système nerveux autonome
+- s2-phys-ren | Physiologie rénale | Physiologie rénale : vue d'ensemble|Filtration glomérulaire et débit sanguin rénal|Fonction tubulaire|Rein et équilibre acido-basique|Troubles de l'équilibre acido-basique
+- s2-phys-dig | Physiologie digestive | Digestion|Régulation du comportement alimentaire
 
 =L2 1
-# l2-anat | Anatomie | Anatomie | bone | 0
-- l2-anat-tc | Tête et cou | Régions du cou|Muscles du cou|Pharynx|Larynx|Glande thyroïde et parathyroïdes|Artères carotides|Veines jugulaires|Lymphatiques de la tête et du cou|Fosses nasales et sinus|Cavité orale et langue|Glandes salivaires|Orbite et œil|Oreille
-- l2-anat-th | Thorax | Paroi thoracique|Diaphragme|Plèvres|Poumons|Trachée et bronches|Médiastin : organisation|Cœur : configuration externe|Cœur : configuration interne|Vascularisation et innervation du cœur|Péricarde|Aorte thoracique|Veines caves et système azygos|Œsophage thoracique|Conduit thoracique|Nerfs vagues et phréniques
-# l2-physio | Physiologie | Physiologie | heart | 2
-- l2-phys-cv | Physiologie cardiovasculaire | Propriétés du muscle cardiaque|Activité électrique du cœur|Cycle cardiaque|Débit cardiaque et sa régulation|Pression artérielle et sa régulation|Circulation veineuse|Microcirculation et échanges capillaires|Circulations régionales : coronaire, cérébrale
-- l2-phys-resp | Physiologie respiratoire | Mécanique ventilatoire|Volumes et débits pulmonaires|Échanges gazeux alvéolo-capillaires|Transport de l'oxygène|Transport du gaz carbonique|Régulation de la ventilation|Équilibre acido-basique : rôle du poumon
-- l2-phys-ren | Physiologie rénale | Filtration glomérulaire|Clairances|Fonctions tubulaires|Régulation de l'eau|Régulation du sodium|Régulation du potassium|Rein et équilibre acido-basique|Hormones et rein
-# l2-histo | Histologie et embryologie spéciales | Histo-embryologie | microscope | 7
-- l2-histo-sp | Histologie des organes | Appareil cardiovasculaire|Appareil respiratoire|Tube digestif|Glandes annexes du tube digestif|Appareil urinaire|Organes lymphoïdes|Glandes endocrines|Appareil génital masculin|Appareil génital féminin|Système nerveux|Organes des sens
-- l2-embryo-sp | Embryologie spéciale | Développement du cœur et des vaisseaux|Développement de l'appareil respiratoire|Développement du tube digestif|Développement de l'appareil urinaire|Développement de l'appareil génital|Développement de la face et du cou|Développement du système nerveux
-# l2-biochim | Biochimie métabolique | Biochimie | molecule | 3
-- l2-biochim | Biochimie métabolique | Introduction au métabolisme|Glycolyse|Cycle de Krebs|Chaîne respiratoire et phosphorylation oxydative|Néoglucogenèse|Glycogène : synthèse et dégradation|Voie des pentoses phosphates|Régulation de la glycémie|Bêta-oxydation des acides gras|Corps cétoniques|Lipogenèse|Cholestérol et lipoprotéines|Métabolisme des acides aminés|Cycle de l'urée|Métabolisme des purines et des pyrimidines|Métabolisme de l'hème et de la bilirubine|Intégration des métabolismes
+# l2-biochim | Biochimie | Biochimie | molecule | 3
+- s3-bc-mol | Biologie moléculaire | Méthodes d'étude|Acides nucléiques : structure|Acides nucléiques : métabolisme|Organisation du génome humain|Réplication|Réparation de l'ADN|Transcription|Traduction
+- s3-bc-prot | Protéines et hémoglobine | Acides aminés, peptides et protéines|Métabolisme des acides aminés|Hémoglobine : structure, propriétés et métabolisme
+- s3-bc-horm | Hormones | Système hypothalamo-hypophysaire|Axe gonadotrope|Hormones thyroïdiennes|Exploration des hormones surrénaliennes
+# l2-biophys | Biophysique | Biophysique | atom | 4
+- s3-bp-ray | Rayonnements et radioactivité | Structure périphérique de l'atome|Structure du noyau|Radioactivité|Généralités sur les rayonnements|Interactions rayonnements-matière|Détecteurs|Dosimétrie|Radiobiologie, radiopathologie et radioprotection
+- s3-bp-img | Imagerie et organes des sens | Bases physiques de la radiologie|Bases physiques de l'échographie|Laser|Biophysique de la vision|Biophysique de l'audition
+# l2-histoembryo | Histologie et embryologie des organes | Histo-embryologie | microscope | 7
+- s3-histo | Histologie | Appareil vasculaire|Organes lymphoïdes|Appareil respiratoire|Appareil urinaire|Appareil digestif|Appareil génital|Système tégumentaire|Œil|Oreille
+- s3-embryo | Embryologie | Embryologie cardio-vasculaire|Embryologie de l'appareil respiratoire|Embryologie rénale|Embryologie de l'appareil génital
+# l2-shs | Sciences humaines et sociales | Sciences humaines | people | 8
+- s3-droit | Droit de la santé | Charte du malade|Code de déontologie des médecins|Loi sur l'Ordre des médecins|Loi portant réforme hospitalière
+- s3-psymed | Psychologie médicale | Objet et objectifs de la psychologie médicale|Organisation du fonctionnement mental|Structures de la personnalité|Personnalités pathologiques|Affectivité et ses modes d'expression|Développement affectif et du langage|Théorie de l'attachement|Interactions précoces et carences affectives précoces|Intelligence, mémoire, cognition et apprentissage|Cerveau et pensée|Réactions psychologiques à la maladie|L'acte médical|Conscience morale du praticien|Le médecin face à la mort|Dynamique de groupes|Les différentes sortes de violences
+- s3-socio | Socio-anthropologie et philosophie | Sociologie et anthropologie de la santé|Culture et cultures|Espèce humaine|Processus primaire de socialisation|Religions, mythes et croyances|Relation soignant-soigné|Professions de santé|Aperçu sur les systèmes de santé|Histoire de la médecine et de la pensée|Histoire de l'hôpital et réforme hospitalière|Histoire de la folie et de la psychiatrie|Épistémologie générale|Fondements d'une épistémologie médicale|Esprit scientifique et paradigmes médicaux|Aspects philosophiques de la médecine|Neurosciences cognitives
 
 =L2 2
-# l2-anat2 | Anatomie | Anatomie | bone | 0
-- l2-anat-abd | Abdomen | Paroi abdominale|Canal inguinal|Péritoine|Œsophage abdominal et estomac|Duodénum|Pancréas|Foie|Voies biliaires|Rate|Jéjunum et iléon|Côlon et rectum|Aorte abdominale et ses branches|Veine porte|Veine cave inférieure|Reins|Uretères|Glandes surrénales
-- l2-anat-pel | Pelvis et périnée | Bassin osseux|Vessie|Urètre|Prostate|Testicules et voies spermatiques|Utérus|Ovaires et trompes|Vagin|Périnée
-- l2-neuroanat | Neuroanatomie | Moelle épinière|Tronc cérébral|Cervelet|Diencéphale|Hémisphères cérébraux|Noyaux gris centraux|Ventricules cérébraux et liquide cérébro-spinal|Méninges|Vascularisation de l'encéphale|Nerfs crâniens|Faisceau pyramidal et voies motrices|Voies sensitives|Système nerveux autonome
-# l2-physio2 | Physiologie | Physiologie | heart | 2
-- l2-phys-dig | Physiologie digestive | Motricité digestive|Sécrétion salivaire|Sécrétion gastrique|Sécrétion pancréatique|Sécrétion biliaire|Digestion et absorption des nutriments|Physiologie du côlon
-- l2-phys-endo | Physiologie endocrinienne | Hormones : généralités|Axe hypothalamo-hypophysaire|Thyroïde|Surrénales|Pancréas endocrine|Métabolisme phosphocalcique|Croissance
-- l2-phys-neuro | Neurophysiologie | Organisation du système nerveux|Réflexes médullaires|Motricité|Sensibilité somatique et douleur|Vision|Audition et équilibre|Sommeil et vigilance|Système nerveux autonome
-- l2-phys-repro | Physiologie de la reproduction | Fonction testiculaire|Cycle menstruel|Grossesse|Lactation
-# l2-microb | Microbiologie générale | Microbiologie | bacteria | 6
-- l2-bact-gen | Bactériologie générale | Structure de la bactérie|Physiologie et croissance bactériennes|Génétique bactérienne|Pouvoir pathogène des bactéries|Antibiotiques : modes d'action|Résistance aux antibiotiques|Diagnostic bactériologique
-- l2-viro-gen | Virologie générale | Structure des virus|Multiplication virale|Physiopathologie des infections virales|Diagnostic virologique|Antiviraux et vaccins
-# l2-biophys | Biophysique | Biophysique | atom | 4
-- l2-biophys | Biophysique | Biophysique cardiaque|Biophysique respiratoire|Biophysique rénale|Bases physiques de l'imagerie|Médecine nucléaire : principes|Effets biologiques des rayonnements|Radioprotection
-# l2-sp | Santé publique et psychologie | Santé publique | globe | 1
-- l2-epid | Épidémiologie | Mesures de fréquence : incidence et prévalence|Indicateurs de santé|Types d'études épidémiologiques|Biais et facteurs de confusion|Dépistage|Surveillance épidémiologique
-- l2-psy | Psychologie médicale | Personnalité|Relation médecin-malade|Psychologie du malade|Annonce d'une mauvaise nouvelle|Stress et adaptation
+# l2-neuroanat | Neuro-anatomie et anatomie des organes | Neuro-anatomie | brain | 4
+- s4-neuro | Neuro-anatomie | Introduction à la neuro-anatomie|Moelle spinale|Tronc cérébral|Cervelet|Cerveau|Vascularisation du système nerveux central|Voies motrices|Voies de la sensibilité|Voies optiques|Nerfs moteurs de l'œil|Nerf trijumeau|Nerf facial
+- s4-cou | Cou | Glande parotide|Trigone carotidien|Thyroïde
+- s4-org | Organes du tronc et du pelvis | Diaphragme|Côlon|Rectum|Reins|Surrénales|Uretères|Vessie|Utérus et annexes
+- s4-tp | Travaux pratiques | Arthrologie|Myologie
+# l2-physio | Physiologie | Physiologie | heart | 2
+- s4-ph-cv | Physiologie cardiovasculaire et respiratoire | Physiologie cardiovasculaire|Mécanique ventilatoire|Physiologie de l'hématose
+- s4-ph-neuro | Neurophysiologie | Somesthésie|Motricité|Sens spécifiques|Veille et sommeil
+- s4-ph-endo | Endocrinologie | Généralités en endocrinologie|Complexe hypothalamo-hypophysaire|Thyroïde|Surrénales|Pancréas endocrine|Parathyroïdes|Reproduction
+# l2-secour | Secourisme | Secourisme | hospital | 0
+- s4-secour | Secourisme | Protection|Alerte|La victime s'étouffe|Saignement abondant|Victime inconsciente|La victime ne respire pas : arrêt cardiorespiratoire|Malaise|Traumatisme
+# l2-semio | Sémiologie | Sémiologie | stetho | 6
+- s4-semio-med | Sémiologie médicale (appareil respiratoire) | Introduction à la sémiologie|Toux et dyspnée|Expectorations|Vomique et hémoptysie|Cyanose|Vibrations vocales, matité et tympanisme|Frottements et râles|Syndrome de condensation pulmonaire non rétractile|Syndrome de condensation rétractile|Épanchements gazeux et mixtes|Syndrome d'épanchement liquidien pleural|Syndrome de suppuration bronchopulmonaire|Syndromes médiastinaux|Radiographie du thorax
+- s4-semio-chir | Sémiologie chirurgicale | Examen clinique de l'abdomen|Infections aiguës en chirurgie|Généralités sur les tumeurs|Généralités sur les fractures|Luxations et entorses|Sémiologie vasculaire|Examen urologique|Sémiologie urologique|Examen gynécologique
+# l2-soins | Soins infirmiers | Soins infirmiers | syringe | 1
+- s4-soins | Soins infirmiers | Introduction aux soins infirmiers|Feuille de température|Feuille des paramètres|Poids et taille|Surveillance du pouls|Surveillance de la tension artérielle|Surveillance de la respiration|Surveillance de la diurèse|Surveillance des expectorations|Généralités sur les pansements|Pansement d'une plaie aseptique|Pansement d'une plaie septique|Ponction lombaire|Ponction pleurale|Ponction d'ascite|Ponction fémorale
 
 =L3 2
+# l3-anapath | Anatomie pathologique | Anapath | microscope | 7
+- s6-ap-gen | Généralités et techniques | Introduction à l'anatomie pathologique|Matériels et moyens d'étude|Techniques en anatomie pathologique|Examen anatomopathologique|Travaux pratiques d'anatomie pathologique
+- s6-ap-les | Lésions élémentaires | Lésions élémentaires des tissus|Troubles de l'adaptation cellulaire|Troubles de la reproduction cellulaire|Lésions des substances intercellulaires|Troubles du métabolisme des glucides|Troubles du métabolisme des lipides|Troubles du métabolisme des protides|Troubles du métabolisme des pigments
+- s6-ap-circ | Troubles circulatoires | Hyperhémie|Hémorragies|Thrombose, embolie et infarctus|Athérosclérose|Anévrysmes
+- s6-ap-infl | Inflammation | Formes anatomo-cliniques de l'inflammation|Inflammation tuberculeuse|Inflammation lépreuse|Inflammation syphilitique|Inflammation mycosique|Inflammation virale
+- s6-ap-tum | Pathologie tumorale | Processus tumoral|Tumeurs bénignes|Tumeurs malignes ou cancers|Classification des cancers|Évolution du cancer|Dysgenèses et tumeurs embryonnaires|Tumeurs placentaires
 # l3-bactviro | Bactériologie et virologie | Bactério-virologie | bacteria | 6
-- l3-bact | Bactériologie spéciale | Staphylocoques|Streptocoques et pneumocoques|Neisseria : méningocoque et gonocoque|Entérobactéries : généralités|Salmonella et Shigella|Escherichia coli|Vibrio cholerae|Pseudomonas|Haemophilus et Bordetella|Corynebactéries|Clostridium : tétanos et botulisme|Mycobactéries : tuberculose et lèpre|Tréponèmes : syphilis|Chlamydia et mycoplasmes|Rickettsies
-- l3-viro | Virologie spéciale | Virus de l'immunodéficience humaine|Virus des hépatites|Virus de la grippe|Virus de la rougeole|Poliovirus et entérovirus|Virus herpès|Virus de la rage|Arbovirus : dengue et fièvre jaune|Virus des fièvres hémorragiques : Ebola|Coronavirus|Papillomavirus|Rotavirus
-# l3-anapath | Anatomie pathologique générale | Anapath | microscope | 7
-- l3-anapath | Anatomie pathologique générale | Techniques en anatomie pathologique|Lésions cellulaires élémentaires|Adaptations cellulaires|Dépôts et surcharges|Inflammation aiguë|Inflammation chronique et granulomes|Cicatrisation et réparation|Œdème, congestion et hémorragie|Thrombose et embolie|Ischémie et infarctus|Tumeurs : généralités|Tumeurs bénignes et malignes|Classification des tumeurs|Extension des cancers|Lésions précancéreuses
+- s6-bact-gen | Bactériologie générale | Anatomie bactérienne|Physiologie bactérienne|Relations hôtes-bactéries|Antibiotiques|Diagnostic bactériologique|Hygiène hospitalière|Infections nosocomiales
+- s6-bact-diag | Prélèvements et examens | Hémoculture|Examen cytobactériologique des urines (ECBU)|Examen du liquide céphalo-rachidien|Coproculture|Sécrétions bronchiques|Sécrétions oropharyngées|Sérodiagnostic de Widal et Félix|ASLO et ASDOR
+- s6-bact-sys | Bactériologie systématique | Staphylocoques|Streptocoques|Pneumocoque|Neisseria|Entérobactéries|Salmonella|Vibrio cholerae|Pseudomonas aeruginosa|Haemophilus|Helicobacter et Campylobacter|Mycobactéries|Tréponèmes|Chlamydia|Bacilles à Gram positif|Bactéries anaérobies strictes
+- s6-viro-gen | Virologie générale | Structure et classification des virus|Multiplication des virus|Diagnostic virologique|Prélèvements génitaux|Antiviraux|Vaccins viraux|Accidents d'exposition au sang
+- s6-viro-adn | Virus à ADN | Herpesviridae|Adénovirus|Papillomavirus
+- s6-viro-arn | Virus à ARN | VIH|Virus des hépatites|Virus de la grippe|Coronavirus|Virus de la rougeole|Virus de la rubéole|Virus respiratoire syncytial|Poliovirus|Rotavirus|Virus de la rage|Arbovirus|Virus des fièvres hémorragiques
 # l3-semiochir | Sémiologie chirurgicale | Sémio. chirurgicale | scalpel | 0
-- l3-semiochir | Sémiologie chirurgicale | Observation médicale en chirurgie|Examen de l'abdomen|Abdomen aigu chirurgical|Syndrome occlusif|Syndrome péritonéal|Hernies de la paroi abdominale|Sémiologie des tuméfactions et des adénopathies|Sémiologie du sein|Sémiologie de la thyroïde|Sémiologie urologique|Sémiologie des bourses|Sémiologie ostéo-articulaire et traumatologique|Plaies et brûlures|Sémiologie vasculaire chirurgicale|Sémiologie proctologique
-# l3-imagerie | Imagerie médicale | Imagerie | xray | 8
-- l3-imagerie | Radiologie et imagerie | Bases physiques des rayons X|Échographie et Doppler|Scanner|Imagerie par résonance magnétique|Produits de contraste|Radioprotection des patients|Sémiologie radiologique thoracique|Sémiologie radiologique de l'abdomen|Sémiologie radiologique osseuse|Imagerie du système nerveux|Imagerie de la femme
-# l3-pharmaco2 | Pharmacologie spéciale | Pharmacologie | pill | 1
-- l3-pharmaco2 | Pharmacologie spéciale | Antibiotiques|Antiparasitaires et antipaludiques|Antifongiques|Antiviraux et antirétroviraux|Antalgiques|Anti-inflammatoires non stéroïdiens|Corticoïdes|Antihypertenseurs|Diurétiques|Anticoagulants et antiagrégants|Antidiabétiques|Psychotropes|Médicaments du système nerveux autonome|Vaccins et sérums
-# l3-sp | Santé publique | Santé publique | globe | 3
-- l3-sp | Santé publique | Démographie et santé|Politique de santé au Sénégal|Soins de santé primaires|Programme élargi de vaccination|Santé de la reproduction|Nutrition et malnutrition|Hygiène hospitalière|Éducation pour la santé|Économie de la santé|Méthodologie de la recherche
+- s6-sc-gen | Chirurgie générale | Sémiologie de l'œsophage|Reflux gastro-œsophagien|Hernie hiatale|Ulcères gastriques et duodénaux|Péritonites aiguës généralisées|Appendicites aiguës|Cholécystite aiguë|Lithiase de la voie biliaire principale|Pancréatites aiguës|Cancer du pancréas
+- s6-sc-cctv | Chirurgie cardio-thoracique et vasculaire | Traumatismes du thorax|Ischémie aiguë des membres|Artériopathie des membres inférieurs|Anévrysmes artériels|Fistules artério-veineuses|Varices des membres inférieurs|Thrombose veineuse profonde|Ischémie intestinale
+- s6-sc-ortho | Chirurgie orthopédique | Introduction à l'orthopédie|Fractures|Rachis normal et traumatique|Traumatismes de la hanche|Main et poignet|Panaris et phlegmons|Infections ostéo-articulaires
+- s6-sc-ped | Chirurgie pédiatrique | Anomalies de la paroi abdominale|Anomalies du canal péritonéo-vaginal|Sténose hypertrophique du pylore|Invagination intestinale aiguë du nourrisson|Occlusions néonatales|Mégacôlon congénital|Urologie de l'enfant|Fractures de l'enfant|Luxation congénitale de la hanche|Ostéomyélite aiguë|Ostéo-arthrite
+- s6-sc-uro | Urologie | Sémiologie fonctionnelle urologique|Examen physique en urologie|Hématurie|Pyuries|Explorations uro-radiologiques
+- s6-sc-urg | Urgences et réanimation | États de choc|Brûlures thermiques étendues|Troubles acido-basiques
 
 =M1 1
-# m1-cardio | Cardiologie et chirurgie vasculaire | Cardiologie | heart | 0
-- m1-cardio | Cardiologie | Insuffisance cardiaque|Hypertension artérielle|Cardiopathies ischémiques|Rhumatisme articulaire aigu|Valvulopathies mitrales|Valvulopathies aortiques|Endocardite infectieuse|Péricardites|Cardiomyopathies|Troubles du rythme|Troubles de la conduction|Cœur pulmonaire chronique|Cardiopathies congénitales
-- m1-chirvasc | Chirurgie cardio-vasculaire | Artériopathie oblitérante des membres inférieurs|Ischémie aiguë des membres|Anévrismes artériels|Fistules artério-veineuses|Plaies vasculaires|Thromboses veineuses profondes|Varices des membres inférieurs
-# m1-pneumo | Pneumologie et chirurgie thoracique | Pneumologie | lungs | 1
-- m1-pneumo | Pneumologie | Pneumonies aiguës|Tuberculose pulmonaire|Pleurésies|Pneumothorax|Asthme|Bronchopneumopathie chronique obstructive|Dilatation des bronches|Abcès du poumon|Cancer bronchique|Embolie pulmonaire|Insuffisance respiratoire|Atteintes pulmonaires du VIH
-- m1-chirthor | Chirurgie thoracique | Traumatismes thoraciques|Hémothorax|Pleurésies purulentes : drainage|Hernies diaphragmatiques|Tumeurs du médiastin
-# m1-gastro | Gastro-entérologie et chirurgie digestive | Digestif | stomach | 5
-- m1-gastro | Gastro-entérologie et hépatologie | Ulcères gastro-duodénaux|Reflux gastro-œsophagien|Hémorragies digestives|Diarrhées aiguës|Diarrhées chroniques|Hépatites virales|Cirrhoses|Carcinome hépatocellulaire|Abcès du foie|Pancréatites|Ictères|Maladies inflammatoires de l'intestin|Parasitoses digestives
-- m1-chirdig | Chirurgie digestive | Appendicite aiguë|Péritonites aiguës|Occlusions intestinales|Hernies de l'aine|Éventrations|Lithiase biliaire|Cancer de l'estomac|Cancer du côlon|Cancer du rectum|Cancer de l'œsophage|Pathologie proctologique|Traumatismes de l'abdomen
-# m1-nephro | Néphrologie et urologie | Néphro-urologie | kidney | 3
-- m1-nephro | Néphrologie | Insuffisance rénale aiguë|Insuffisance rénale chronique|Syndrome néphrotique|Glomérulonéphrites|Infections urinaires|Néphropathies vasculaires|Troubles hydroélectrolytiques|Troubles acido-basiques|Dialyse et transplantation
-- m1-uro | Urologie | Lithiase urinaire|Adénome de la prostate|Cancer de la prostate|Rétention aiguë d'urine|Tumeurs du rein|Tumeurs de la vessie|Bilharziose urinaire et ses complications|Traumatismes de l'appareil urinaire|Cancers du testicule|Torsion du testicule|Rétrécissements de l'urètre
-# m1-infectio | Maladies infectieuses et tropicales | Infectiologie | virus | 2
-- m1-infectio | Maladies infectieuses et tropicales | Paludisme|Fièvre typhoïde|Infection à VIH|Tuberculose|Choléra|Amibiase|Méningites bactériennes|Tétanos|Rage|Rougeole|Fièvre jaune|Dengue et arboviroses|Bilharzioses|Leishmanioses|Trypanosomiase|Septicémies|Infections sexuellement transmissibles|Fièvre prolongée inexpliquée|Antibiothérapie : principes
+# m1-cpc | Cardiologie, pneumologie et chirurgie thoracique et vasculaire | Cardio-pneumo-CCTV | heart | 0
+- s7-cardio | Cardiologie | Électrocardiogramme|Athérosclérose|Maladie coronaire|Hypertension artérielle|Insuffisance cardiaque|Insuffisance cardiaque : physiopathologie|Cœur rhumatismal|Rétrécissement mitral|Insuffisance mitrale|Rétrécissement aortique|Insuffisance aortique|Endocardites|Péricardites|Cardiopathies congénitales|Dissection de l'aorte|Artériopathie oblitérante des membres inférieurs|Thrombophlébites|Syncopes|Arrêt cardio-circulatoire
+- s7-pneumo | Pneumologie | Examens complémentaires en pneumologie|Pneumopathies aiguës bactériennes communautaires|Infections virales respiratoires|Abcès du poumon|Pleurésies non purulentes|Pleurésies purulentes|Pneumothorax spontané|Tuberculose : diagnostic|Tuberculose : traitement|Asthme|Bronchopneumopathie chronique obstructive|Dilatation des bronches|Insuffisance respiratoire chronique|Embolie pulmonaire|Œdèmes pulmonaires|Cancers bronchopulmonaires|Mésothéliome pleural malin|Tumeurs médiastinales|Sarcoïdose médiastino-pulmonaire|Pneumopathies interstitielles diffuses|Hydatidose pulmonaire|Poumon et VIH|Allergies respiratoires|Syndrome d'apnées obstructives du sommeil|Tabac, pollution et poumon
+- s7-cctv | Chirurgie cardio-thoracique et vasculaire | Artériopathies des membres inférieurs|Anévrysmes artériels|Anévrismes artério-veineux|Varices des membres inférieurs|Thrombose veineuse profonde|Indications opératoires en chirurgie cardiaque|Indications et techniques chirurgicales
+# m1-hgechd | Hépato-gastro-entérologie et chirurgie digestive | HGE-chirurgie digestive | stomach | 5
+- s7-hge | Hépato-gastro-entérologie | Dysphagie|Reflux gastro-œsophagien|Maladie ulcéreuse gastro-duodénale|Constipation|Troubles fonctionnels intestinaux|Malabsorption intestinale|Parasitoses intestinales|Rectocolite hémorragique et maladie de Crohn|Manifestations digestives du VIH|Diagnostic d'un ictère|Diagnostic d'une hépatomégalie|Diagnostic d'une ascite|Hypertension portale|Encéphalopathie hépatique|Hépatites virales|Cirrhoses|Cancer primitif du foie
+- s7-chirdig | Chirurgie digestive | Troubles moteurs œsophagiens|Malformations congénitales de l'œsophage|Lésions caustiques de l'œsophage|Cancer de l'œsophage|Hernie hiatale|Complications évolutives des ulcères gastro-duodénaux|Séquelles de la chirurgie gastro-duodénale|Cancer de l'estomac|Hémorragie digestive : conduite à tenir|Contusions abdominales|Péritonites aiguës généralisées|Abcès sous-phréniques|Appendicites|Occlusion intestinale aiguë|Volvulus du côlon pelvien|Invagination intestinale aiguë|Occlusions néonatales|Malformations ano-rectales|Insuffisance circulatoire digestive|Cancers colorectaux|Fissure anale|Abcès et fistules anales|Cancer du canal anal|Lithiase biliaire et ses complications|Pancréatites aiguës|Cancer du pancréas exocrine|Abcès du foie
+# m1-tor | Traumatologie, orthopédie et rhumatologie | Traumato-ortho-rhumato | joint | 9
+- s7-rhumato | Rhumatologie | Physiologie de la douleur|Réaction inflammatoire|Pathologie synoviale|Pathologie osseuse|Polyarthrite rhumatoïde|Spondylarthrite ankylosante|Arthrites juvéniles idiopathiques|Pseudo-polyarthrite rhizomélique et maladie de Horton|Syndrome des antiphospholipides|Goutte|Arthrose|Ostéoporose|Ostéomalacie|Rhumatismes abarticulaires|Scolioses
+- s7-tor | Traumatologie-orthopédie | Introduction à la traumatologie-orthopédie|Lésions musculo-squelettiques|Fractures de l'enfant|Traumatismes de l'épaule|Traumatismes du coude|Traumatismes du poignet|Traumatismes de la main|Traumatismes du rachis|Traumatismes de la hanche|Traumatismes du genou|Traumatismes de la cheville|Ostéomyélites et ostéites|Tuberculose ostéo-articulaire|Mycétome : aspects orthopédiques|Lèpre : aspects orthopédiques|Séquelles de poliomyélite|Fluorose : aspects orthopédiques|Tumeurs osseuses et des parties molles
 
 =M1 2
-# m1-neuro | Neurologie et neurochirurgie | Neurologie | brain | 4
-- m1-neuro | Neurologie | Accidents vasculaires cérébraux|Épilepsies|Comas|Méningo-encéphalites|Céphalées|Maladie de Parkinson|Neuropathies périphériques|Compressions médullaires|Myasthénie|Sclérose en plaques|Démences|Neuropaludisme
-- m1-neurochir | Neurochirurgie | Traumatismes crânio-cérébraux|Hématomes intracrâniens|Traumatismes du rachis|Tumeurs cérébrales|Hypertension intracrânienne|Hydrocéphalie|Hernies discales|Mal de Pott
-# m1-endoc | Endocrinologie et métabolisme | Endocrinologie | gland | 6
-- m1-endoc | Endocrinologie, diabétologie, nutrition | Diabète sucré|Complications aiguës du diabète|Complications chroniques du diabète|Hyperthyroïdies|Hypothyroïdies|Goitres et nodules thyroïdiens|Insuffisance surrénale|Hypercorticismes|Phéochromocytome|Pathologies hypophysaires|Obésité|Dyslipidémies|Malnutrition de l'adulte
-# m1-locom | Rhumatologie et orthopédie | Appareil locomoteur | joint | 9
-- m1-rhumato | Rhumatologie | Polyarthrite rhumatoïde|Lupus érythémateux systémique|Spondylarthrites|Goutte|Arthrose|Ostéoporose|Arthrites septiques|Lombalgies et sciatiques|Ostéomyélites|Manifestations ostéo-articulaires de la drépanocytose
-- m1-ortho | Orthopédie-traumatologie | Généralités sur les fractures|Fractures ouvertes|Fractures de l'extrémité supérieure du fémur|Traumatismes de la jambe|Traumatismes de l'épaule|Fractures de l'avant-bras et du poignet|Traumatismes du bassin|Entorses et luxations|Tumeurs osseuses primitives|Ostéomyélites aiguës|Pied bot et malformations
-# m1-hemato | Hématologie clinique | Hématologie | drop | 0
-- m1-hemato | Hématologie clinique | Anémies|Drépanocytose|Thalassémies|Leucémies|Maladie de Hodgkin|Lymphomes non hodgkiniens|Myélome multiple|Syndromes hémorragiques|Hémophilies|Purpuras thrombopéniques|Coagulation intravasculaire disséminée|Transfusion sanguine en pratique
-# m1-dermato | Dermatologie | Dermatologie | skin | 5
-- m1-dermato | Dermatologie-vénéréologie | Lésions élémentaires et démarche diagnostique|Infections bactériennes de la peau|Dermatophyties et candidoses|Gale et pédiculoses|Lèpre|Ulcère de Buruli|Eczémas|Psoriasis|Toxidermies|Manifestations cutanées du VIH|Infections sexuellement transmissibles|Cancers de la peau
-# m1-anapath | Anatomie pathologique spéciale | Anapath | microscope | 7
-- m1-anapath | Anatomie pathologique spéciale | Pathologie du col de l'utérus|Pathologie du sein|Pathologie de l'estomac|Pathologie du côlon|Pathologie du foie|Pathologie de la prostate|Pathologie des ganglions|Pathologie de la thyroïde|Tumeurs osseuses|Tuberculose et bilharziose en anatomie pathologique
+# m1-hemato | Hématologie clinique et maladies systémiques | Hématologie | drop | 0
+- s8-hemato | Hématologie clinique | Anémies|Anémies carentielles|Anémies par anomalie de la membrane|Enzymopathies|Hémoglobinopathies|Anémies d'origine immunologique|Aplasies médullaires|Syndromes myélodysplasiques|Syndromes myéloprolifératifs|Leucémies aiguës|Lymphome de Hodgkin|Lymphomes non hodgkiniens|Gammapathies monoclonales|Pathologies de l'hémostase primaire|Hémophilies et autres pathologies de la coagulation|Transfusion sanguine|Corticothérapie|Traitements immunosuppresseurs
+- s8-systemique | Maladies systémiques | Introduction aux maladies systémiques|Concept d'auto-immunité|Auto-anticorps|Lupus systémique|Sclérodermie systémique|Syndrome de Sjögren|Myopathies inflammatoires|Connectivite mixte : syndrome de Sharp|Syndrome des anticorps antiphospholipides|Vasculites|Maladie de Behçet|Sarcoïdose
+# m1-mit | Maladies infectieuses et tropicales | MIT | virus | 2
+- s8-mit | Maladies infectieuses et tropicales | Généralités sur les infections|Antibiothérapie|Résistance aux antibiotiques|Septicémies à bacilles Gram négatif|Pneumococcies|Méningites purulentes|Méningites à liquide clair|Fièvre typhoïde|Diarrhées aiguës|Choléra|Amibiase|Tétanos|Rage humaine|Poliomyélite antérieure aiguë|Rougeole|Varicelle et zona|Grippe|Covid-19|Arboviroses|Fièvres hémorragiques virales en Afrique|Hépatites virales|Paludisme|Toxoplasmose|Trypanosomiase|Cryptococcose|Endocardites infectieuses|Infection à VIH : prise en charge
+- s8-smit | Stage au service des maladies infectieuses | Panorama des maladies infectieuses|Coma fébrile : conduite à tenir|Paludisme grave|Fièvres au long cours : diagnostic|VIH : épidémiologie et histoire naturelle|VIH : prise en charge pratique
+# m1-onco | Oncologie | Oncologie | ribbon | 7
+- s8-onco-fond | Oncologie fondamentale | Épidémiologie des cancers|Facteurs de la cancérogenèse|Histoire naturelle des cancers|Diagnostic des cancers|Syndromes paranéoplasiques|Chirurgie des cancers|Chimiothérapie des cancers|Radiothérapie|Urgences en cancérologie|Surveillance et évolution des cancers|Lutte contre le cancer en Afrique
+- s8-onco-spe | Oncologie spéciale | Cancer du sein|Cancer du col utérin|Cancer de l'endomètre|Cancer de l'ovaire|Cancers du foie|Cancers des voies aérodigestives supérieures
+# m1-urgrea | Urgences et réanimation | Urgences-réanimation | syringe | 1
+- s8-urg | Urgences | Organisation des urgences préhospitalières et hospitalières|Arrêt cardiaque|Détresse respiratoire aiguë : conduite à tenir|Asthme aigu grave|Douleurs thoraciques|Syndrome coronarien aigu|Traumatisme du thorax|Envenimations|Noyade et accidents de plongée
+- s8-rea | Réanimation | États de choc|Catécholamines|Comas|Traumatismes crânio-encéphaliques|Œdème aigu du poumon|Embolie pulmonaire|Insuffisance rénale aiguë|Troubles de l'hydratation et dysnatrémies|Dyskaliémies|Troubles acido-basiques|Acidocétose diabétique|Paludisme grave|Intoxications aiguës|Brûlures|Crush syndrome|Antibiothérapie en réanimation
 
 =M2 1
-# m2-pedia | Pédiatrie | Pédiatrie | baby | 3
-- m2-pedia | Pédiatrie | Croissance et développement de l'enfant|Alimentation du nourrisson|Malnutrition aiguë|Déshydratation de l'enfant|Diarrhées du nourrisson|Infections respiratoires aiguës|Paludisme de l'enfant|Méningites de l'enfant|Rougeole et maladies éruptives|Drépanocytose de l'enfant|Anémies de l'enfant|Convulsions de l'enfant|Programme élargi de vaccination|Prise en charge intégrée des maladies de l'enfant|Nouveau-né normal|Ictère du nouveau-né|Infections néonatales|Prématurité|Asphyxie néonatale|Cardiopathies congénitales
-- m2-chirped | Chirurgie pédiatrique | Invagination intestinale aiguë|Sténose du pylore|Hernies de l'enfant|Malformations ano-rectales|Ectopie testiculaire|Ostéomyélite de l'enfant|Brûlures de l'enfant
-# m2-gyneco | Gynécologie-obstétrique | Gynéco-obstétrique | female | 7
-- m2-obst | Obstétrique | Diagnostic de la grossesse|Consultation prénatale|Accouchement normal|Hémorragies du premier trimestre|Grossesse extra-utérine|Hémorragies du troisième trimestre|Hémorragies du post-partum|Prééclampsie et éclampsie|Rupture utérine|Dystocies|Paludisme et grossesse|VIH et grossesse|Infections du post-partum|Césarienne|Mortalité maternelle
-- m2-gyn | Gynécologie | Infections génitales|Stérilité du couple|Contraception|Fibromes utérins|Cancer du col de l'utérus|Cancer du sein|Kystes et tumeurs de l'ovaire|Aménorrhées|Fistules obstétricales|Mutilations génitales féminines|Ménopause
+# m2-dermato | Dermatologie-vénéréologie | Dermatologie | skin | 5
+- s9-derm-gen | Généralités | Introduction à la dermatologie|Lésions élémentaires en dermatologie
+- s9-derm-inf | Dermatoses infectieuses | Dermo-hypodermites bactériennes|Tuberculose cutanée|Lèpre|Leishmaniose cutanée|Mycétomes|Dermatoses virales non tumorales|Ectoparasitoses|Manifestations cutanéo-muqueuses du VIH|Généralités sur les IST|Syphilis|Gonococcie|Chancre mou|Maladie de Nicolas-Favre
+- s9-derm-infl | Dermatoses inflammatoires | Eczémas|Psoriasis|Lichen plan|Acné|Toxidermies|Dermatoses bulleuses|Syndrome érythrodermique|Manifestations dermatologiques du lupus|Sclérodermies|Dermatomyosite|Maladie de Behçet|Sarcoïdose
+- s9-derm-tum | Dermatoses tumorales | Tumeurs cutanées bénignes|Carcinome basocellulaire|Carcinome spinocellulaire|Mélanome|Maladie de Kaposi
+# m2-endoc | Endocrinologie, métabolisme et nutrition | Endocrinologie | gland | 6
+- s9-endoc | Endocrinologie-métabolisme-nutrition | Dysthyroïdies|Endocrinologie de la reproduction|Diabète : complications chroniques et pied diabétique|Dyslipidémies|Fondamentaux de la nutrition|Alcool et organisme
+# m2-imagerie | Imagerie médicale | Imagerie | xray | 8
+- s9-img-gen | Techniques | Introduction et échographie|Tomodensitométrie|Analyse du rythme cardiaque fœtal
+- s9-img-neuro | Neuro-imagerie et ORL | Traumatismes crânio-encéphaliques|AVC ischémiques|AVC hémorragiques|Infections cérébro-méningées|Tumeurs cérébrales|Compression médullaire lente|Pathologies dégénératives du rachis|Pathologies ORL
+- s9-img-thor | Imagerie thoracique | Douleurs thoraciques aiguës|Infections pulmonaires|Tuberculose|Pneumopathies interstitielles diffuses|Cancer bronchopulmonaire|Syndrome médiastinal
+- s9-img-abd | Imagerie abdominale | Urgences abdominales non traumatiques de l'adulte|Traumatismes de l'abdomen|Cirrhose|Maladies inflammatoires chroniques de l'intestin
+# m2-neuropsy | Neurologie, neurochirurgie et psychiatrie | Neuro-psychiatrie | brain | 4
+- s9-neuro | Neurologie | Infarctus cérébraux|Thromboses veineuses cérébrales|Céphalées et algies faciales|Épilepsies : diagnostic|Épilepsies : prise en charge|Maladie de Parkinson et syndromes parkinsoniens|Myasthénie|Neuropathies périphériques|Myélopathies non compressives|Encéphalomyélites auto-immunes|Myopathies de l'enfant|Neurosida|Rééducation en neurologie
+- s9-neurochir | Neurochirurgie | Traumatismes crânio-encéphaliques|Complications tardives des traumatismes crânio-encéphaliques|Hématomes intracérébraux spontanés|Hémorragies méningées|Hydrocéphalie|Tumeurs cérébrales|Tumeurs sus-tentorielles|Tumeurs de la fosse postérieure|Compression médullaire lente et queue de cheval|Lombosciatique|Canal lombaire étroit|Syndrome du canal carpien
+- s9-psy | Psychiatrie | Agitation|Trouble panique : attaque de panique et crise d'angoisse aiguë|Trouble anxieux généralisé|Trouble phobique|Trouble obsessionnel compulsif|Trouble de stress post-traumatique|Troubles somatoformes|Trouble bipolaire|Trouble schizophrénique|Troubles délirants|Suicide|Addictions aux substances psychoactives|Addiction à l'alcool|Troubles du post-partum|Troubles des conduites de l'adolescent|Troubles du spectre de l'autisme
+
 =M2 2
-# m2-psy | Psychiatrie | Psychiatrie | mind | 4
-- m2-psy | Psychiatrie | Examen psychiatrique|Schizophrénies|Troubles bipolaires|Dépressions|Troubles anxieux|Bouffées délirantes aiguës|Addictions|Troubles psychiatriques du post-partum|Urgences psychiatriques|Psychotropes en pratique|Psychiatrie et culture au Sénégal
-# m2-orl | ORL et chirurgie cervico-faciale | ORL | ear | 6
-- m2-orl | ORL | Otites|Angines et leurs complications|Sinusites|Épistaxis|Corps étrangers des voies aériennes|Dyspnées laryngées|Cancers ORL|Surdités|Paralysie faciale|Adénopathies cervicales|Cancer de la thyroïde|Cancer de la langue
-# m2-ophtalmo | Ophtalmologie | Ophtalmologie | eye | 1
-- m2-ophtalmo | Ophtalmologie | Œil rouge|Baisse de l'acuité visuelle|Cataracte|Glaucomes|Conjonctivites|Trachome|Traumatismes oculaires|Rétinopathies diabétique et hypertensive|Carence en vitamine A|Onchocercose oculaire|Strabisme|Rétinoblastome
-# m2-stomato | Stomatologie | Stomatologie | tooth | 9
-- m2-stomato | Stomatologie et chirurgie maxillo-faciale | Infections d'origine dentaire|Cellulites cervico-faciales|Noma|Traumatismes de la face|Tumeurs des maxillaires|Fentes labio-palatines
+# m2-gyneco | Gynécologie-obstétrique | Gynéco-obstétrique | female | 7
+- s10-go-ec1 | EC1 · Grossesse normale et pathologique | Diagnostic précoce de la grossesse|Surveillance et hygiène de la grossesse|Présentation du sommet|Surveillance du travail d'accouchement|Suites de couches normales et pathologiques|Présentation du siège|Grossesse gémellaire|Macrosomie fœtale|Dystocie dynamique|Dystocie fœtale|Dystocies osseuses|Hémorragies du premier trimestre|Hémorragies du troisième trimestre|Hémorragies du post-partum immédiat|Menace d'accouchement prématuré|Accouchement prématuré spontané|Rupture prématurée des membranes|Anomalies du liquide amniotique|HTA et grossesse|Diabète et grossesse|Anémie et grossesse|Paludisme et grossesse|Infection à VIH et grossesse|Infection urinaire et grossesse
+- s10-go-ec2 | EC2 · Pathologies gynécologiques et mammaires | Douleurs pelviennes|Troubles du cycle et des règles|Fibromes utérins|Tumeurs de l'ovaire|Pathologie mammaire bénigne|Cancer du sein|Cancer du col utérin|Cancer de l'endomètre
+- s10-go-ec3 | EC3 · Santé de la reproduction | Puberté chez la fille|Aménorrhées|Contraception|Méthodes barrières|Dispositif intra-utérin|Infertilité du couple|Ménopause|Mortalité maternelle|Mortalité périnatale|Mutilations génitales féminines|Abus sexuels|Santé de la reproduction des adolescents et des jeunes
+# m2-pedia | Pédiatrie-puériculture | Pédiatrie | baby | 3
+- s10-ped-puer | Puériculture et nutrition | Croissance somatique normale|Développement psychomoteur|Besoins nutritionnels du nourrisson|Allaitement maternel|Allaitement artificiel et laits de substitution|Vaccination|Malnutrition|Rachitisme carentiel|Obésité|Anémies de l'enfant|Vomissements du nourrisson|Diarrhée aiguë|Diarrhée chronique|Constipation chronique
+- s10-ped-neo | Néonatologie et génétique | Examen du nouveau-né et soins en salle de naissance|Adaptation à la vie extra-utérine|Prématurité|Asphyxie périnatale et réanimation|Détresse respiratoire du nouveau-né|Ictères du nouveau-né|Infections néonatales|Anémies néonatales|Syndromes hémorragiques du nouveau-né|Aberrations chromosomiques constitutionnelles|Anomalies du développement sexuel
+- s10-ped-synd | Grands syndromes | Morbidité et mortalité infantiles|Paludisme de l'enfant|Méningite purulente de l'enfant|Méningites lymphocytaires de l'enfant|Convulsions du nourrisson et de l'enfant|Coma chez l'enfant|Déshydratation de l'enfant|Intoxications aiguës de l'enfant|Infections respiratoires aiguës hautes|Bronchiolite aiguë|Pneumonies de l'enfant|Staphylococcie pleuro-pulmonaire|Primo-infection tuberculeuse|Asthme de l'enfant|Cardiopathies congénitales|Rhumatisme articulaire aigu|Insuffisance cardiaque de l'enfant|HTA de l'enfant|Glomérulonéphrite aiguë post-infectieuse|Syndrome néphrotique de l'enfant|Infection urinaire de l'enfant|Drépanocytose|Leucémies aiguës de l'enfant|Lymphomes non hodgkiniens de l'enfant|Maladie de Hodgkin de l'enfant|Tumeurs abdominales de l'enfant|Diabète de l'enfant|Hypothyroïdies de l'enfant|Hyperthyroïdie de l'enfant|Erreurs innées du métabolisme|Douleur chez l'enfant
+# m2-uronephro | Urologie-néphrologie | Uro-néphrologie | kidney | 6
+- s10-nephro | Néphrologie | Introduction à la néphrologie|Maladie rénale chronique : dépistage et prévention|Insuffisance rénale aiguë|Insuffisance rénale chronique|Traitements de suppléance rénale|Syndrome néphrotique|Glomérulonéphrite aiguë|Glomérulonéphrite rapidement progressive|Néphropathie lupique|Néphropathie diabétique|Néphropathies héréditaires|Drépanocytose et rein|Néphropathies interstitielles aiguës|Néphropathies tubulo-interstitielles chroniques|Infections du haut appareil urinaire|Infections du bas appareil urinaire|Rein et grossesse|Rein et VIH|Dysnatrémies|Dyskaliémies|Dyscalcémies|Acidose métabolique
+- s10-uro | Urologie | Lithiase urinaire|Syndrome de la jonction pyélo-urétérale|Reflux vésico-urétéral|Infections du haut appareil urinaire|Infections du bas appareil urinaire|Bilharziose urogénitale|Tuberculose urogénitale|Hypertrophie bénigne de la prostate|Cancer de la prostate|Cancers de la vessie|Cancer du rein de l'adulte|Cancer du rein de l'enfant|Cancers du testicule|Diagnostic des grosses bourses|Dystopies testiculaires|Traumatismes rénaux|Traumatismes du bas appareil urinaire|Fracture de la verge|Priapisme|Sténose de l'urètre|Incontinences urinaires|Fistules urogénitales|Dysfonction érectile|Infertilité masculine
+- s10-uro-base | Anatomie, anatomie pathologique et radiologie | Anatomie de l'appareil urinaire et génital masculin|Tumeurs bénignes de la prostate|Cancers prostatiques|Tumeurs de la vessie|Sémiologie radiologique de l'appareil urinaire
+# m2-anglais | Anglais médical | Anglais | lang | 1
+- s10-anglais | Anglais | Obstetrics|Urology
+# m2-stages | Stages de gynécologie et de pédiatrie | Stages | hospital | 8
+- s10-st-gyn | Stage de gynécologie-obstétrique | Examen clinique en gynécologie|Examen obstétrical|Pelvimétrie clinique|Accouchement normal|Partogramme|Analyse du rythme cardiaque fœtal|Gestion active de la troisième période de l'accouchement|Délivrance : conduite à tenir|Examen du nouveau-né en salle de naissance
+- s10-st-ped | Stage de pédiatrie | Observation du nouveau-né|Observation du nourrisson et de l'enfant|Observation pédiatrique
 
 =D1 1
-# d1-rea | Anesthésie, réanimation et urgences | Réanimation | syringe | 0
-- d1-rea | Anesthésie-réanimation | Arrêt cardio-respiratoire|États de choc|Détresses respiratoires aiguës|Comas|Polytraumatisé|Brûlures étendues|Intoxications aiguës|Envenimations|Anesthésie générale : principes|Anesthésie locorégionale|Remplissage vasculaire et transfusion|Douleur aiguë
-# d1-medint | Médecine interne et gériatrie | Médecine interne | stetho | 2
-- d1-medint | Médecine interne | Fièvre prolongée|Altération de l'état général|Polyadénopathies|Maladies systémiques|Vascularites|Sarcoïdose|Amylose|Particularités de la personne âgée|Chutes du sujet âgé|Iatrogénie
-# d1-thera | Thérapeutique | Thérapeutique | pill | 1
-- d1-thera | Thérapeutique et prescription | Rédiger une ordonnance|Prescription chez l'enfant|Prescription chez la femme enceinte et allaitante|Prescription chez le sujet âgé|Prescription chez l'insuffisant rénal et hépatique|Antibiothérapie en pratique|Corticothérapie en pratique|Anticoagulants en pratique|Insulinothérapie|Traitement de la douleur|Transfusion en pratique|Médicaments essentiels et génériques|Pharmacovigilance et effets indésirables|Interactions médicamenteuses
+# d1-comm | Anglais et communication scientifique | Anglais-communication | lang | 1
+- s11-comm | Communication scientifique | Introduction à la communication scientifique|L'article scientifique|Citations et références bibliographiques|Logiciel Zotero|Aides à la communication|Médecine fondée sur les preuves (EBM)
+- s11-angl | Anglais médical | Medical English|Abbreviations|Clinical cases
+# d1-mlt | Médecine légale et médecine du travail | Médecine légale-travail | scales | 8
+- s11-medleg | Médecine légale | Organisation judiciaire et sanitaire|Conditions légales d'exercice de la médecine au Sénégal|Ordre des médecins du Sénégal|Déontologie|Code de déontologie|Code harmonisé de la CEDEAO|Acte médical|Contrat médical|Information du malade|Charte du malade|Secret professionnel|Dossier médical|Certificats médicaux|Responsabilité médicale|Diagnostic de la mort et implications médico-légales|Autopsie médico-légale|Traumatologie médico-légale|Asphyxies mécaniques|Agressions sexuelles|Infanticide|Dons, prélèvements et législation au Sénégal
+- s11-medtrav | Médecine du travail | Organisation des services médicaux du travail|Personnel des services de santé au travail|Vocabulaire et règles générales de prévention|Hygiène du travail|Accidents du travail|Maladies professionnelles|Sécurité sociale|Nuisances physiques|Risques chimiques|Nuisances biologiques|Nuisances psychosociales|Pneumoconioses professionnelles|Accidents d'exposition au sang|Catégories professionnelles particulières
+- s11-toxico | Toxicologie | Notions générales de toxicologie|Toxicocinétique|Démarche diagnostique et syndromes toxiques|Principes de traitement des intoxications|Intoxication au paracétamol|Intoxication aux benzodiazépines|Intoxication aux pesticides|Envenimations
+# d1-sp | Santé publique, santé communautaire et économie de la santé | Santé publique | globe | 1
+- s11-sp | Santé publique | Introduction à la santé publique|Système de santé|Nature et présentation de l'information en santé publique|Résumé de l'information|Mesures de fréquence en épidémiologie|Types d'études et mesures d'association|Mesures d'impact|Échantillonnage|Collecte des données|Investigation d'une épidémie|Santé environnementale|Déchets biomédicaux|Concepts en nutrition|Enquêtes nutritionnelles et de mortalité|Santé de la reproduction en situation d'urgence
+- s11-sc | Santé communautaire | Santé communautaire|Acteurs et structures communautaires|Intervention sous directives communautaires|Socio-anthropologie de la santé
+- s11-eco | Économie de la santé | Introduction à l'économie de la santé|Besoins et demandes de santé|Définition et typologie des coûts|Financement de la santé|Couverture maladie universelle
+# d1-synth | Synthèse clinique et thérapeutique | Synthèse-thérapeutique | pill | 2
+- s11-thera | Thérapeutique | Antibiotiques et antibiothérapie|Anti-inflammatoires non stéroïdiens|Corticoïdes|Diurétiques|HTA : thérapeutique|Traitement de l'insuffisance cardiaque|Traitement du syndrome coronarien aigu|Maladie veineuse thromboembolique : thérapeutique|Prise en charge du diabète|Goutte : thérapeutique|Paludisme : thérapeutique|Traitement de la tuberculose|Traitement des méningites purulentes|Maladies systémiques : stratégies thérapeutiques
+- s11-thera-nf | À travailler seul (non fait en cours) | Asthme et BPCO|Hépatites virales|Maladie ulcéreuse gastro-duodénale|Thérapeutique en endocrinologie|Traitement antirétroviral
 
 =D1 2
-# d1-onco | Oncologie | Oncologie | ribbon | 7
-- d1-onco | Cancérologie | Épidémiologie des cancers au Sénégal|Diagnostic d'un cancer|Bilan d'extension et classification TNM|Chimiothérapie : principes|Radiothérapie : principes|Soins palliatifs|Douleur cancéreuse|Dépistage des cancers|Cancer du foie|Lymphome de Burkitt|Sarcome de Kaposi
-# d1-medleg | Médecine légale et du travail | Médecine légale | scales | 8
-- d1-medleg | Médecine légale | Certificats médicaux|Levée de corps et autopsie|Coups et blessures|Violences sexuelles|Secret médical|Responsabilité médicale|Droits du malade
-- d1-medtrav | Médecine du travail | Organisation de la médecine du travail|Accidents du travail|Maladies professionnelles|Risques professionnels des soignants
-# d1-sp | Santé publique | Santé publique | globe | 1
-- d1-sp | Santé publique et épidémiologie | Planification sanitaire|Gestion d'un district sanitaire|Investigation d'une épidémie|Maladies à potentiel épidémique|Lutte contre le paludisme|Lutte contre la tuberculose|Lutte contre le VIH|Santé maternelle et infantile|Nutrition|Hygiène du milieu|Évaluation des programmes de santé
+# d1-geria | Gériatrie-gérontologie | Gériatrie | people | 9
+- s12-geria | Gériatrie-gérontologie | Aspects démographiques, épidémiologiques et sociaux du vieillissement en Afrique|Physiologie du vieillissement|Particularités de la personne âgée malade|Évaluation gériatrique multidimensionnelle|Syndrome de fragilité|Perte d'autonomie et dépendance|Chutes du sujet âgé|Syndrome d'immobilisation|Confusion du sujet âgé|Maladie d'Alzheimer|Dépression du sujet âgé|Dénutrition de la personne âgée|Anémies du sujet âgé|Insuffisance cardiaque de la personne âgée|Prescription médicamenteuse chez la personne âgée
+# d1-mgt | Management des services de santé | Management | chart | 5
+- s12-mgt | Management | Aperçu sur les systèmes de santé|Management de la santé|Leadership|Gouvernance sanitaire|Gouvernance sanitaire mondiale|Prestation des services de santé|Incitation à la performance
+- s12-entr | Entrepreneuriat | Introduction à l'entrepreneuriat en santé|Connaissance entrepreneuriale et design thinking|Création d'entreprise|Business Model Canvas|Levée de fonds|Atelier de pitching
+# d1-metho | Méthodologie de la recherche | Méthodologie | chart | 3
+- s12-metho | Méthodologie de la recherche | Introduction à la méthodologie de la recherche|Rédiger un protocole|Qualité de la mesure|Évaluation d'un test diagnostique|Tests statistiques|Comparaison de deux moyennes|Comparaison de proportions : test du khi-deux|Recherche qualitative|Éthique et recherche en santé|Lecture critique d'un article|Recommandations STROBE
+# d1-orl | ORL, ophtalmologie et stomatologie | ORL-ophtalmo-stomato | ear | 6
+- s12-orl | ORL | Diagnostic d'une obstruction nasale|Épistaxis|Diagnostic d'une hypoacousie|Cholestéatome|Diagnostic d'une dysphonie|Diagnostic d'une dyspnée laryngée|Corps étrangers des voies respiratoires inférieures|Corps étrangers laryngo-trachéaux|Diagnostic d'une dysphagie|Manifestations ORL du reflux gastro-œsophagien|Traumatismes du cou|Cancer du larynx|Cancer de l'hypopharynx|Cancer de l'ethmoïde
+- s12-ophtalmo | Ophtalmologie | Anatomie et physiologie de l'œil|Sémiologie des paupières|Sémiologie de la conjonctive|Sémiologie de la cornée|Sémiologie de l'uvée|Sémiologie du cristallin|Diagnostic d'un œil rouge|Conjonctivites|Kératites|Uvéites|Cataractes|Glaucomes|Décollement de la rétine|Amétropies|Limbo-conjonctivite endémique des tropiques et trachome|Rétinoblastome|Œil et maladies générales
+- s12-stomato | Stomatologie et chirurgie maxillo-faciale | Notions élémentaires d'anatomie dentaire|Carie dentaire et ses complications|Cellulites cervico-faciales|Fractures mandibulaires|Luxation de l'articulation temporo-mandibulaire|Lithiase des glandes salivaires|Tumeurs des glandes salivaires|Tumeurs maxillo-faciales|Place de la stomatologie en médecine et en chirurgie
 
 =D2 1
 # d2-stages | Stages cliniques | Stages | hospital | 8
@@ -1710,6 +1739,7 @@ function viewMe(){
   ${appearancePanel()}
   ${layoutPanel()}
   ${PWA?gsPanel():''}
+  ${drivePanel()}
   <section class="panel stack"><h3>Sauvegarde</h3>${syncHTML()}
    <div class="row"><button class="btn" style="flex:1" data-act="export-json">Exporter une sauvegarde</button><button class="btn" style="flex:1" data-act="export-anki">Exporter pour Anki</button></div>
    <button class="btn" data-act="import-json">Importer une sauvegarde</button>
@@ -2007,7 +2037,7 @@ async function offerFile(filename, text){
   openSheet(()=>sheetTop(filename)+`<p class="small">Le téléchargement direct n'est pas disponible ici. Copie ce texte et enregistre-le dans un fichier.</p><textarea id="exportText" style="min-height:50vh" readonly>${esc(text)}</textarea><button class="btn btn-primary" data-act="copy-export">Copier</button>`);
 }
 function exportJSON(){
-  const d={app:'xamxam', v:1, exported:new Date().toISOString(), cards:Object.values(S.cards), progress:S.progress, custom:S.custom, notes:S.notes, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams, internat:S.internat};
+  const d={app:'xamxam', v:1, exported:new Date().toISOString(), cards:Object.values(S.cards), progress:S.progress, custom:S.custom, notes:S.notes, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams, internat:S.internat, drive:DRV};
   S.prefs.lastExport=now(); savePrefs(); setSync(W.status);
   offerFile('xamxam-sauvegarde-'+dayKey()+'.json', JSON.stringify(d));
 }
@@ -2028,12 +2058,13 @@ function importBackup(text){
   let d; try{ d=JSON.parse(text); }catch{ toast("Ce fichier n'est pas une sauvegarde XamXam."); return; }
   if(!d||d.app!=='xamxam'){ toast("Ce fichier n'est pas une sauvegarde XamXam."); return; }
   if(d.kind==='share'){ importShare(d); return; }
+  if(d.kind==='drive'){ importDrive(d); return; }
   const notes=Object.entries(d.notes||{}).map(([id,n])=>({...n, id}));
   const r=mergeData({cards:d.cards||[], notes, progress:{map:d.progress||{}, custom:d.custom||[]}, stats:d.stats||{days:{}}, prefs:d.prefs||null, trash:d.trash||{}});
   r.fromInc.cards.forEach(id=>cloudPut('cards/'+id,200)); r.fromInc.notes.forEach(id=>cloudPut('notes/'+id,200)); r.fromInc.docs.forEach(k=>cloudPut(k,200));
   for(const e of Object.values(d.exams||{})){ if(e&&e.id&&(!S.exams[e.id]||(S.exams[e.id].t||0)<(e.t||0))) S.exams[e.id]=e; }
   for(const x of Object.values(d.docs||{})){ if(x&&x.id&&!S.docs[x.id]) S.docs[x.id]=x; }
-  mergeInternat(d.internat);
+  mergeInternat(d.internat); mergeDrive(d.drive);
   writeLocal(); onDataChanged(true); toast('Sauvegarde importée : '+plural(r.fromInc.cards.length,'carte')+' mise'+(r.fromInc.cards.length>1?'s':'')+' à jour');
 }
 
@@ -2373,6 +2404,7 @@ function docsSection(id){
   return `<section class="panel"><div class="section-title"><h3>Mes documents de cours</h3><button class="btn btn-ghost" data-act="doc-add" data-id="${id}">${I.plus} Ajouter</button></div>
    ${list.length?`<div class="clist">${list.map(d=>`<button class="citem" data-act="doc-open" data-id="${d.id}"><span style="min-width:0"><span class="q">${esc(d.name)}</span><span class="meta"><span class="badge">${fileIcon(fileKind(d.name,d.type))}</span><span>${fmtSize(d.size)} · ${fmtShort(new Date(d.created))}</span></span></span>${I.chev}</button>`).join('')}</div>`
      :'<p class="muted small">Ajoute ton cours : PDF, Word, PowerPoint, photos ou tout autre fichier. Il reste sur ton téléphone, même sans internet.</p>'}
+   ${drv('chap',id).length?`<h4 class="drv-h">Sur le Drive de la promo</h4>${driveList(drv('chap',id))}`:''}
   </section>`;
 }
 async function addDocs(chap, files){
@@ -2600,7 +2632,7 @@ async function gh(method, path, body){
   if(!r.ok) throw Object.assign(new Error('http'),{code:'http', status:r.status});
   return r.json();
 }
-function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams, internat:S.internat}; }
+function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams, internat:S.internat, drive:DRV}; }
 function applyRemote(d){
   const before=JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
   const notes=Object.entries(d.notes||{}).map(([id,n])=>({...n, id}));
@@ -2614,6 +2646,7 @@ function applyRemote(d){
     else if(attempts.length!==(l.attempts||[]).length){ l.attempts=attempts; ex++; } }
   for(const id of Object.keys(S.exams)){ if(S.trash[id] && S.trash[id]>=(S.exams[id].t||0)) delete S.exams[id]; }
   if(mergeInternat(d.internat)) ex++;
+  if(mergeDrive(d.drive)) ex++;
   return r.fromInc.cards.length || r.fromInc.notes.length || r.fromInc.docs.size || ex || before!==JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
 }
 async function gsSync(manual){
@@ -2708,6 +2741,34 @@ async function handleSharedLaunch(){
   try{ const c=await caches.open('xamxam-share'); const r=await c.match('shared-file'); if(!r) return; const text=await r.text(); await c.delete('shared-file'); importBackup(text); }catch{ toast("Impossible d'ouvrir le fichier partagé."); }
 }
 
+// ---------- Drive de la promo ----------
+// Les liens vers les fichiers du Drive (cours, QCM, examens, copies modèles d'internat) ne sont pas publiés avec l'appli :
+// ils arrivent par un fichier à importer et restent sur les appareils de l'étudiant (et dans sa synchronisation).
+let DRV=null; try{ DRV=JSON.parse(lsGet('xamxam.drive')||'null'); }catch{ DRV=null; }
+const drv=(kind,id)=>(DRV&&!DRV.removed&&DRV[kind]&&DRV[kind][id])||[];
+const driveUrl=e=>e[2]==='p'?'https://docs.google.com/presentation/d/'+e[1]+'/view':'https://drive.google.com/file/d/'+e[1]+'/view';
+function driveList(list){ return `<div class="clist">${list.map(e=>{ const m=String(e[0]).match(/^(.*?)(?: · (PDF|Word|PowerPoint|Présentation))?$/);
+  return `<a class="citem" href="${driveUrl(e)}" target="_blank" rel="noopener"><span style="min-width:0"><span class="q">${esc(m[1])}</span><span class="meta"><span class="badge">${esc(m[2]||'Fichier')}</span><span>Drive</span></span></span>${I.chev}</a>`; }).join('')}</div>`; }
+function cleanDrive(d){ const ok=e=>Array.isArray(e)&&typeof e[0]==='string'&&/^[\w-]{10,100}$/.test(String(e[1]||''));
+  const lists=o=>{ const r={}; for(const [k,v] of Object.entries(o&&typeof o==='object'?o:{})) if(Array.isArray(v)){ const l=v.filter(ok).map(e=>e[2]==='p'?[e[0].slice(0,200),e[1],'p']:[e[0].slice(0,200),e[1]]); if(l.length) r[k]=l; } return r; };
+  const mod={}; for(const [k,v] of Object.entries(d.mod&&typeof d.mod==='object'?d.mod:{})){ const g=lists(v); if(Object.keys(g).length) mod[k]=g; }
+  return {name:String(d.name||'Drive de la promo').slice(0,80), at:+d.at||now(), chap:lists(d.chap), mod, int:lists(d.int)}; }
+function mergeDrive(inc){ if(!inc||typeof inc!=='object'||!inc.at) return false; if(DRV&&(DRV.at||0)>=inc.at) return false;
+  DRV=inc.removed?{removed:true, at:+inc.at}:cleanDrive(inc); lsSet('xamxam.drive', JSON.stringify(DRV)); return true; }
+function importDrive(d){ DRV=cleanDrive({...d, at:now()}); lsSet('xamxam.drive', JSON.stringify(DRV)); if(typeof gsSchedule==='function') gsSchedule();
+  const nC=Object.keys(DRV.chap).length, nI=Object.keys(DRV.int).length;
+  onDataChanged(true); toast(`Drive relié : ${plural(nC,'cours','cours')} et ${plural(nI,'question')} d'internat s'ouvrent maintenant sur leurs fichiers.`, 4800); }
+function driveModBlock(mid){ const g=DRV&&!DRV.removed&&DRV.mod&&DRV.mod[mid]; if(!g) return '';
+  const parts=[['doc','Autres documents'],['qcm','QCM'],['exam','Examens et devoirs'],['td','TD et TP'],['cas','Cas cliniques']].filter(([k])=>g[k]&&g[k].length);
+  if(!parts.length) return '';
+  return `<section class="panel"><h3>Sur le Drive de la promo</h3>${parts.map(([k,n])=>`<details class="syn"><summary><span>${n} <span class="small muted">· ${g[k].length}</span></span>${I.chev}</summary><div class="syn-body">${driveList(g[k])}</div></details>`).join('')}</section>`; }
+function driveIntBlock(id){ const l=drv('int',id); if(!l.length) return '';
+  return `<section class="panel"><h3>Copies modèles sur le Drive</h3><p class="small muted" style="margin-bottom:8px">Rédactions de cette question rangées dans le Drive de ta promo. Compare-les à ton plan et garde les mots-clés.</p>${driveList(l)}</section>`; }
+function drivePanel(){ const on=DRV&&!DRV.removed;
+  return `<section class="panel stack"><h3>Drive de la promo</h3>${on?`<p class="small">${plural(Object.keys(DRV.chap).length,'cours','cours')} et ${plural(Object.keys(DRV.int).length,'question')} d'internat ouvrent leurs fichiers du Drive. Liens importés le ${esc(fmtShort(new Date(DRV.at)))}.</p>
+    <p class="small muted">Ces liens restent sur tes appareils et dans ta synchronisation : ils ne sont pas publiés avec l'appli.</p><button class="btn" data-act="drive-del">Retirer les liens du Drive</button>`
+   :`<p class="small">Pour ouvrir depuis XamXam les cours, QCM, examens et copies modèles d'internat du Drive de ta promo, importe le fichier de liens (« xamxam-drive-promo103.json ») avec « Importer une sauvegarde ».</p>`}</section>`; }
+
 // ---------- Internat des hôpitaux ----------
 // Programme du concours d'après le document de l'étudiante : 4 épreuves écrites de 2 heures.
 // Chaque question a un plan (plan type de sa famille, ou plan propre quand la leçon est rédigée),
@@ -2715,7 +2776,6 @@ async function handleSharedLaunch(){
 // Les leçons rédigées sont des fichiers : internat/lecons/<id>.md
 const INT_DUR=120;
 const INT_STATUS=['À faire','Plan su','Leçon sue','Maîtrisée'];
-const INT_YEARS={PCEM1:'1re année', PCEM2:'2e année', DCEM1:'3e année', DCEM2:'4e année', DCEM3:'5e année'};
 
 // Plans types : un par famille de questions. Deux espaces de retrait = une sous-partie.
 const PLANS={
@@ -2851,6 +2911,23 @@ IV. Rapports
 V. Vascularisation et innervation
 VI. Applications cliniques
 Conclusion`},
+ 'a-region':{n:"Région, pédicule", ep:'anat', ex:'région sous-maxillaire, pédicule hépatique', p:`I. Généralités
+  1. Définition
+  2. Intérêt : anatomique, clinique, chirurgical
+II. Situation et limites
+  1. Limites superficielles
+  2. Limites profondes
+III. Constitution : plans successifs, de la superficie à la profondeur
+IV. Contenu
+  1. Éléments vasculaires
+  2. Éléments nerveux
+  3. Lymphatiques et organes
+  4. Disposition et rapports des éléments entre eux
+V. Rapports avec les régions voisines
+VI. Applications cliniques
+  1. Examen et exploration
+  2. Voies d'abord et pathologie
+Conclusion`},
  'b-fonction':{n:"Fonction physiologique", ep:'bio', ex:'circulation, respiration, digestion, hémostase, immunité, régulation des ions', p:`Introduction
   1. Définition
   2. Intérêt
@@ -2925,6 +3002,23 @@ V. Diagnostic étiologique
   1. Enquête : interrogatoire, examen, examens orientés
   2. Étiologies
 VI. Traitement : symptomatique, étiologique
+Conclusion`},
+ 'm-urgence':{n:"Urgence médicale (oral)", ep:'med', ex:'état de mal épileptique, coma hépatique, intoxications, accidents des traitements', p:`I. Généralités
+  1. Définition
+  2. Intérêt : urgence diagnostique et thérapeutique, pronostic vital
+  3. Physiopathologie
+II. Diagnostic
+  1. Positif : clinique, signes de gravité
+  2. Examens urgents, sans retarder le traitement
+  3. Différentiel
+  4. Étiologique
+III. Prise en charge
+  1. Buts
+  2. Gestes immédiats : liberté des voies aériennes, respiration, circulation, conditionnement
+  3. Traitement spécifique
+  4. Traitement de la cause
+  5. Surveillance
+  6. Prévention des récidives
 Conclusion`},
  'c-affection':{n:"Affection chirurgicale", ep:'chir', ex:'mal de Pott, anévrismes, hernies, ostéomyélites', p:`I. Généralités
   1. Définition
@@ -3016,153 +3110,425 @@ IV. Traitement
 Conclusion`}
 };
 
-// Épreuves → groupes → questions : [id, titre, famille de plan, année d'enseignement, chapitres de L3 liés, remarque]
+// Programme officiel du concours d'internat des hôpitaux de Dakar (document « Programme internat » du Drive de la promo).
+// Épreuves → groupes [nom, questions, 'oral' ou 'extra'] → questions [id, titre, famille de plan, cours de L3 S5 liés, remarque].
+// Les questions d'oral s'ajoutent à celles de l'écrit ; « extra » = leçons utiles hors de la liste officielle.
 const INT=[
  {id:'chir', name:'Pathologie chirurgicale', coef:2, groups:[
-  ['Traumatologie et orthopédie',[
-   ['c-brulures','Brûlures étendues','c-urgence','DCEM2',''],
-   ['c-fractures-ouvertes','Fractures ouvertes','c-trauma','DCEM2',''],
-   ['c-osteomyelites','Ostéomyélites aiguës','c-affection','DCEM2',''],
-   ['c-tumeurs-os','Tumeurs osseuses primitives','c-tumeur','DCEM2',''],
-   ['c-trauma-crane','Traumatismes crânio-cérébraux','c-trauma','DCEM3','neuro-4 neuro-6'],
-   ['c-trauma-rachis','Traumatismes du rachis','c-trauma','DCEM2','neuro-7'],
-   ['c-trauma-bassin','Traumatismes du bassin','c-trauma','DCEM2',''],
-   ['c-trauma-jambe','Traumatismes de la jambe','c-trauma','DCEM2',''],
-   ['c-trauma-epaule',"Traumatismes de l'épaule",'c-trauma','DCEM2',''],
-   ['c-pott','Mal de Pott','c-affection','DCEM2','neuro-7']]],
-  ['Vaisseaux et thorax',[
-   ['c-anevrismes-art','Anévrismes artériels','c-affection','DCEM2','cardio-1'],
-   ['c-anevrismes-av','Anévrismes artério-veineux','c-affection','DCEM2','cardio-1'],
-   ['c-plaies-vasc','Plaies vasculaires','c-urgence','DCEM2','cardio-1 cardio-6'],
-   ['c-trauma-thorax','Traumatismes thoraciques','c-trauma','DCEM2',''],
-   ['c-hernies-diaph','Hernies diaphragmatiques','c-affection','DCEM3','']]],
-  ['Cou et cancers',[
-   ['c-adp-cervicales','Adénopathies cervicales','m-syndrome','DCEM3','hemsemio-1'],
-   ['c-cancer-langue','Cancer de la langue','c-tumeur','DCEM3',''],
-   ['c-cancer-thyroide','Cancer de la thyroïde','c-tumeur','DCEM3',''],
-   ['c-cancer-sein','Cancer du sein','c-tumeur','DCEM3',''],
-   ['c-cancer-colon','Cancer du côlon','c-tumeur','DCEM3',''],
-   ['c-cancer-rectum','Cancer du rectum','c-tumeur','DCEM3',''],
-   ['c-tumeurs-cerveau','Tumeurs cérébrales','c-tumeur','DCEM3','neuro-4']]],
-  ['Chirurgie digestive, urologie, obstétrique',[
-   ['c-hernies-aine',"Hernies de l'aine",'c-affection','DCEM3',''],
-   ['c-occlusions','Occlusions intestinales','c-urgence','DCEM3',''],
-   ['c-uro','Pathologies urologiques graves : prostate, rein, testicule','c-affection','DCEM3','','Intitulé général dans ton programme : à préciser avec la liste officielle des questions.'],
-   ['c-obstetrique','Pathologies obstétricales graves','c-urgence','DCEM3','','Intitulé général dans ton programme : à préciser avec la liste officielle des questions.']]]]},
+  ['Pathologie générale',[
+   ['c-brulures','Brûlures étendues récentes','c-urgence',''],
+   ['c-anevrismes-art','Anévrismes artériels','c-affection','cardio-1'],
+   ['c-fractures-ouvertes','Fractures ouvertes de membres','c-trauma',''],
+   ['c-osteomyelites','Ostéomyélites aiguës','c-affection',''],
+   ['c-anevrismes-av','Anévrismes artério-veineux','c-affection','cardio-1'],
+   ['c-tumeurs-os','Tumeurs primitives des os','c-tumeur','']
+  ]],
+  ['Tête, cou, thorax, rachis',[
+   ['c-trauma-crane','Traumatismes crânio-cérébraux','c-trauma','neuro-4 neuro-6'],
+   ['c-adp-cervicales','Adénopathies cervicales','m-syndrome','hemsemio-1'],
+   ['c-cancer-langue','Cancer de la langue','c-tumeur',''],
+   ['c-cancer-thyroide','Tumeurs du corps thyroïde','c-tumeur',''],
+   ['c-cancer-sein','Tumeurs du sein','c-tumeur',''],
+   ['c-pott','Mal de Pott','c-affection','neuro-7'],
+   ['c-trauma-rachis','Fractures du rachis','c-trauma','neuro-7'],
+   ['c-trauma-thorax','Traumatismes du thorax','c-trauma',''],
+   ['c-hernies-diaph','Hernies diaphragmatiques','c-affection','']
+  ]],
+  ['Abdomen',[
+   ['c-contusions-abdo','Contusions de l\'abdomen','c-trauma',''],
+   ['c-complications-ugd','Complications des ulcères gastro-duodénaux','c-urgence','dig-6'],
+   ['c-lithiase-biliaire','Lithiase biliaire','c-affection','dig-7'],
+   ['m-pancreatite','Pancréatites aiguës','c-urgence',''],
+   ['c-occlusions','Occlusion intestinale aiguë','c-urgence','dig-2'],
+   ['c-appendicite','Appendicite aiguë','c-urgence',''],
+   ['c-cancer-colon','Cancer du côlon','c-tumeur',''],
+   ['c-cancer-rectum','Cancer du rectum','c-tumeur','']
+  ]],
+  ['Appareil urinaire, appareil génital',[
+   ['c-tumeurs-rein','Tumeurs du rein','c-tumeur','nephro-3'],
+   ['c-tb-urogenitale','Tuberculose uro-génitale','c-affection','nephro-3'],
+   ['c-cancer-testicule','Cancer du testicule','c-tumeur',''],
+   ['c-geu','Grossesse extra-utérine','c-urgence',''],
+   ['c-fibromes','Fibromyomes utérins','c-tumeur',''],
+   ['c-cancers-uterus','Cancers de l\'utérus','c-tumeur',''],
+   ['c-tumeurs-ovaire','Tumeurs de l\'ovaire','c-tumeur',''],
+   ['c-avortements','Complications des avortements','c-urgence','']
+  ]],
+  ['Bassin et membres',[
+   ['c-mycetomes','Mycétomes','c-affection','myco-2'],
+   ['c-elephantiasis','Éléphantiasis des membres','c-affection','parasito-15'],
+   ['c-trauma-bassin','Fractures du bassin','c-trauma',''],
+   ['c-col-femoral','Fractures du col fémoral','c-trauma',''],
+   ['c-trauma-jambe','Fractures de la jambe','c-trauma',''],
+   ['c-cou-de-pied','Fractures du cou-de-pied','c-trauma',''],
+   ['c-coxalgie','Coxalgie (tuberculose de la hanche)','c-affection',''],
+   ['c-trauma-epaule','Traumatismes de l\'épaule','c-trauma','']
+  ]],
+  ['Oral · Pathologie générale',[
+   ['co-hemorragies-op','Syndromes hémorragiques pré- et postopératoires : diagnostic et traitement','c-urgence','hemato-11 hemato-18'],
+   ['co-ecrasement','Écrasement des membres','c-trauma',''],
+   ['co-fractures-spont','Fractures spontanées','c-affection','rhumato-1'],
+   ['c-plaies-vasc','Plaies des artères','c-urgence','cardio-1 cardio-6'],
+   ['co-plaies-artic','Plaies articulaires','c-trauma',''],
+   ['co-plaies-nerfs','Plaies des nerfs','c-trauma',''],
+   ['co-arret-peroperatoire','Arrêt cardiaque au cours des interventions chirurgicales','c-urgence','cardio-6']
+  ],'oral'],
+  ['Oral · Tête, cou, thorax',[
+   ['co-ce-voies-resp','Corps étrangers des voies respiratoires','c-urgence',''],
+   ['co-deglutition-nne','Troubles de la déglutition du nouveau-né','c-affection',''],
+   ['co-plaies-coeur','Plaies du cœur','c-urgence','']
+  ],'oral'],
+  ['Oral · Abdomen',[
+   ['co-abces-sousphrenique','Abcès sous-phrénique','c-affection',''],
+   ['co-infarctus-mesentere','Infarctus du mésentère','c-urgence',''],
+   ['c-hernies-aine','Hernie inguinale','c-affection',''],
+   ['co-hernie-crurale','Hernie crurale étranglée','c-urgence',''],
+   ['co-hernies-ombilicales','Hernies ombilicales','c-affection',''],
+   ['co-occlusion-neonatale','Occlusion néonatale','c-urgence',''],
+   ['co-plaies-abdomen','Plaies de l\'abdomen','c-trauma','']
+  ],'oral'],
+  ['Oral · Appareil urinaire et génital',[
+   ['co-retention-urines','Rétention d\'urines','c-urgence','nephro-2'],
+   ['co-torsion-testicule','Torsion du testicule et de ses annexes','c-urgence',''],
+   ['co-adenome-prostate','Adénome prostatique','c-tumeur',''],
+   ['co-cancer-prostate','Cancer de la prostate','c-tumeur','biochim-5']
+  ],'oral'],
+  ['Oral · Bassin et membres',[
+   ['co-coude','Traumatismes du coude','c-trauma',''],
+   ['co-clavicule','Fracture de la clavicule','c-trauma',''],
+   ['co-avant-bras','Fracture des deux os de l\'avant-bras','c-trauma',''],
+   ['co-panaris','Panaris et phlegmon des gaines','c-affection',''],
+   ['co-luxation-hanche','Luxation traumatique de la hanche','c-trauma',''],
+   ['co-diaphyse-femorale','Fracture de la diaphyse fémorale','c-trauma',''],
+   ['co-rotule','Fracture de la rotule','c-trauma',''],
+   ['co-menisques','Accidents des ménisques du genou','c-trauma',''],
+   ['co-calcaneum','Fracture du calcanéum','c-trauma',''],
+   ['co-ischemie-aigue','Ischémie aiguë des membres','c-urgence','cardio-1'],
+   ['co-ulcere-phagedenique','Ulcères phagédéniques','c-affection','']
+  ],'oral'],
+  ['Oral · Obstétrique',[
+   ['co-placenta-praevia','Placenta prævia','c-urgence',''],
+   ['co-hrp','Hématome rétroplacentaire','c-urgence',''],
+   ['co-eclampsie','Éclampsie','c-urgence','cardio-7'],
+   ['co-delivrance','Accidents de la délivrance','c-urgence',''],
+   ['co-incompatibilite','Incompatibilité sanguine fœto-maternelle','c-affection','hemato-5'],
+   ['co-reanimation-nne','Mort apparente et réanimation du nouveau-né','c-urgence',''],
+   ['co-choriocarcinome','Chorio-épithéliome placentaire','c-tumeur','']
+  ],'oral']
+ ]},
  {id:'med', name:'Pathologie médicale', coef:2, groups:[
-  ['Cardiovasculaire',[
-   ['m-ic','Insuffisance cardiaque','m-maladie','DCEM1','cardio-9 cardio-3 cardio-4'],
-   ['m-hta','Hypertension artérielle','m-maladie','DCEM1','cardio-7'],
-   ['m-coronaropathies','Coronaropathies : angor et infarctus du myocarde','m-maladie','DCEM1','cardio-8 cardio-12 biochim-6']]],
-  ['Digestif',[
-   ['m-ulceres','Ulcères gastro-duodénaux','m-maladie','DCEM1','dig-6'],
-   ['m-cirrhose','Cirrhoses','m-maladie','DCEM1','dig-3 dig-4 dig-5 biochim-4'],
-   ['m-ictere','Ictères','m-syndrome','DCEM1','dig-7 biochim-4'],
-   ['m-pancreatite','Pancréatites','m-maladie','DCEM1',''],
-   ['m-hepatites','Hépatites virales','m-maladie','DCEM1','dig-7 biochim-4']]],
-  ['Infectieux',[
-   ['m-palu','Paludisme','m-maladie','DCEM1','parasito-5'],
-   ['m-typhoide','Fièvre typhoïde','m-maladie','DCEM1','gen-1'],
-   ['m-vih','Infection à VIH et sida','m-maladie','DCEM1','immuno-8 myco-8 myco-4 parasito-6'],
-   ['m-tuberculose','Tuberculose','m-maladie','DCEM1',''],
-   ['m-cholera','Choléra','m-maladie','DCEM1','dig-2 gen-3'],
-   ['m-amibiase','Amibiase','m-maladie','DCEM1','parasito-22 dig-2']]],
+  ['Pathologie cardiovasculaire',[
+   ['m-retrecissement-mitral','Rétrécissement mitral','m-maladie','cardio-3 cardio-4'],
+   ['m-endocardites','Endocardites malignes lentes','m-maladie','cardio-4'],
+   ['m-pericardites','Péricardites','m-maladie','cardio-5'],
+   ['m-coronaropathies','Insuffisance coronarienne','m-maladie','cardio-8 cardio-12 biochim-6'],
+   ['m-ic','Insuffisance cardiaque','m-maladie','cardio-9 cardio-3 cardio-4'],
+   ['m-hta','Hypertension artérielle','m-maladie','cardio-7'],
+   ['m-thrombophlebites','Thrombophlébites des membres','m-maladie','cardio-1']
+  ]],
+  ['Pathologie digestive',[
+   ['m-ulceres','Ulcères gastro-duodénaux','m-maladie','dig-6'],
+   ['m-hemorragies-dig','Hémorragies digestives','m-syndrome','dig-6'],
+   ['m-cancer-pancreas','Cancer du pancréas','m-maladie','dig-7'],
+   ['m-ictere','Ictères par rétention','m-syndrome','dig-7 biochim-4'],
+   ['m-hepatites','Hépatites virales','m-maladie','dig-7 biochim-4'],
+   ['m-cirrhose','Cirrhoses','m-maladie','dig-3 dig-4 dig-5 biochim-4'],
+   ['m-cancer-foie','Cancers du foie','m-maladie','dig-5 biochim-5']
+  ]],
+  ['Maladies infectieuses',[
+   ['m-raa','Rhumatisme articulaire aigu','m-maladie','cardio-4'],
+   ['m-tetanos','Tétanos','m-maladie',''],
+   ['m-typhoide','Fièvre typhoïde','m-maladie','gen-1'],
+   ['m-amibiase','Dysenterie amibienne','m-maladie','parasito-22 dig-2'],
+   ['m-amibiase-hep','Amibiase hépatique','m-maladie','parasito-22 dig-5'],
+   ['m-staph','Septicémies à staphylocoque','m-maladie',''],
+   ['m-palu','Paludisme','m-maladie','parasito-5'],
+   ['m-trypano','Trypanosomiase humaine','m-maladie','parasito-10'],
+   ['m-filarioses','Filarioses','m-maladie','parasito-15 parasito-13 parasito-14'],
+   ['m-fievre-jaune','Fièvre jaune','m-maladie',''],
+   ['m-lepre','Lèpre','m-maladie',''],
+   ['m-cholera','Choléra','m-maladie','dig-2 gen-3'],
+   ['m-bilharzioses','Bilharzioses, rougeole, variole','m-maladie','parasito-19']
+  ]],
   ['Hématologie',[
-   ['m-anemies','Anémies','m-syndrome','DCEM1','hemsemio-2 hemato-17 hemato-3'],
-   ['m-leucemies','Leucémies','m-maladie','DCEM2','hemato-2 hemato-17 hemato-16'],
-   ['m-hodgkin','Maladie de Hodgkin','m-maladie','DCEM2','hemsemio-1 hemsemio-3'],
-   ['m-myelome','Myélome multiple','m-maladie','DCEM2','hemato-16 gen-2']]],
+   ['m-anemies-hemolytiques','Anémies hémolytiques','m-maladie','hemsemio-2 hemato-8 hemato-7'],
+   ['m-leucemies','Leucémies','m-maladie','hemato-2 hemato-17 hemato-16'],
+   ['m-hodgkin','Maladie de Hodgkin','m-maladie','hemsemio-1 hemsemio-3'],
+   ['m-purpuras','Purpuras','m-syndrome','hemato-11 hemato-10 hemato-18'],
+   ['m-splenomegalies','Splénomégalies','m-syndrome','hemsemio-3'],
+   ['m-myelome','Myélome multiple (maladie de Kahler)','m-maladie','hemato-16 gen-2']
+  ]],
   ['Néphrologie',[
-   ['m-ira','Insuffisance rénale aiguë','m-maladie','DCEM2','nephro-8 nephro-2 biochim-3'],
-   ['m-irc','Insuffisance rénale chronique','m-maladie','DCEM2','nephro-9 nephro-1 biochim-3'],
-   ['m-sn','Syndrome néphrotique','m-maladie','DCEM2','nephro-5 nephro-3 nephro-4']]],
-  ['Respiratoire',[
-   ['m-asthme','Asthme','m-maladie','DCEM1',''],
-   ['m-pneumonies','Infections pulmonaires','m-maladie','DCEM1',''],
-   ['m-tumeurs-poumon','Tumeurs broncho-pulmonaires','m-maladie','DCEM1',''],
-   ['m-embolie','Embolie pulmonaire','m-maladie','DCEM1','cardio-12 cardio-1']]],
-  ['Endocrinologie, métabolisme, maladies de système',[
-   ['m-diabete','Diabète sucré','m-maladie','DCEM2','endoc-6'],
-   ['m-hyperthyroidie','Hyperthyroïdies','m-maladie','DCEM2','endoc-1'],
-   ['m-hypothyroidie','Hypothyroïdies','m-maladie','DCEM2','endoc-2'],
-   ['m-surrenale','Insuffisance surrénale','m-maladie','DCEM2','endoc-4'],
-   ['m-cushing','Hypercorticismes','m-maladie','DCEM2','endoc-3'],
-   ['m-lupus','Lupus érythémateux systémique','m-maladie','DCEM2','rhumato-3 immuno-1'],
-   ['m-goutte','Goutte','m-maladie','DCEM2','rhumato-3'],
-   ['m-pr','Polyarthrite rhumatoïde','m-maladie','DCEM2','rhumato-3 gen-2']]]]},
+   ['m-ira','Insuffisance rénale aiguë','m-maladie','nephro-8 nephro-2 biochim-3','Question officielle : « Insuffisance rénale » (aiguë et chronique).'],
+   ['m-irc','Insuffisance rénale chronique','m-maladie','nephro-9 nephro-1 biochim-3','Question officielle : « Insuffisance rénale » (aiguë et chronique).'],
+   ['m-gna','Glomérulonéphrites aiguës','m-maladie','nephro-5 nephro-3'],
+   ['m-sn','Syndromes néphrotiques','m-maladie','nephro-5 nephro-3 nephro-4'],
+   ['m-anuries','Anuries','m-syndrome','nephro-2 nephro-8'],
+   ['m-lithiase-renale','Lithiase rénale','m-maladie','nephro-4']
+  ]],
+  ['Pathologie respiratoire',[
+   ['m-suppurations-pulm','Suppurations pulmonaires','m-maladie',''],
+   ['m-suppurations-bronch','Suppurations bronchiques chroniques','m-maladie',''],
+   ['m-oap','Œdème aigu du poumon','m-maladie','cardio-9'],
+   ['m-embolie','Embolies pulmonaires','m-maladie','cardio-12 cardio-1'],
+   ['m-primo-tb','Primo-infection tuberculeuse','m-maladie',''],
+   ['m-miliaire','Tuberculose miliaire','m-maladie',''],
+   ['m-asthme','Asthme','m-maladie',''],
+   ['m-pleuresies','Pleurésies séro-fibrineuses','m-maladie',''],
+   ['m-tumeurs-poumon','Cancers broncho-pulmonaires','m-maladie',''],
+   ['m-mediastin','Syndromes médiastinaux','m-syndrome','']
+  ]],
+  ['Neurologie',[
+   ['m-polynevrites','Polynévrites','m-syndrome','neuro-1'],
+   ['m-hemiplegies','Hémiplégies','m-syndrome','neuro-2 neuro-1'],
+   ['m-paraplegies','Paraplégies','m-syndrome','neuro-7 neuro-2'],
+   ['m-polio','Poliomyélite antérieure aiguë','m-maladie',''],
+   ['m-meningites','Méningites','m-maladie','neuro-5'],
+   ['m-hemorragies-meningees','Hémorragies méningées','m-maladie','neuro-5'],
+   ['m-comas','Comas non traumatiques','m-syndrome','neuro-6'],
+   ['m-fosse-post','Tumeurs de la fosse postérieure','m-maladie','neuro-4 neuro-8']
+  ]],
+  ['Endocrinologie',[
+   ['m-hyperthyroidie','Hyperthyroïdie','m-maladie','endoc-1'],
+   ['m-hypothyroidie','Insuffisance thyroïdienne','m-maladie','endoc-2'],
+   ['m-hyperparathyroidie','Hyperparathyroïdie','m-maladie','endoc-5'],
+   ['m-hypopituitarisme','Hypopituitarisme','m-maladie','endoc-7'],
+   ['m-surrenale','Insuffisance surrénale lente','m-maladie','endoc-4'],
+   ['m-cushing','Hypercorticismes','m-maladie','endoc-3']
+  ]],
+  ['Nutrition et métabolisme',[
+   ['m-diabete','Diabète','m-maladie','endoc-6'],
+   ['m-goutte','Goutte','m-maladie','rhumato-3'],
+   ['m-hypoglycemies','Hypoglycémies','m-syndrome','endoc-6']
+  ]],
+  ['Divers',[
+   ['m-sarcoidose','Sarcoïdose','m-maladie',''],
+   ['m-lupus','Lupus érythémateux aigu disséminé','m-maladie','rhumato-3 immuno-1'],
+   ['m-pr','Polyarthrite chronique évolutive (polyarthrite rhumatoïde)','m-maladie','rhumato-3 gen-2']
+  ]],
+  ['Oral · Pathologie cardiovasculaire',[
+   ['mo-stokes-adams','Syndrome de Stokes-Adams','m-urgence','cardio-2'],
+   ['mo-aomi','Artériopathies chroniques oblitérantes des membres inférieurs','m-maladie','cardio-1'],
+   ['mo-insuffisance-aortique','Insuffisance aortique','m-maladie','cardio-3 cardio-4'],
+   ['mo-retrecissement-aortique','Rétrécissement aortique','m-maladie','cardio-3 cardio-4']
+  ],'oral'],
+  ['Oral · Pathologie digestive',[
+   ['mo-coma-hepatique','Coma hépatique','m-urgence','dig-3 neuro-6'],
+   ['mo-cancer-estomac','Cancer de l\'estomac','m-maladie',''],
+   ['mo-cancer-oesophage','Cancer de l\'œsophage','m-maladie','dig-1'],
+   ['mo-stenose-pylore','Sténose du pylore','m-maladie','dig-1'],
+   ['mo-hemochromatose','Hémochromatose primitive','m-maladie','dig-5'],
+   ['mo-rch','Rectocolite hémorragique','m-maladie','dig-2']
+  ],'oral'],
+  ['Oral · Maladies infectieuses',[
+   ['mo-coqueluche','Coqueluche','m-maladie',''],
+   ['mo-diphterie','Diphtérie','m-maladie',''],
+   ['mo-erytheme-noueux','Érythème noueux','m-syndrome',''],
+   ['mo-oreillons','Oreillons','m-maladie',''],
+   ['mo-rubeole','Rubéole','m-maladie',''],
+   ['mo-scarlatine','Scarlatine','m-maladie',''],
+   ['mo-syphilis','Syphilis primo-secondaire','m-maladie',''],
+   ['mo-varicelle','Varicelle','m-maladie',''],
+   ['mo-zona','Zona','m-maladie',''],
+   ['mo-rickettsioses','Rickettsioses','m-maladie',''],
+   ['mo-leptospiroses','Leptospiroses, brucellose','m-maladie','']
+  ],'oral'],
+  ['Oral · Hématologie',[
+   ['mo-accidents-transfusion','Accidents de la transfusion sanguine','m-urgence','hemato-15 hemato-5 hemato-12'],
+   ['mo-accidents-anticoag','Accidents des anticoagulants','m-urgence','hemato-11 hemato-18'],
+   ['mo-aplasies','Aplasies médullaires','m-maladie','hemato-2 hemato-16'],
+   ['mo-mononucleose','Syndrome mononucléosique','m-syndrome','hemato-14 hemato-17'],
+   ['mo-hemophilies','Hémophilies','m-maladie','hemato-11 hemato-18'],
+   ['mo-polyglobulies','Polyglobulies','m-syndrome','hemato-3 hemato-17'],
+   ['mo-biermer','Maladie de Biermer','m-maladie','hemsemio-2 hemato-3']
+  ],'oral'],
+  ['Oral · Néphrologie',[
+   ['mo-colique-nephretique','Coliques néphrétiques','m-urgence','nephro-4']
+  ],'oral'],
+  ['Oral · Pathologie respiratoire',[
+   ['mo-ira-bpco','Insuffisance respiratoire aiguë des bronchopneumopathies chroniques','m-urgence',''],
+   ['mo-hemoptysie','Hémoptysie','m-urgence',''],
+   ['m-pneumonies','Pneumonies bactériennes','m-maladie',''],
+   ['mo-pneumothorax','Pneumothorax','m-urgence',''],
+   ['mo-emphyseme','Emphysème pulmonaire','m-maladie',''],
+   ['mo-pleuresie-purulente','Pleurésie purulente','m-maladie','']
+  ],'oral'],
+  ['Oral · Neurologie',[
+   ['mo-etat-de-mal','État de mal épileptique','m-urgence','neuro-6'],
+   ['mo-htic','Hypertension intracrânienne','m-syndrome','neuro-4'],
+   ['mo-sciatique','Sciatique','m-syndrome','neuro-1'],
+   ['mo-paralysie-faciale','Paralysie faciale','m-syndrome','neuro-3'],
+   ['mo-parkinson','Syndromes parkinsoniens','m-syndrome','neuro-9']
+  ],'oral'],
+  ['Oral · Endocrinologie',[
+   ['mo-isa','Insuffisance surrénale aiguë','m-urgence','endoc-4']
+  ],'oral'],
+  ['Oral · Nutrition, métabolisme, intoxications',[
+   ['mo-deshydratation-nrs','Déshydratation aiguë du nourrisson','m-urgence','gen-3 gen-5'],
+   ['mo-rachitisme','Rachitisme','m-maladie','rhumato-1 endoc-5'],
+   ['mo-tetanie-nrs','Tétanie du nourrisson','m-urgence','endoc-5 gen-5'],
+   ['mo-intox-co','Intoxication par l\'oxyde de carbone','m-urgence',''],
+   ['mo-intox-barbituriques','Intoxication par les barbituriques','m-urgence','pharmaco-6'],
+   ['mo-delirium-tremens','Delirium tremens','m-urgence','']
+  ],'oral'],
+  ['Oral · Divers',[
+   ['mo-accidents-atb','Accidents des antibiotiques','m-urgence','pharmaco-11'],
+   ['mo-accidents-cortico','Accidents de la corticothérapie','m-urgence','endoc-3'],
+   ['mo-cancer-os-secondaire','Cancer secondaire des os','m-maladie','biochim-5']
+  ],'oral'],
+  ['Compléments utiles (hors liste officielle)',[
+   ['m-vih','Infection à VIH et sida','m-maladie','immuno-8 myco-8 myco-4 parasito-6'],
+   ['m-tuberculose','Tuberculose pulmonaire commune','m-maladie',''],
+   ['m-anemies','Anémies : démarche diagnostique','m-syndrome','hemsemio-2 hemato-17 hemato-3']
+  ],'extra']
+ ]},
  {id:'anat', name:'Anatomie', coef:1, groups:[
-  ['Système nerveux central',[
-   ['a-ventricules','Ventricules cérébraux','a-cavite','PCEM1','neuro-4'],
-   ['a-nerfs-craniens','Nerfs crâniens','a-nerf','PCEM1','neuro-3'],
-   ['a-pyramidal','Faisceau pyramidal','a-voie','PCEM1','neuro-2 neuro-1']]],
-  ['Thorax',[
-   ['a-coeur','Cœur','a-organe','PCEM1','cardio-11 cardio-4'],
-   ['a-poumons','Poumons','a-organe','PCEM1',''],
-   ['a-bronches','Bronches','a-conduit','PCEM1',''],
-   ['a-aorte','Aorte','a-artere','PCEM1','cardio-1'],
-   ['a-diaphragme','Diaphragme','a-muscle','PCEM1','']]],
-  ['Abdomen et pelvis',[
-   ['a-estomac','Estomac','a-organe','PCEM1',''],
-   ['a-foie','Foie','a-organe','PCEM1','dig-5'],
-   ['a-pancreas','Pancréas','a-organe','PCEM1',''],
-   ['a-rate','Rate','a-organe','PCEM1','hemsemio-3'],
-   ['a-reins','Reins','a-organe','PCEM1','nephro-1'],
-   ['a-vessie','Vessie','a-organe','PCEM1','']]],
-  ['Organes génitaux',[
-   ['a-uterus','Utérus','a-organe','PCEM1',''],
-   ['a-ovaires','Ovaires','a-organe','PCEM1',''],
-   ['a-testicules','Testicules','a-organe','PCEM1','']]],
+  ['Système nerveux',[
+   ['a-ventricules','Quatrième ventricule','a-cavite','neuro-4'],
+   ['a-arteres-cerveau','Artères du cerveau','a-artere',''],
+   ['a-voies-optiques','Voies optiques','a-voie','neuro-3'],
+   ['a-pyramidal','Faisceau pyramidal','a-voie','neuro-2 neuro-1'],
+   ['a-facial','Nerf facial','a-nerf','neuro-3'],
+   ['a-recurrent','Nerf récurrent','a-nerf',''],
+   ['a-moteurs-oeil','Nerfs moteurs de l\'œil','a-nerf','neuro-3'],
+   ['a-vertebrales','Artères vertébrales et tronc basilaire','a-artere','']
+  ]],
+  ['Cou et thorax',[
+   ['a-carotide-interne','Carotide interne','a-artere',''],
+   ['a-phrenique','Nerf phrénique','a-nerf',''],
+   ['a-sous-maxillaire','Région sous-maxillaire','a-region',''],
+   ['a-oesophage','Œsophage','a-conduit','dig-1'],
+   ['a-coeur','Cœur et ses vaisseaux','a-organe','cardio-11 cardio-4'],
+   ['a-bronches','Bronches','a-conduit',''],
+   ['a-diaphragme','Diaphragme','a-muscle',''],
+   ['a-aorte','Aorte thoracique','a-artere','cardio-1']
+  ]],
+  ['Abdomen',[
+   ['a-estomac','Estomac et ses vaisseaux','a-organe',''],
+   ['a-pancreas','Duodéno-pancréas','a-organe',''],
+   ['a-colon','Côlon et ses vaisseaux','a-organe',''],
+   ['a-reins','Rein et ses vaisseaux','a-organe','nephro-1'],
+   ['a-surrenales','Capsules surrénales','a-organe','endoc-3 endoc-4'],
+   ['a-pedicule-hepatique','Pédicule hépatique','a-region','dig-4'],
+   ['a-rate','Rate','a-organe','hemsemio-3']
+  ]],
+  ['Petit bassin',[
+   ['a-uretere','Uretère','a-conduit','nephro-4'],
+   ['a-vessie','Vessie','a-organe',''],
+   ['a-deferent','Canal déférent','a-conduit',''],
+   ['a-uterus','Utérus et ses vaisseaux','a-organe',''],
+   ['a-ovaires','Ovaires et ligament large','a-organe',''],
+   ['a-rectum','Rectum et ses vaisseaux','a-organe','']
+  ]],
   ['Membres',[
-   ['a-vasc-ms','Vascularisation du membre supérieur','a-artere','PCEM2','cardio-1'],
-   ['a-vasc-mi','Vascularisation du membre inférieur','a-artere','PCEM2','cardio-1'],
-   ['a-plexus-brachial','Plexus brachial','a-nerf','PCEM2',''],
-   ['a-plexus-lombaire','Plexus lombaire','a-nerf','PCEM2',''],
-   ['a-plexus-sacre','Plexus sacré','a-nerf','PCEM2',''],
-   ['a-genou','Articulation du genou','a-articulation','PCEM2',''],
-   ['a-hanche','Articulation de la hanche','a-articulation','PCEM2',''],
-   ['a-epaule',"Articulation de l'épaule",'a-articulation','PCEM2','']]]]},
+   ['a-plexus-brachial','Plexus brachial','a-nerf',''],
+   ['a-axillaire','Artère axillaire','a-artere',''],
+   ['a-femorale','Artère fémorale','a-artere','cardio-1'],
+   ['a-poplitee','Artère poplitée','a-artere','cardio-1'],
+   ['a-hanche','Articulation de la hanche','a-articulation',''],
+   ['a-genou','Genou','a-articulation','']
+  ]]
+ ]},
  {id:'bio', name:'Biologie', coef:2, groups:[
   ['Physiologie',[
-   ['b-circulation','Physiologie de la circulation','b-fonction','PCEM2','cardio-11 cardio-7'],
-   ['b-sodium','Régulation du sodium','b-fonction','PCEM2','gen-3 gen-5'],
-   ['b-potassium','Régulation du potassium','b-fonction','PCEM2','gen-5'],
-   ['b-calcium','Régulation du calcium','b-fonction','PCEM2','gen-5 endoc-5 rhumato-1'],
-   ['b-digestion','Physiologie de la digestion','b-fonction','PCEM2',''],
-   ['b-respiration','Physiologie de la respiration','b-fonction','PCEM2','']]],
-  ['Immunologie',[
-   ['b-immunite-innee','Immunité innée','b-fonction','PCEM2','immuno-1 immuno-2 immuno-6 immuno-7 immuno-8'],
-   ['b-immunite-adaptative','Immunité adaptative','b-fonction','PCEM2','immuno-1 immuno-3 immuno-4 immuno-5'],
-   ['b-auto-immunite','Auto-immunité','b-fonction','PCEM2','immuno-1 immuno-5']]],
+   ['b-pression-arterielle','La pression artérielle, ses facteurs et sa régulation','b-fonction','cardio-7'],
+   ['b-automatisme-cardiaque','Le contrôle nerveux et l\'automatisme cardiaque','b-fonction','cardio-2'],
+   ['b-hemodynamique','Hémodynamique intracardiaque','b-fonction','cardio-4 cardio-10'],
+   ['b-debit-cardiaque','Le débit cardiaque et ses facteurs d\'adaptation','b-fonction','cardio-9'],
+   ['b-lymphe','La lymphe et la circulation lymphatique','b-fonction','hemsemio-1'],
+   ['b-reticule','Physiologie du système réticulé du tronc cérébral','b-fonction','neuro-6'],
+   ['b-ventilation','Physiologie de la ventilation pulmonaire','b-fonction',''],
+   ['b-hematose','Physiologie de l\'hématose ; mécanismes compensateurs des variations des gaz du sang','b-fonction','gen-5'],
+   ['b-digestion-gastrique','Physiologie de la digestion gastrique','b-fonction','dig-1'],
+   ['b-digestion-intestinale','Physiologie de la digestion intestinale','b-fonction','dig-2'],
+   ['b-absorption','Physiologie de l\'absorption intestinale','b-fonction','dig-2'],
+   ['b-pancreas-exocrine','Physiologie du pancréas exocrine','b-fonction',''],
+   ['b-hypothalamus','Les relations fonctionnelles entre l\'hypothalamus et l\'antéhypophyse','b-fonction','endoc-7'],
+   ['b-menstruation','Physiologie de la menstruation','b-fonction',''],
+   ['b-croissance-osseuse','Rôle des glandes endocrines dans la croissance osseuse','b-fonction','endoc-7 endoc-5'],
+   ['b-filtration','La filtration glomérulaire','b-fonction','nephro-1'],
+   ['b-tubule','Physiologie du tubule rénal','b-fonction','nephro-1 nephro-6'],
+   ['b-clearances','Les clearances rénales','b-fonction','nephro-1 biochim-3'],
+   ['b-concentration-urine','Les mécanismes de concentration de l\'urine','b-fonction','nephro-2'],
+   ['b-glycogenique','Fonction glycogénique du foie','b-fonction','biochim-4 endoc-6'],
+   ['b-insuline','L\'insuline et ses effets physiologiques','b-substance','endoc-6'],
+   ['b-acide-base','Régulation de l\'équilibre acide-base','b-fonction','gen-5']
+  ]],
+  ['Biochimie',[
+   ['b-corticotrophine','Sécrétion et rôle physiologique de la corticotrophine','b-substance','endoc-3 endoc-4 endoc-7'],
+   ['b-thyroidiennes','Effets biologiques et biosynthèse des hormones thyroïdiennes','b-substance','endoc-1 endoc-2'],
+   ['b-cortisol','Métabolisme et effets du cortisol','b-substance','endoc-3 endoc-4'],
+   ['b-aldosterone','Métabolisme et effets de l\'aldostérone','b-substance','endoc-4'],
+   ['b-androgenes','Métabolisme et action physiologique des hormones mâles','b-substance',''],
+   ['b-oestrogenes','Métabolisme et action physiologique des hormones œstrogéniques','b-substance',''],
+   ['b-progestatives','Métabolisme et action physiologique des hormones progestatives','b-substance',''],
+   ['b-ammoniogenese','Ammoniogenèse et uréogenèse','b-processus','biochim-3 biochim-4'],
+   ['b-cetogenese','La cétogenèse','b-processus','endoc-6'],
+   ['b-glycemie','Régulation de la glycémie','b-fonction','endoc-6'],
+   ['b-compartiments','Les compartiments hydriques de l\'organisme et leur régulation','b-fonction','gen-3'],
+   ['b-sodium','La répartition du sodium dans l\'organisme et sa régulation','b-fonction','gen-3 gen-5'],
+   ['b-potassium','La répartition du potassium dans l\'organisme et sa régulation','b-fonction','gen-5'],
+   ['b-calcium','La répartition du calcium dans l\'organisme et sa régulation','b-fonction','gen-5 endoc-5 rhumato-1'],
+   ['b-vitamine-d','Vitamine D : nature, origine, besoins, action, physiologie','b-substance','rhumato-1 endoc-5'],
+   ['b-vitamine-b1','Vitamine B1 : nature, origine, besoins, action physiologique','b-substance',''],
+   ['b-vitamine-c','Vitamine C : nature, rôle biologique','b-substance','']
+  ]],
   ['Biologie cellulaire',[
-   ['b-mitose','Mitose','b-processus','PCEM1',''],
-   ['b-meiose','Méiose','b-processus','PCEM1',''],
-   ['b-synthese-proteique','Synthèse des protéines : ADN, ARN messager','b-processus','PCEM1','']]],
-  ['Génétique',[
-   ['b-mutations','Mutations','b-processus','PCEM1',''],
-   ['b-transmission','Transmission des caractères héréditaires','b-processus','PCEM1','']]],
+   ['b-differenciation-sexuelle','Physiologie de la différenciation sexuelle','b-processus',''],
+   ['b-mitose','La mitose, les chromosomes, le caryotype humain','b-processus',''],
+   ['b-synthese-proteique','Les fonctions cellulaires de l\'ADN et de l\'ARN','b-processus',''],
+   ['b-transmission','Modes de transmission héréditaire des caractères monofactoriels','b-processus',''],
+   ['b-defense-cellulaire','Les processus cellulaires de défense contre les agents infectieux','b-fonction','immuno-1 immuno-2 immuno-8'],
+   ['b-defense-humorale','Les facteurs humoraux de défense contre les agents infectieux','b-fonction','immuno-4 immuno-6 immuno-7'],
+   ['b-greffe','Les bases théoriques de l\'immunité de greffe','b-fonction','immuno-5'],
+   ['b-auto-immunite','L\'auto-immunisation','b-processus','immuno-1 immuno-5'],
+   ['b-carcinogenese','Les facteurs de la carcinogenèse','b-processus','immuno-9 biochim-5']
+  ]],
   ['Hématologie',[
-   ['b-groupes','Groupes sanguins','b-substance','PCEM2','hemato-5 hemato-15 hemato-12'],
-   ['b-hemostase','Hémostase','b-fonction','PCEM2','hemato-11 hemato-18 hemato-10'],
-   ['b-hemoglobine','Hémoglobine','b-substance','PCEM2','hemato-6 hemato-8 hemato-7']]],
-  ['Biophysique',[
-   ['b-rayonnements','Effets biologiques des rayonnements ionisants','b-biophys','PCEM2',''],
-   ['b-radioprotection','Radioprotection','b-biophys','PCEM2','']]]]}
+   ['b-groupes','Les groupes érythrocytaires','b-substance','hemato-5 hemato-15 hemato-12'],
+   ['b-hemostase','Les facteurs de l\'hémostase','b-fonction','hemato-11 hemato-18 hemato-10']
+  ]],
+  ['Physique et biophysique',[
+   ['b-rayonnements','Action des rayonnements ionisants sur les différents tissus','b-biophys','']
+  ]],
+  ['Compléments utiles (hors liste officielle)',[
+   ['b-hemoglobine','Hémoglobine','b-substance','hemato-6 hemato-8 hemato-7'],
+   ['b-immunite-innee','Immunité innée','b-fonction','immuno-1 immuno-2 immuno-6 immuno-7 immuno-8'],
+   ['b-immunite-adaptative','Immunité adaptative','b-fonction','immuno-1 immuno-3 immuno-4 immuno-5']
+  ],'extra']
+ ]}
 ];
 // Leçons rédigées (fichiers internat/lecons/<id>.md). Complété automatiquement à la publication.
 const INT_READY=['b-groupes','b-hemoglobine','b-hemostase','b-immunite-adaptative','b-immunite-innee','m-amibiase','m-anemies','m-asthme','m-cholera','m-cirrhose','m-coronaropathies','m-cushing','m-diabete','m-embolie','m-goutte','m-hepatites','m-hodgkin','m-hta','m-hyperthyroidie','m-hypothyroidie','m-ic','m-ictere','m-ira','m-irc','m-leucemies','m-lupus','m-myelome','m-palu','m-pancreatite','m-pneumonies','m-pr','m-sn','m-surrenale','m-tuberculose','m-tumeurs-poumon','m-typhoide','m-ulceres','m-vih'];
 const INTQ={}, L3INT={}, INTL={};
 const fold = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+// Mots d'un intitulé : sans accents, sans petits mots, au singulier.
+const STOPW=new Set('le la les l d de du des et ses son sa un une en au aux a par pour sur dans chez ou avec sans leur leurs'.split(' '));
+const wordsOf = t => fold(String(t).replace(/\(.*?\)/g,' ')).replace(/œ/g,'oe').replace(/æ/g,'ae').split(/[^a-z0-9]+/).filter(w=>w&&!STOPW.has(w)).map(w=>w.length>4?w.replace(/[sx]$/,''):w);
+// Matières où chercher les cours qui préparent une question, selon l'épreuve.
+const INT_SCOPE={
+  anat: m=>/anat/.test(m.id),
+  bio: m=>/biochim|biophys|physio|bcg|histo|^hib$|bactviro/.test(m.id),
+  chir: m=>!/^l[12]-/.test(m.id) || /semio|secour|soins/.test(m.id),
+  med: m=>!/^l[12]-/.test(m.id) || /semio|secour|soins/.test(m.id)};
 function buildInt(){
   for(const k in INTQ) delete INTQ[k]; for(const k in L3INT) delete L3INT[k];
   for(const ep of INT){ let n=0; ep.all=[];
-    for(const [g,items] of ep.groups) for(const [id,t,type,an,l3,note] of items){ const x={id,t,type,an,ep:ep.id,g,l3:(l3||'').split(' ').filter(Boolean),note:note||'',n:++n}; INTQ[id]=x; ep.all.push(x); }
-    for(const c of (S.internat.custom||[])){ if(c.del||c.ep!==ep.id) continue; const x={id:c.id,t:c.title,type:c.type,an:'',ep:ep.id,g:'Mes questions',l3:[],note:'',n:++n,custom:true}; INTQ[c.id]=x; ep.all.push(x); }
+    for(const [g,items,flag] of ep.groups) for(const [id,t,type,l3,note] of items){ const x={id,t,type,ep:ep.id,g,oral:flag==='oral',extra:flag==='extra',l3:(l3||'').split(' ').filter(Boolean),note:note||'',n:++n}; INTQ[id]=x; ep.all.push(x); }
+    for(const c of (S.internat.custom||[])){ if(c.del||c.ep!==ep.id) continue; const x={id:c.id,t:c.title,type:c.type,ep:ep.id,g:'Mes questions',l3:[],note:'',n:++n,custom:true}; INTQ[c.id]=x; ep.all.push(x); }
   }
-  // les cours des autres années qui portent le même intitulé qu'une question sont reliés automatiquement
-  const idx=Object.values(CH).filter(c=>{ const m=MODS[c.mod]; return m && !(m.lvl==='L3'&&m.sem===1); }).map(c=>[c.id, fold(c.title)]);
-  for(const x of Object.values(INTQ)){ if(x.custom) continue; const q=fold(x.t); if(q.length<4) continue;
-    for(const [id,t] of idx) if((t===q || t.startsWith(q+' ') || q.startsWith(t+' ')) && !x.l3.includes(id)) x.l3.push(id); }
-  for(const x of Object.values(INTQ)) for(const c of x.l3) (L3INT[c]=L3INT[c]||[]).push(x.id);
+  // les cours de toutes les années dont l'intitulé reprend celui d'une question y sont reliés automatiquement
+  const idx=Object.values(CH).map(c=>[c, wordsOf(c.title)]).filter(([,w])=>w.length);
+  for(const x of Object.values(INTQ)){ if(x.custom) continue;
+    const q=wordsOf(x.t.split(' : ')[0]), inScope=INT_SCOPE[x.ep]; if(!q.length||!inScope) continue;
+    for(const [c,w] of idx){ const m=MODS[c.mod]; if(!m||!inScope(m)||x.l3.includes(c.id)) continue;
+      const qInC=q.every(a=>w.includes(a)), cInQ=w.every(a=>q.includes(a)) && (w.length>=2 || x.ep==='anat' || w[0].length>=7);
+      if(qInC||cInQ) x.l3.push(c.id); }
+  }
+  for(const x of Object.values(INTQ)){ x.l3=x.l3.filter(c=>CH[c]);
+    for(const c of x.l3) (L3INT[c]=L3INT[c]||[]).push(x.id);
+    let best=null; for(const c of x.l3){ const m=MODS[CH[c].mod]; if(!m) continue; const k=semNo(m.lvl,m.sem); if(!best||k<best.k) best={k,lvl:m.lvl}; }
+    x.an=best?best.lvl+' · S'+best.k:''; }   // première fois que la question est vue en cours
 }
 const intSt = id => (S.internat.prog[id]||{}).s||0;
 function setIntSt(id,s){ S.internat.prog[id]={s,t:now()}; saveLocal(); }
@@ -3229,9 +3595,10 @@ function progSeg(){ return `<div class="seg" role="group" aria-label="Quel progr
 function viewInt(){
   intPrefetch();
   const all=Object.values(INTQ), f=UI.intFilter, q=fold(UI.intQuery.trim()), c=intCounts(all); const nSeen=all.filter(intSeen).length;
-  const filters=[['all','Toutes'],['seen','Vues en cours'+(nSeen?' · '+nSeen:'')],['ready','Leçon rédigée'],['0','À faire'],['1','Plan su'],['2','Leçon sue'],['3','Maîtrisées']];
-  const match=x=>(f==='all'||(f==='seen'?intSeen(x):f==='ready'?intReady(x.id):String(intSt(x.id))===f))&&(!q||fold(x.t).includes(q)||fold(x.g).includes(q));
-  let html=`<header class="stack" style="gap:4px"><p class="eyebrow">Concours des hôpitaux du Sénégal · ${all.length} questions</p><h1>Internat</h1></header>${progSeg()}
+  const off=all.filter(x=>!x.custom&&!x.extra), nW=off.filter(x=>!x.oral).length, nO=off.filter(x=>x.oral).length, nCopy=all.filter(x=>drv('int',x.id).length).length;
+  const filters=[['all','Toutes'],['ecrit','Écrit'],['oral','Oral'],['seen','Vues en cours'+(nSeen?' · '+nSeen:'')],['ready','Leçon rédigée'],...(nCopy?[['copie','Copie modèle']]:[]),['0','À faire'],['1','Plan su'],['2','Leçon sue'],['3','Maîtrisées']];
+  const match=x=>(f==='all'||(f==='ecrit'?!x.oral:f==='oral'?x.oral:f==='seen'?intSeen(x):f==='ready'?intReady(x.id):f==='copie'?drv('int',x.id).length>0:String(intSt(x.id))===f))&&(!q||fold(x.t).includes(q)||fold(x.g).includes(q));
+  let html=`<header class="stack" style="gap:4px"><p class="eyebrow">Concours des hôpitaux de Dakar · ${nW} questions d'écrit, ${nO} d'oral</p><h1>Internat</h1></header>${progSeg()}
    <section class="panel stack" style="gap:10px"><div class="spread"><strong>Où j'en suis</strong><span class="small muted">${c[1]+c[2]+c[3]} plans sus · ${c[2]+c[3]} leçons sues</span></div>${intBar(c,all.length)}
      <div class="legend"><span><i class="lg3"></i>Maîtrisée</span><span><i class="lg2"></i>Leçon sue</span><span><i class="lg1"></i>Plan su</span></div>
      <div class="row" style="flex-wrap:nowrap"><button class="btn btn-soft" style="flex:1" data-act="int-plans">Plans types</button><button class="btn btn-primary" style="flex:1" data-act="int-train">Épreuve blanche</button></div></section>
@@ -3242,16 +3609,17 @@ function viewInt(){
     let inner='', shown=0, lastG=null;
     for(const x of ep.all){ if(!match(x)) continue;
       if(x.g!==lastG){ inner+=`<div class="sub-h"><h3>${esc(x.g)}</h3></div>`; lastG=x.g; }
-      const st=intSt(x.id); const meta=[intReady(x.id)?'leçon rédigée':'plan type', intSeen(x)?'vue en cours':(x.l3.length?'dans tes cours de L3':''), x.note?'à préciser':''].filter(Boolean).join(' · ');
+      const st=intSt(x.id); const meta=[x.oral?'oral':'', intReady(x.id)?'leçon rédigée':'plan type', drv('int',x.id).length?'copie modèle':'', intSeen(x)?'vue en cours':(x.an?'dans tes cours ('+x.an+')':'')].filter(Boolean).join(' · ');
       inner+=`<button class="chap" data-act="int-open" data-id="${x.id}"><span class="chap-n">${pad(x.n)}</span><span class="chap-t">${esc(x.t)}<span class="chap-meta">${meta}</span></span><span class="pill s${st}">${INT_STATUS[st]}</span></button>`; shown++; }
     if(!shown && (q||f!=='all')) continue;
     if(!q && f==='all') inner+=`<button class="add-chap" data-act="int-add" data-ep="${ep.id}">+ Ajouter une question</button>`;
     total+=shown;
     const cc=intCounts(ep.all), known=cc[2]+cc[3]; const open=UI.open.has('int-'+ep.id)||q||f!=='all';
-    html+=`<details class="mod" data-mod="int-${ep.id}" ${open?'open':''}><summary><span class="stack" style="gap:2px"><strong style="font-family:var(--font-display);font-size:1.0625rem">${esc(ep.name)}</strong><span class="small muted">coefficient ${ep.coef} · ${plural(ep.all.length,'question')}${known?' · '+known+' sue'+(known>1?'s':''):''}</span></span>${I.chev}</summary>${inner}</details>`;
+    const w=ep.all.filter(x=>!x.oral&&!x.extra).length, o=ep.all.filter(x=>x.oral).length;
+    html+=`<details class="mod" data-mod="int-${ep.id}" ${open?'open':''}><summary><span class="stack" style="gap:2px"><strong style="font-family:var(--font-display);font-size:1.0625rem">${esc(ep.name)}</strong><span class="small muted">coefficient ${ep.coef} · ${w} à l'écrit${o?' · '+o+' à l\'oral':''}${known?' · '+known+' sue'+(known>1?'s':''):''}</span></span>${I.chev}</summary>${inner}</details>`;
   }
   if(!total) html+=`<p class="muted">Aucune question ne correspond.</p>`;
-  html+=`<p class="small muted">Programme établi d'après ton document. Les leçons sont des modèles : en cas de différence, c'est le cours de tes professeurs qui fait foi.</p>`;
+  html+=`<p class="small muted">Programme officiel du concours (écrit et oral), tiré du Drive de ta promo. Les leçons sont des modèles : en cas de différence, c'est le cours de tes professeurs qui fait foi.</p>`;
   return html;
 }
 
@@ -3302,12 +3670,13 @@ function intSheet(){
   const links=x.l3.filter(c=>CH[c]);
   return sheetTop(ep.name+' · '+x.n+'/'+ep.all.length)+`
    <div class="stack" style="gap:6px"><h2>${esc(x.t)}</h2>
-    <p class="small muted">Coefficient ${ep.coef} · épreuve de ${INT_DUR/60} h${x.an?' · enseignée en '+INT_YEARS[x.an]:''}</p>
+    <p class="small muted">${x.oral?'Oral · question d\'urgence le plus souvent':'Écrit · coefficient '+ep.coef+' · épreuve de '+INT_DUR/60+' h'}${x.extra?' · hors liste officielle':''}${x.an?' · vue en cours en '+x.an:''}</p>
     ${x.note?`<p class="small" style="color:var(--hard)">${esc(x.note)}</p>`:''}</div>
    <div class="seg" role="group" aria-label="Où en es-tu ?">${INT_STATUS.map((l,i)=>`<button data-act="int-status" data-s="${i}" aria-pressed="${st===i}">${l}</button>`).join('')}</div>
    ${links.length?`<section class="panel"><h3>Dans tes cours</h3>
      <p class="small muted" style="margin-bottom:8px">${links.some(c=>statusOf(c)>=1)?'Tu as déjà vu cette leçon en cours : apprends-la maintenant au format de l\'internat.':'Ces cours préparent cette question : travaille-les ensemble.'}</p>
      <div class="menu">${links.map(c=>`<button data-act="chap" data-id="${c}">${I.book}<span><span class="t">${esc(CH[c].title)}</span><span class="d">${MODS[CH[c].mod].lvl} · ${esc(SUBS[CH[c].sub].name)} · ${STATUS[statusOf(c)]}</span></span>${I.chev}</button>`).join('')}</div></section>`:''}
+   ${driveIntBlock(id)}
    <div class="seg" role="group" aria-label="Partie de la fiche">${[['plan','Plan'],['lecon','Leçon type'],['expl','Explications']].map(([k,l])=>`<button data-act="int-tab" data-t="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
    ${body}
    ${UI.intEdit?'':`<button class="btn btn-primary btn-lg" data-act="int-train" data-id="${id}">S'entraîner sur cette question · ${INT_DUR/60} h</button>
@@ -3393,7 +3762,7 @@ function intCheckSheet(){
 function intPickSheet(){
   const nSeen=Object.values(INTQ).filter(x=>intSeen(x)&&intSt(x.id)<3).length;
   return sheetTop('Épreuve blanche')+`<p>Une question tirée au sort, ${INT_DUR/60} heures, comme au concours. Tu écris sur une feuille, puis tu te corriges avec la fiche.</p>
-   <section class="panel"><div class="menu">${INT.map(ep=>`<button data-act="int-draw" data-ep="${ep.id}">${I.exam}<span><span class="t">${esc(ep.name)}</span><span class="d">coefficient ${ep.coef} · ${plural(ep.all.length,'question')}</span></span>${I.chev}</button>`).join('')}
+   <section class="panel"><div class="menu">${INT.map(ep=>`<button data-act="int-draw" data-ep="${ep.id}">${I.exam}<span><span class="t">${esc(ep.name)}</span><span class="d">coefficient ${ep.coef} · ${plural(ep.all.filter(x=>!x.oral&&!x.extra).length,'question')} d'écrit</span></span>${I.chev}</button>`).join('')}
      ${nSeen?`<button data-act="int-draw" data-ep="seen">${I.book}<span><span class="t">Parmi les leçons vues en cours</span><span class="d">${plural(nSeen,'question')}</span></span>${I.chev}</button>`:''}</div></section>
    <p class="small muted">Le tirage préfère les questions dont tu connais déjà le plan.</p>`;
 }
@@ -3443,7 +3812,7 @@ document.addEventListener('click', async e=>{
       const c={id:uid('q'), ep:UI.intAddEp, title:t, type:($('#intAddType')||{}).value||'m-maladie', t:now()}; S.internat.custom.push(c); saveLocal(); buildInt(); UI.open.add('int-'+c.ep); closeSheet(); toast('Question ajoutée'); break; }
     case 'int-del': armConfirm(a,'Confirmer la suppression',()=>{ const c=S.internat.custom.find(x=>x.id===UI.intId); if(c){ c.del=true; c.t=now(); } saveLocal(); buildInt(); closeSheet(); toast('Question supprimée'); }); break;
     case 'int-train': if(d.id) itrBegin(d.id); else if(ITR) itrResume(); else openSheet(intPickSheet); break;
-    case 'int-draw': { let pool=(d.ep==='seen'?Object.values(INTQ).filter(intSeen):INT.find(x=>x.id===d.ep).all).filter(x=>intSt(x.id)<3);
+    case 'int-draw': { let pool=(d.ep==='seen'?Object.values(INTQ).filter(intSeen):INT.find(x=>x.id===d.ep).all).filter(x=>intSt(x.id)<3&&!x.oral&&!x.extra);
       if(!pool.length){ toast('Toutes ces questions sont déjà maîtrisées.'); break; }
       const known=pool.filter(x=>intSt(x.id)>=1); if(known.length && Math.random()<0.75) pool=known;
       itrBegin(pool[Math.floor(Math.random()*pool.length)].id); break; }
@@ -3534,6 +3903,7 @@ function modSheet(){
    <div class="listbox">${subs[0].all.map(c=>chapRow(c,K)).join('')}<button class="add-chap" data-act="add-chap" data-sub="${subs[0].id}">+ Ajouter un cours</button></div>`;
   h+=`<button class="add-chap boxed" data-act="sub-add" data-mod="${m.id}">+ Ajouter une sous-matière</button>
    <div class="listbox">${modExamsBlock(m)}</div>
+   ${driveModBlock(m.id)}
    ${m.custom?`<button class="btn danger" data-act="mod-del" data-id="${m.id}">Supprimer cette matière</button>`:`<button class="btn btn-ghost" data-act="mod-hide" data-id="${m.id}">Je ne suis pas cette matière : la masquer</button>`}`;
   return h;
 }
@@ -3729,6 +4099,7 @@ document.addEventListener('click', async e=>{
     case 'export-json': exportJSON(); break;
     case 'export-anki': exportAnki(); break;
     case 'copy-export': copyText($('#exportText').value, $('#exportText')); break;
+    case 'drive-del': armConfirm(a,'Confirmer : retirer les liens',()=>{ DRV={removed:true, at:now()}; lsSet('xamxam.drive', JSON.stringify(DRV)); if(typeof gsSchedule==='function') gsSchedule(); rerender(); toast('Liens du Drive retirés'); }); break;
     case 'del-examples': armConfirm(a,'Confirmer : supprimer les exemples',()=>{ Object.values(S.cards).filter(c=>c.example).forEach(c=>deleteCard(c.id)); updateDueDot(); rerender(); toast('Exemples supprimés'); }); break;
     case 'theme': S.prefs.theme=d.k; savePrefs(); applyTheme(); rerender(); break;
     case 'accent': S.prefs.accent=d.v; savePrefs(); applyTheme(); rerender(); break;

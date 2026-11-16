@@ -1,6 +1,6 @@
 // XamXam : fonctionnement hors ligne.
 // Changer VERSION à chaque mise à jour de l'appli pour rafraîchir le cache.
-const VERSION = 'xamxam-v8';
+const VERSION = 'xamxam-v9';
 // Ces caches-là sont gardés d'une version à l'autre : les bibliothèques (lecture des PDF et des photos, environ 10 Mo)
 // et les polices ne sont pas retéléchargées à chaque mise à jour.
 const LIB = 'xamxam-lib-1', FONTS = 'xamxam-fonts-1', SHARE = 'xamxam-share', LESSONS = 'xamxam-internat-1';
@@ -17,8 +17,10 @@ const SHELL = [
 const isFont = u => u.hostname === 'fonts.googleapis.com' || u.hostname === 'fonts.gstatic.com';
 const isLib = u => u.origin === self.location.origin && u.pathname.includes('/lib/');
 
+// À l'installation, les fichiers sont pris sur le serveur (pas dans le cache du navigateur, qui peut garder
+// l'ancienne version quelques minutes) : la version gardée pour le hors ligne est bien la nouvelle.
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
