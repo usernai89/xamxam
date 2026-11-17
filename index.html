@@ -912,6 +912,9 @@ function inkFor(hex){ return lum(hex)>0.42?'#14111B':'#FFFFFF'; }
 function lsGet(k){ try{ return localStorage.getItem(k); }catch{ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch{ return false; } }
 let toastTimer;
+function aiLinks(){ const l=(n,u)=>`<a class="btn btn-ghost" style="flex:1;text-decoration:none;padding-left:4px;padding-right:4px" href="${u}" target="_blank" rel="noopener">${n}</a>`;
+  return `<div class="row" style="gap:6px;flex-wrap:nowrap">${l('Claude','https://claude.ai/new')}${l('ChatGPT','https://chatgpt.com/')}${l('Copilot','https://copilot.microsoft.com/')}${l('Gemini','https://gemini.google.com/')}</div>
+  <p class="small muted">Message trop long pour l'IA (Copilot surtout) ? Colle la leçon en deux fois. Réponse coupée au milieu ? Écris-lui « continue », puis colle ses réponses ci-dessous, l'une après l'autre.</p>`; }
 function appUrl(){ try{ return new URL('./', location.href).href; }catch{ return location.href; } }
 async function copyLink(t){ try{ await navigator.clipboard.writeText(t); toast('Lien copié : '+t, 3600); }catch{ window.prompt('Copie ce lien :', t); } }
 function toast(msg, ms=2600){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.hidden=true, ms); }
@@ -1732,7 +1735,7 @@ function aiPanel(){
       :`<button class="btn btn-primary btn-lg" data-act="gen-go">Demander les cartes à Claude</button>`;
   } else {
     html+=`<div class="notice">${AI.ready?(PWA?"Trois gestes : copie la consigne, colle-la dans ton IA (Claude, ChatGPT, Gemini…), puis colle sa réponse ci-dessous.":"Claude n'est pas joignable depuis cette page. Copie la consigne, colle-la dans une conversation avec Claude, puis colle sa réponse ci-dessous."):'Connexion à Claude…'}</div>
-     <div class="row"><button class="btn btn-soft" style="flex:1" data-act="gen-copy">Copier la consigne</button>${PWA?'<a class="btn" style="flex:1;text-decoration:none" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude</a>':''}</div>
+     <div class="row"><button class="btn btn-soft" style="flex:1" data-act="gen-copy">Copier la consigne</button></div>${PWA?aiLinks():''}
      <label class="field">Réponse de l'IA<textarea id="genPaste" data-input="gen-paste" placeholder="[{&quot;type&quot;:&quot;qa&quot;, …}]">${esc(g.paste)}</textarea></label>
      <button class="btn btn-primary" data-act="gen-parse">Lire la réponse</button>`;
   }
@@ -2395,7 +2398,7 @@ function docImportPanel(){
   if(exam && m.aiOpen){
     if(AI.sample) html+=m.aiBusy?`<div class="row"><button class="btn btn-primary" style="flex:1" disabled>Claude lit l'épreuve…</button><button class="btn" data-act="gen-stop">Arrêter</button></div>`:'';
     else html+=`<div class="notice">Copie la consigne, colle-la dans ton IA (Claude, ChatGPT, Gemini…), puis colle sa réponse ci-dessous. L'IA complète les réponses s'il n'y a pas de corrigé.</div>
-      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="imp-exam-copy">Copier la consigne</button>${PWA?'<a class="btn" style="flex:1;text-decoration:none" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude</a>':''}</div>
+      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="imp-exam-copy">Copier la consigne</button></div>${PWA?aiLinks():''}
       <label class="field">Réponse de l'IA<textarea data-input="imp2-paste" placeholder="[{&quot;type&quot;:&quot;qcm&quot;, …}]">${esc(m.paste)}</textarea></label>
       <button class="btn btn-primary" data-act="imp-exam-read">Lire la réponse</button>`;
   }
@@ -3687,7 +3690,7 @@ function intSheet(){
       ${C.offline?`<button class="btn btn-soft" data-act="int-retry">Réessayer</button>`:`<button class="btn btn-soft" data-act="int-edit" data-f="lecon">${I.pen} Écrire ma leçon</button>`}</section>
       ${C.offline?'':`<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Avec Claude</h3><span class="small muted">facultatif</span></div>
        <p class="small muted">Copie la consigne, colle-la dans ton IA (Claude, ChatGPT, Gemini…), puis colle ici sa réponse : la leçon est rangée dans cette fiche. Vérifie-la toujours avec ton cours.</p>
-       <div class="row" style="flex-wrap:nowrap"><button class="btn btn-soft" style="flex:1" data-act="int-copy">Copier la consigne</button><a class="btn" style="flex:1;text-decoration:none" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude</a></div>
+       <div class="row" style="flex-wrap:nowrap"><button class="btn btn-soft" style="flex:1" data-act="int-copy">Copier la consigne</button></div>${aiLinks()}
        <label class="field">Réponse de l'IA<textarea id="intPaste" placeholder="@@plan …"></textarea></label>
        <button class="btn" data-act="int-paste">Ranger dans la fiche</button></section>`}`;
   }
