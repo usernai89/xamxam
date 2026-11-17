@@ -1327,6 +1327,8 @@ async function compressForCard(file){
 }
 
 function chapCtx(chapId){ const c=CH[chapId]; if(!c) return {mod:'Médecine L3', sub:'', title:''}; return {mod:MODS[c.mod].name, sub:SUBS[c.sub].name, title:c.title}; }
+const AI_GO="Exécute cette demande tout de suite, en une seule réponse, sans poser de question, sans demander de confirmation et sans résumer la consigne.";
+const AI_JSON="Si ta réponse est limitée en longueur, écris moins d'éléments mais rends un tableau JSON complet et valide (crochets et accolades fermés) ; on te demandera la suite si besoin. Pas de commentaire avant ni après le tableau.";
 function buildCardPrompt(o){
   const ctx=chapCtx(o.chap);
   const typesTxt={qa:'question / réponse', cloze:'texte à trous', qcm:'QCM à réponses multiples (style examen)'};
@@ -1337,7 +1339,9 @@ function buildCardPrompt(o){
   if(o.source==='photo') src='\nLa leçon (le cours de l\'étudiant) est sur la ou les photos jointes.\n';
   const hasCourse=!!src;
   const nCours=Math.max(1,Math.round(o.n*0.9)), nPlus=Math.max(0,o.n-nCours);
-  return `Tu es un enseignant de médecine qui prépare des flashcards pour un étudiant en ${lv} de la Faculté de médecine de l'UCAD à Dakar (Sénégal). Les cartes doivent l'aider à réussir ses examens et à préparer le concours de l'internat.
+  return `${AI_GO}
+
+Tu es un enseignant de médecine qui prépare des flashcards pour un étudiant en ${lv} de la Faculté de médecine de l'UCAD à Dakar (Sénégal). Les cartes doivent l'aider à réussir ses examens et à préparer le concours de l'internat.
 
 Module : ${ctx.mod}${ctx.sub?' › '+ctx.sub:''}
 ${ctx.title?'Leçon : '+ctx.title:''}
@@ -1359,12 +1363,14 @@ Règles :
 - QCM : 4 ou 5 propositions dans "choices", une ou plusieurs justes ; "answer" = liste des indices (à partir de 0) de TOUTES les bonnes propositions ; "back" explique pourquoi.
 - ${o.hint?'"hint" : une astuce pour retenir (moyen mnémotechnique, analogie ou mini-histoire de 1 à 2 phrases, en tutoyant ; exemples du quotidien sénégalais bienvenus).':'"hint" : chaîne vide.'}
 
-Réponds uniquement avec un tableau JSON, sans texte autour ni balises de code, de cette forme :
+Réponds uniquement avec un tableau JSON, sans texte autour ni balises de code, de cette forme. ${AI_JSON}
 [{"type":"qa","front":"…","back":"…","hint":"…"},{"type":"cloze","front":"… {{mot-clé}} …","back":"…","hint":"…"},{"type":"qcm","front":"…","choices":["…","…","…","…"],"answer":[0,2],"back":"…","hint":"…"}]`;
 }
 function buildLessonPrompt(chapId){
   const ctx=chapCtx(chapId); const notes=(S.notes[chapId]||{}).text||'';
-  return `Tu es un excellent professeur de médecine à Dakar. Fais une leçon express pour un étudiant de L3 de médecine (année de barrage) sur : « ${ctx.title} » (${ctx.sub}, ${ctx.mod}).
+  return `${AI_GO}
+
+Tu es un excellent professeur de médecine à Dakar. Fais une leçon express pour un étudiant de L3 de médecine (année de barrage) sur : « ${ctx.title} » (${ctx.sub}, ${ctx.mod}).
 ${notes.trim()?'\nVoici ses notes de cours : respecte-les et complète-les.\n"""\n'+notes.trim().slice(0,12000)+'\n"""\n':''}
 Style : tutoiement, clair et vivant, une analogie parlante, des exemples du contexte sénégalais quand c'est pertinent, pas de remplissage.
 Plan, avec des titres "## " :
@@ -1388,32 +1394,66 @@ ${c.type==='qcm'?'Propositions : '+c.choices.map((x,i)=>String.fromCharCode(65+i
 Explique en 120 à 200 mots, en le tutoyant : pourquoi c'est la bonne réponse (le mécanisme), puis une façon simple de s'en souvenir. Markdown simple (**gras**, "- "). Si la carte contient une erreur ou une imprécision, signale-la clairement dès la première ligne.`;
 }
 function normalizeGenerated(arr){
-  if(!Array.isArray(arr)){ if(arr&&Array.isArray(arr.cards)) arr=arr.cards; else return []; }
-  const out=[];
-  for(const x of arr){
-    if(!x||typeof x!=='object') continue;
-    let type=['qa','cloze','qcm'].includes(x.type)?x.type:'qa';
-    const front=String(x.front||x.question||'').trim(); if(!front) continue;
-    const c={type, front, back:String(x.back||x.answer_text||x.reponse||'').trim(), hint:String(x.hint||'').trim(), choices:[], answer:[]};
+  if(!Array.isArray(arr)){ if(arr&&typeof arr==='object'){ const k=['cards','cartes','flashcards','questions','items','data'].find(k=>Array.isArray(arr[k])); if(k) arr=arr[k]; else return []; } else return []; }
+  const out=[], get=(x,...ks)=>{ for(const k of ks){ if(x[k]!=null&&x[k]!=='') return x[k]; } return ''; };
+  for(const x0 of arr){
+    if(!x0||typeof x0!=='object') continue;
+    const x={}; for(const k in x0) x[fold(k).replace(/[^a-z_]/g,'')]=x0[k];
+    const t=fold(String(x.type||'')).replace(/[^a-z]/g,'');
+    let type=t.startsWith('qcm')||t.includes('mcq')||t.includes('choix')?'qcm':(t.startsWith('cloze')||t.includes('trou')?'cloze':'qa');
+    const choicesRaw=get(x,'choices','choix','propositions','options');
+    if(Array.isArray(choicesRaw)&&choicesRaw.length>=2) type='qcm';
+    const front=String(get(x,'front','question','recto','enonce','q')).trim(); if(!front) continue;
+    let backV=get(x,'back','verso','explication','explanation','reponse','answer_text','correction');
+    if(!backV && type!=='qcm' && typeof x.answer==='string') backV=x.answer;
+    const c={type, front, back:String(backV).trim(), hint:String(get(x,'hint','astuce','mnemo','mnemotechnique')).trim(), choices:[], answer:[]};
     if(type==='qcm'){
-      c.choices=Array.isArray(x.choices)?x.choices.map(s=>String(s).trim()).filter(Boolean).slice(0,6):[];
-      let ans=Array.isArray(x.answer)?x.answer:(typeof x.answer==='number'?[x.answer]:[]);
-      c.answer=ans.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<c.choices.length);
+      c.choices=Array.isArray(choicesRaw)?choicesRaw.map(s=>String(s).replace(/^\s*[A-Fa-f][.)]\s+/,'').trim()).filter(Boolean).slice(0,6):[];
+      let ans=get(x,'answer','answers','bonnes','correct','reponses');
+      if(!Array.isArray(ans)) ans=typeof ans==='number'?[ans]:String(ans).split(/[,;\s]+/).filter(Boolean);
+      let idx=ans.map(v=>{ if(typeof v==='number') return v; const s=String(v).trim(); if(/^[A-Fa-f]$/.test(s)) return s.toUpperCase().charCodeAt(0)-65; if(/^\d+$/.test(s)) return +s; const k=c.choices.findIndex(ch=>fold(ch)===fold(s)); return k; });
+      if(idx.length && idx.every(i=>Number.isInteger(i)&&i>=1&&i<=c.choices.length) && idx.some(i=>i===c.choices.length) && !idx.includes(0)) idx=idx.map(i=>i-1);
+      c.answer=[...new Set(idx.filter(i=>Number.isInteger(i)&&i>=0&&i<c.choices.length))];
       if(c.choices.length<2||!c.answer.length){ c.type='qa'; if(c.choices.length) c.back=(c.back?c.back+'\n':'')+c.choices.filter((_,i)=>c.answer.includes(i)).join(' ; '); c.choices=[]; c.answer=[]; }
     }
-    if(type==='cloze' && !/\{\{.+?\}\}/.test(front)) c.type='qa';
+    if(c.type==='cloze' && !/\{\{.+?\}\}/.test(front)) c.type='qa';
+    if(c.type==='qa' && !c.back) continue;
     out.push(c);
   }
   return out;
 }
+// Lit la réponse d'une IA (Claude, ChatGPT, Copilot, Gemini…) même imparfaite :
+// balises ```json, texte autour, guillemets typographiques, virgules en trop, réponses coupées ou en plusieurs morceaux.
+function jsonChunks(t){
+  const out=[]; let depth=0, start=-1, str=false, esc=false;
+  for(let k=0;k<t.length;k++){ const ch=t[k];
+    if(str){ if(esc) esc=false; else if(ch==='\\') esc=true; else if(ch==='"') str=false; continue; }
+    if(ch==='"'){ str=true; continue; }
+    if(ch==='{'){ if(depth===0) start=k; depth++; }
+    else if(ch==='}'&&depth>0){ depth--; if(depth===0&&start>=0){ out.push(t.slice(start,k+1)); start=-1; } }
+  }
+  return out;
+}
+function tryJSON(t){
+  const fix=x=>x.replace(/,\s*([\]}])/g,'$1');
+  for(const v of [t, fix(t), fix(t.replace(/[“”„]/g,'"').replace(/[‘’]/g,"'"))]){ try{ return JSON.parse(v); }catch{} }
+  return undefined;
+}
 function parseLoose(text){
-  text=String(text||'').trim(); if(!text) return [];
+  text=String(text||'').replace(/\r/g,'').replace(/```[a-zA-Z]*\n?/g,'').replace(/ /g,' ').trim(); if(!text) return [];
   const a=text.indexOf('['), b=text.lastIndexOf(']');
-  if(a>=0&&b>a){ try{ return normalizeGenerated(JSON.parse(text.slice(a,b+1))); }catch{} }
-  try{ return normalizeGenerated(JSON.parse(text)); }catch{}
-  // lignes "question :: réponse :: astuce" ou séparées par tabulation
+  if(a>=0&&b>a){ const v=tryJSON(text.slice(a,b+1)); const r=normalizeGenerated(v); if(r.length) return r; }
+  { const v=tryJSON(text); const r=normalizeGenerated(v&&!Array.isArray(v)&&!v.cards&&!v.cartes?[v]:v); if(r.length) return r; }
+  // objets un par un (réponse coupée, plusieurs tableaux collés à la suite)
+  const objs=[]; for(const c of jsonChunks(text)){ const v=tryJSON(c); if(v&&typeof v==='object') objs.push(v); }
+  { const r=normalizeGenerated(objs); if(r.length) return r; }
   const out=[];
-  for(const line of text.split(/\r?\n/)){
+  // « Question : … / Réponse : … »
+  const re=/(?:^|\n)\s*(?:\d+[.)]\s*)?(?:\*\*)?(?:Q(?:uestion)?|Recto)\s*\d*\s*(?:\*\*)?\s*[:：-]\s*([\s\S]+?)\n\s*(?:\*\*)?(?:R(?:éponse|eponse)?|A(?:nswer)?|Verso)\s*(?:\*\*)?\s*[:：-]\s*([\s\S]+?)(?=\n\s*(?:\d+[.)]\s*)?(?:\*\*)?(?:Q(?:uestion)?|Recto)\s*\d*\s*(?:\*\*)?\s*[:：-]|$)/gi;
+  let m; while((m=re.exec(text))){ const front=m[1].trim(), back=m[2].trim(); if(front&&back) out.push({type:/\{\{.+?\}\}/.test(front)?'cloze':'qa', front, back, hint:'', choices:[], answer:[]}); }
+  if(out.length) return out;
+  // lignes "question :: réponse :: astuce" ou séparées par tabulation
+  for(const line of text.split('\n')){
     const parts=line.includes('::')?line.split('::'):line.split('\t');
     if(parts.length>=2 && parts[0].trim() && parts[1].trim()){
       const front=parts[0].trim(); out.push({type:/\{\{.+?\}\}/.test(front)?'cloze':'qa', front, back:parts[1].trim(), hint:(parts[2]||'').trim(), choices:[], answer:[]});
@@ -2258,7 +2298,9 @@ function parseExam(text){
 }
 function buildExamPrompt(o){
   const ctx=chapCtx(o.chap);
-  return `Voici le texte d'une épreuve d'examen de médecine (L3, Faculté de médecine de l'UCAD, Dakar)${o.year?' : '+o.year:''}${ctx.sub?', '+ctx.sub:''}. Le texte vient d'un PDF ou d'une photo : il peut contenir des erreurs de lecture.
+  return `${AI_GO}
+
+Voici le texte d'une épreuve d'examen de médecine (L3, Faculté de médecine de l'UCAD, Dakar)${o.year?' : '+o.year:''}${ctx.sub?', '+ctx.sub:''}. Le texte vient d'un PDF ou d'une photo : il peut contenir des erreurs de lecture.
 
 Transforme CHAQUE question de l'épreuve en carte de révision, dans l'ordre, sans en inventer d'autres :
 - QCM (propositions A, B, C…) : "type":"qcm", "front" = l'énoncé (avec le cas clinique s'il y en a un), "choices" = les propositions sans la lettre, "answer" = indices (à partir de 0) de TOUTES les bonnes propositions.
@@ -3528,7 +3570,8 @@ function intBar(c,n){ const w=i=>n?c[i]/n*100:0; return `<span class="bar" role=
 function parseLesson(text){
   const out={plan:'',lecon:'',expl:'',apps:'',figs:[]}; let cur=null, fig=null;
   for(const line of String(text||'').replace(/\r/g,'').split('\n')){
-    const m=line.match(/^@@\s*([A-Za-zÀ-ÿ]+)\s*(.*)$/);
+    if(/^\s*```/.test(line)) continue;
+    const m=line.match(/^[\s>*#_`-]*@@\s*([A-Za-zÀ-ÿ]+)[*_`\s:]*(.*)$/);
     if(m){ const k=fold(m[1]); fig=null;
       if(k==='schema'||k==='figure'){ fig={title:m[2].trim(), svg:''}; out.figs.push(fig); cur='fig'; }
       else cur={plan:'plan', lecon:'lecon', explications:'expl', explication:'expl', applications:'apps'}[k]||null;
@@ -3682,7 +3725,9 @@ function intAddSheet(){ const ep=INT.find(e=>e.id===UI.intAddEp);
    <button class="btn btn-primary btn-lg" data-act="int-add-go">Ajouter</button>`;
 }
 function buildIntPrompt(id){ const x=INTQ[id], ep=INT.find(e=>e.id===x.ep), p=PLANS[x.type]||{};
-  return `Tu es un enseignant de la Faculté de médecine de Dakar (UCAD). Rédige une question du concours d'internat des hôpitaux du Sénégal, épreuve écrite de ${ep.name.toLowerCase()} (${INT_DUR/60} heures, coefficient ${ep.coef}).
+  return `${AI_GO} Écris toute la copie, jusqu'à la conclusion.
+
+Tu es un enseignant de la Faculté de médecine de Dakar (UCAD). Rédige une question du concours d'internat des hôpitaux du Sénégal, épreuve écrite de ${ep.name.toLowerCase()} (${INT_DUR/60} heures, coefficient ${ep.coef}).
 
 Question : « ${x.t} »
 
