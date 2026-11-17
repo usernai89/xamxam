@@ -1331,27 +1331,35 @@ function buildCardPrompt(o){
   const ctx=chapCtx(o.chap);
   const typesTxt={qa:'question / réponse', cloze:'texte à trous', qcm:'QCM à réponses multiples (style examen)'};
   const types=o.types.map(t=>typesTxt[t]).join(', ');
+  const lv=(()=>{ try{ const l=LEVELS.find(x=>x.id===myLvl()); return l?l.name+' ('+l.an+')':'L3'; }catch{ return 'L3'; } })();
   let src='';
-  if(o.source==='text' && o.text.trim()) src='\nBase-toi en priorité sur ce contenu de cours (ne le contredis pas ; complète seulement avec des notions sûres) :\n"""\n'+o.text.trim().slice(0,14000)+'\n"""\n';
-  if(o.source==='photo') src='\nLe cours est sur la ou les photos jointes : base-toi d\'abord sur leur contenu.\n';
-  return `Tu es un enseignant de médecine qui prépare des flashcards pour un étudiant de 3e année (L3) de la Faculté de médecine de l'UCAD à Dakar (Sénégal). C'est son année de barrage : les cartes doivent l'aider à réussir l'examen semestriel et à préparer l'internat.
+  if(o.source==='text' && o.text.trim()) src='\nVoici la leçon (le cours de l\'étudiant) :\n"""\n'+o.text.trim().slice(0,14000)+'\n"""\n';
+  if(o.source==='photo') src='\nLa leçon (le cours de l\'étudiant) est sur la ou les photos jointes.\n';
+  const hasCourse=!!src;
+  const nCours=Math.max(1,Math.round(o.n*0.9)), nPlus=Math.max(0,o.n-nCours);
+  return `Tu es un enseignant de médecine qui prépare des flashcards pour un étudiant en ${lv} de la Faculté de médecine de l'UCAD à Dakar (Sénégal). Les cartes doivent l'aider à réussir ses examens et à préparer le concours de l'internat.
 
 Module : ${ctx.mod}${ctx.sub?' › '+ctx.sub:''}
-${ctx.title?'Chapitre : '+ctx.title:''}
+${ctx.title?'Leçon : '+ctx.title:''}
 ${o.focus.trim()?'Notion à travailler : '+o.focus.trim():''}
 ${src}
-Écris ${o.n} cartes, ${o.level==='internat'?"niveau concours de l'internat (détails, diagnostics différentiels, pièges)":"niveau examen de L3 (l'essentiel, solide et précis)"}. Types à utiliser, en les mélangeant : ${types}.
+Écris ${o.n} cartes, ${o.level==='internat'?"niveau concours de l'internat (détails, diagnostics différentiels, pièges)":"niveau examen (l'essentiel, solide et précis)"}. Types à utiliser, en les mélangeant : ${types}.
+
+Méthode, dans cet ordre :
+1. ${hasCourse?"Lis la leçon et relève ses objectifs de cours : ceux qui sont écrits (« Objectifs », « À la fin de ce cours, l'étudiant doit… ») ou, s'il n'y en a pas, ceux qui découlent de ses titres et de ses parties.":"Établis la liste des objectifs de cours habituels de cette leçon dans une faculté de médecine francophone (définir, décrire, expliquer, citer, diagnostiquer, traiter…)."}
+2. Environ 90 % des cartes (${nCours} cartes) répondent à ces objectifs, en les couvrant TOUS avant d'ajouter quoi que ce soit d'autre. ${hasCourse?"Base-toi exactement sur la leçon : reprends ses définitions, ses classifications, ses chiffres et ses formulations mot pour mot, ou de très près si une reformulation est nécessaire. Ne contredis jamais la leçon et n'en change pas les valeurs.":"Utilise les définitions classiques des cours et des référentiels, formulées de façon simple et exacte."}
+3. Les ${nPlus} dernières cartes (environ 10 %) ajoutent ce qui est utile et sûr mais ${hasCourse?"absent de la leçon":"souvent oublié"} : notions des référentiels et des recommandations récentes, pièges d'examen ou d'internat, données du contexte sénégalais. Commence leur "back" par « Hors cours : ».
 
 Règles :
 - Une seule idée par carte, formulée précisément ; pas de question à réponse oui/non.
 - Réponses courtes (1 à 4 lignes) en français médical correct ; listes avec des tirets "- ".
-- Vise ce qui tombe à l'examen : définitions, signes cliniques, mécanismes (le pourquoi), valeurs normales, étiologies, diagnostics différentiels, pièges classiques.
+- Vise ce qui tombe à l'examen : définitions, signes cliniques, mécanismes (le pourquoi), valeurs normales, étiologies, diagnostics différentiels, conduite à tenir, pièges classiques.
 - N'invente jamais un chiffre, un seuil ou un nom : si tu n'es pas sûr, n'écris pas la carte.
 - Texte à trous : dans "front", entoure 1 ou 2 mots-clés avec {{ et }} ; "back" donne une courte explication.
 - QCM : 4 ou 5 propositions dans "choices", une ou plusieurs justes ; "answer" = liste des indices (à partir de 0) de TOUTES les bonnes propositions ; "back" explique pourquoi.
 - ${o.hint?'"hint" : une astuce pour retenir (moyen mnémotechnique, analogie ou mini-histoire de 1 à 2 phrases, en tutoyant ; exemples du quotidien sénégalais bienvenus).':'"hint" : chaîne vide.'}
 
-Réponds uniquement avec un tableau JSON, sans texte autour, de cette forme :
+Réponds uniquement avec un tableau JSON, sans texte autour ni balises de code, de cette forme :
 [{"type":"qa","front":"…","back":"…","hint":"…"},{"type":"cloze","front":"… {{mot-clé}} …","back":"…","hint":"…"},{"type":"qcm","front":"…","choices":["…","…","…","…"],"answer":[0,2],"back":"…","hint":"…"}]`;
 }
 function buildLessonPrompt(chapId){
@@ -1576,7 +1584,7 @@ function chapterSheet(id){
      ${cards.length?`<div class="clist">${cards.map(cardRow).join('')}</div>`:'<p class="muted small">Pas encore de carte pour ce chapitre.</p>'}
    </section>
    <section class="panel"><div class="section-title"><h3>Avec Claude</h3><span class="small muted">facultatif</span></div>
-     <p class="small muted" id="lessonHelp">${AI.sample?'Claude peut t\'expliquer ce chapitre en 5 minutes, ou préparer des cartes.':'Une consigne toute prête à coller dans Claude : il t\'explique le chapitre en 5 minutes, ou prépare des cartes.'}${note?' Il s\'appuie sur tes notes.':''}</p>
+     <p class="small muted" id="lessonHelp">${AI.sample?'Claude peut t\'expliquer ce chapitre en 5 minutes, ou préparer des cartes.':'Une consigne toute prête à coller dans ton IA (Claude, ChatGPT, Gemini…) : elle t\'explique le chapitre en 5 minutes, ou prépare des cartes.'}${note?' Il s\'appuie sur tes notes.':''}</p>
      <div id="lessonOut" class="rt" style="margin-top:10px" hidden></div>
      <div class="row" style="margin-top:10px" id="lessonBtns"><button class="btn btn-soft" style="flex:1" data-act="lesson" data-id="${id}">Leçon express</button><button class="btn btn-soft" style="flex:1" data-act="gen-for" data-id="${id}">Préparer des cartes</button></div>
    </section>
@@ -1643,7 +1651,7 @@ function cardResults(){
 
 // ---------- Vue : Créer ----------
 function viewNew(){
-  const tabs=[['hand','Écrire'],['import','Importer'],['ai','Avec Claude']];
+  const tabs=[['hand','Écrire'],['import','Importer'],['ai',AI.sample?'Avec Claude':'Avec une IA']];
   let html=`<header class="stack" style="gap:4px"><p class="eyebrow">Cartes, leçons, annales</p><h1>Créer</h1></header>
    <div class="seg" role="group" aria-label="Façon de créer">${tabs.map(([k,l])=>`<button data-act="new-tab" data-t="${k}" aria-pressed="${UI.newTab===k}">${l}</button>`).join('')}</div>`;
   if(UI.newTab==='import') html+=importPanel();
@@ -1683,9 +1691,9 @@ function aiPanel(){
     html+=g.busy?`<div class="row"><button class="btn btn-primary" style="flex:1" disabled>Claude rédige… <span class="mono" id="genCount"></span></button><button class="btn" data-act="gen-stop">Arrêter</button></div>`
       :`<button class="btn btn-primary btn-lg" data-act="gen-go">Demander les cartes à Claude</button>`;
   } else {
-    html+=`<div class="notice">${AI.ready?(PWA?"Trois gestes : copie la consigne, colle-la dans Claude, puis colle sa réponse ci-dessous.":"Claude n'est pas joignable depuis cette page. Copie la consigne, colle-la dans une conversation avec Claude, puis colle sa réponse ci-dessous."):'Connexion à Claude…'}</div>
+    html+=`<div class="notice">${AI.ready?(PWA?"Trois gestes : copie la consigne, colle-la dans ton IA (Claude, ChatGPT, Gemini…), puis colle sa réponse ci-dessous.":"Claude n'est pas joignable depuis cette page. Copie la consigne, colle-la dans une conversation avec Claude, puis colle sa réponse ci-dessous."):'Connexion à Claude…'}</div>
      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="gen-copy">Copier la consigne</button>${PWA?'<a class="btn" style="flex:1;text-decoration:none" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude</a>':''}</div>
-     <label class="field">Réponse de Claude<textarea id="genPaste" data-input="gen-paste" placeholder="[{&quot;type&quot;:&quot;qa&quot;, …}]">${esc(g.paste)}</textarea></label>
+     <label class="field">Réponse de l'IA<textarea id="genPaste" data-input="gen-paste" placeholder="[{&quot;type&quot;:&quot;qa&quot;, …}]">${esc(g.paste)}</textarea></label>
      <button class="btn btn-primary" data-act="gen-parse">Lire la réponse</button>`;
   }
   if(g.err) html+=`<div class="notice warn">${esc(g.err)}</div>`;
@@ -2255,7 +2263,7 @@ function buildExamPrompt(o){
 Transforme CHAQUE question de l'épreuve en carte de révision, dans l'ordre, sans en inventer d'autres :
 - QCM (propositions A, B, C…) : "type":"qcm", "front" = l'énoncé (avec le cas clinique s'il y en a un), "choices" = les propositions sans la lettre, "answer" = indices (à partir de 0) de TOUTES les bonnes propositions.
 - Question rédactionnelle ou QROC : "type":"qa", "front" = la question, "back" = la réponse attendue, courte et structurée (tirets "- ").
-- Si un corrigé figure dans le texte, utilise-le. Sinon, donne la réponse la plus sûre et commence "back" par « Réponse proposée par Claude, à vérifier. », puis justifie en 1 à 3 lignes.
+- Si un corrigé figure dans le texte, utilise-le. Sinon, donne la réponse la plus sûre et commence "back" par « Réponse proposée par l'IA, à vérifier. », puis justifie en 1 à 3 lignes.
 - Corrige les fautes de lecture évidentes, sans changer le sens.
 
 Réponds uniquement avec un tableau JSON, sans texte autour :
@@ -2344,9 +2352,9 @@ function docImportPanel(){
   }
   if(exam && m.aiOpen){
     if(AI.sample) html+=m.aiBusy?`<div class="row"><button class="btn btn-primary" style="flex:1" disabled>Claude lit l'épreuve…</button><button class="btn" data-act="gen-stop">Arrêter</button></div>`:'';
-    else html+=`<div class="notice">Copie la consigne, colle-la dans Claude, puis colle sa réponse ci-dessous. Claude complète les réponses s'il n'y a pas de corrigé.</div>
+    else html+=`<div class="notice">Copie la consigne, colle-la dans ton IA (Claude, ChatGPT, Gemini…), puis colle sa réponse ci-dessous. L'IA complète les réponses s'il n'y a pas de corrigé.</div>
       <div class="row"><button class="btn btn-soft" style="flex:1" data-act="imp-exam-copy">Copier la consigne</button>${PWA?'<a class="btn" style="flex:1;text-decoration:none" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude</a>':''}</div>
-      <label class="field">Réponse de Claude<textarea data-input="imp2-paste" placeholder="[{&quot;type&quot;:&quot;qcm&quot;, …}]">${esc(m.paste)}</textarea></label>
+      <label class="field">Réponse de l'IA<textarea data-input="imp2-paste" placeholder="[{&quot;type&quot;:&quot;qcm&quot;, …}]">${esc(m.paste)}</textarea></label>
       <button class="btn btn-primary" data-act="imp-exam-read">Lire la réponse</button>`;
   }
   html+='</section>';
@@ -3478,7 +3486,7 @@ const INT=[
  ]}
 ];
 // Leçons rédigées (fichiers internat/lecons/<id>.md). Complété automatiquement à la publication.
-const INT_READY=['a-aorte','a-arteres-cerveau','a-axillaire','a-bronches','a-carotide-interne','a-coeur','a-colon','a-deferent','a-diaphragme','a-estomac','a-facial','a-femorale','a-genou','a-hanche','a-moteurs-oeil','a-oesophage','a-ovaires','a-pancreas','a-pedicule-hepatique','a-phrenique','a-plexus-brachial','a-poplitee','a-pyramidal','a-rate','a-rectum','a-recurrent','a-reins','a-sous-maxillaire','a-surrenales','a-uretere','a-uterus','a-ventricules','a-vertebrales','a-vessie','a-voies-optiques','b-absorption','b-acide-base','b-aldosterone','b-ammoniogenese','b-androgenes','b-auto-immunite','b-automatisme-cardiaque','b-calcium','b-carcinogenese','b-cetogenese','b-clearances','b-compartiments','b-concentration-urine','b-corticotrophine','b-cortisol','b-croissance-osseuse','b-debit-cardiaque','b-defense-cellulaire','b-defense-humorale','b-differenciation-sexuelle','b-digestion-gastrique','b-digestion-intestinale','b-filtration','b-glycemie','b-glycogenique','b-greffe','b-groupes','b-hematose','b-hemodynamique','b-hemoglobine','b-hemostase','b-hypothalamus','b-immunite-adaptative','b-immunite-innee','b-insuline','b-lymphe','b-menstruation','b-mitose','b-oestrogenes','b-pancreas-exocrine','b-potassium','b-pression-arterielle','b-progestatives','b-rayonnements','b-reticule','b-sodium','b-synthese-proteique','b-thyroidiennes','b-transmission','b-tubule','b-ventilation','b-vitamine-b1','b-vitamine-c','b-vitamine-d','c-adp-cervicales','c-anevrismes-art','c-anevrismes-av','c-appendicite','c-avortements','c-brulures','c-cancer-colon','c-cancer-langue','c-cancer-rectum','c-cancer-sein','c-cancer-testicule','c-cancer-thyroide','c-cancers-uterus','c-col-femoral','c-complications-ugd','c-contusions-abdo','c-cou-de-pied','c-coxalgie','c-elephantiasis','c-fibromes','c-fractures-ouvertes','c-geu','c-hernies-aine','c-hernies-diaph','c-lithiase-biliaire','c-mycetomes','c-occlusions','c-osteomyelites','c-plaies-vasc','c-pott','c-tb-urogenitale','c-trauma-bassin','c-trauma-crane','c-trauma-epaule','c-trauma-jambe','c-trauma-rachis','c-trauma-thorax','c-tumeurs-os','c-tumeurs-ovaire','c-tumeurs-rein','m-amibiase','m-amibiase-hep','m-anemies','m-anemies-hemolytiques','m-anuries','m-asthme','m-bilharzioses','m-cancer-foie','m-cancer-pancreas','m-cholera','m-cirrhose','m-coronaropathies','m-cushing','m-diabete','m-embolie','m-endocardites','m-fievre-jaune','m-filarioses','m-gna','m-goutte','m-hemorragies-dig','m-hepatites','m-hodgkin','m-hta','m-hyperthyroidie','m-hypothyroidie','m-ic','m-ictere','m-ira','m-irc','m-lepre','m-leucemies','m-lithiase-renale','m-lupus','m-myelome','m-palu','m-pancreatite','m-pericardites','m-pneumonies','m-pr','m-purpuras','m-raa','m-retrecissement-mitral','m-sn','m-splenomegalies','m-staph','m-suppurations-bronch','m-suppurations-pulm','m-surrenale','m-tetanos','m-thrombophlebites','m-trypano','m-tuberculose','m-tumeurs-poumon','m-typhoide','m-ulceres','m-vih'];
+const INT_READY=['a-aorte','a-arteres-cerveau','a-axillaire','a-bronches','a-carotide-interne','a-coeur','a-colon','a-deferent','a-diaphragme','a-estomac','a-facial','a-femorale','a-genou','a-hanche','a-moteurs-oeil','a-oesophage','a-ovaires','a-pancreas','a-pedicule-hepatique','a-phrenique','a-plexus-brachial','a-poplitee','a-pyramidal','a-rate','a-rectum','a-recurrent','a-reins','a-sous-maxillaire','a-surrenales','a-uretere','a-uterus','a-ventricules','a-vertebrales','a-vessie','a-voies-optiques','b-absorption','b-acide-base','b-aldosterone','b-ammoniogenese','b-androgenes','b-auto-immunite','b-automatisme-cardiaque','b-calcium','b-carcinogenese','b-cetogenese','b-clearances','b-compartiments','b-concentration-urine','b-corticotrophine','b-cortisol','b-croissance-osseuse','b-debit-cardiaque','b-defense-cellulaire','b-defense-humorale','b-differenciation-sexuelle','b-digestion-gastrique','b-digestion-intestinale','b-filtration','b-glycemie','b-glycogenique','b-greffe','b-groupes','b-hematose','b-hemodynamique','b-hemoglobine','b-hemostase','b-hypothalamus','b-immunite-adaptative','b-immunite-innee','b-insuline','b-lymphe','b-menstruation','b-mitose','b-oestrogenes','b-pancreas-exocrine','b-potassium','b-pression-arterielle','b-progestatives','b-rayonnements','b-reticule','b-sodium','b-synthese-proteique','b-thyroidiennes','b-transmission','b-tubule','b-ventilation','b-vitamine-b1','b-vitamine-c','b-vitamine-d','c-adp-cervicales','c-anevrismes-art','c-anevrismes-av','c-appendicite','c-avortements','c-brulures','c-cancer-colon','c-cancer-langue','c-cancer-rectum','c-cancer-sein','c-cancer-testicule','c-cancer-thyroide','c-cancers-uterus','c-col-femoral','c-complications-ugd','c-contusions-abdo','c-cou-de-pied','c-coxalgie','c-elephantiasis','c-fibromes','c-fractures-ouvertes','c-geu','c-hernies-aine','c-hernies-diaph','c-lithiase-biliaire','c-mycetomes','c-occlusions','c-osteomyelites','c-plaies-vasc','c-pott','c-tb-urogenitale','c-trauma-bassin','c-trauma-crane','c-trauma-epaule','c-trauma-jambe','c-trauma-rachis','c-trauma-thorax','c-tumeurs-os','c-tumeurs-ovaire','c-tumeurs-rein','m-amibiase','m-amibiase-hep','m-anemies','m-anemies-hemolytiques','m-anuries','m-asthme','m-bilharzioses','m-cancer-foie','m-cancer-pancreas','m-cholera','m-cirrhose','m-coronaropathies','m-cushing','m-diabete','m-embolie','m-endocardites','m-fievre-jaune','m-filarioses','m-gna','m-goutte','m-hemiplegies','m-hemorragies-dig','m-hepatites','m-hodgkin','m-hta','m-hyperthyroidie','m-hypothyroidie','m-ic','m-ictere','m-ira','m-irc','m-lepre','m-leucemies','m-lithiase-renale','m-lupus','m-mediastin','m-miliaire','m-myelome','m-oap','m-palu','m-pancreatite','m-paraplegies','m-pericardites','m-pleuresies','m-pneumonies','m-polio','m-polynevrites','m-pr','m-primo-tb','m-purpuras','m-raa','m-retrecissement-mitral','m-sn','m-splenomegalies','m-staph','m-suppurations-bronch','m-suppurations-pulm','m-surrenale','m-tetanos','m-thrombophlebites','m-trypano','m-tuberculose','m-tumeurs-poumon','m-typhoide','m-ulceres','m-vih'];
 const INTQ={}, L3INT={}, INTL={};
 const fold = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 // Mots d'un intitulé : sans accents, sans petits mots, au singulier.
@@ -3635,9 +3643,9 @@ function intSheet(){
       <p>${C.offline?'Cette leçon est rédigée, mais il faut internet pour la charger la première fois.':'Pas encore de leçon rédigée pour cette question. Apprends d\'abord le plan, puis écris ta leçon à partir de ton cours.'}</p>
       ${C.offline?`<button class="btn btn-soft" data-act="int-retry">Réessayer</button>`:`<button class="btn btn-soft" data-act="int-edit" data-f="lecon">${I.pen} Écrire ma leçon</button>`}</section>
       ${C.offline?'':`<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Avec Claude</h3><span class="small muted">facultatif</span></div>
-       <p class="small muted">Copie la consigne, colle-la dans Claude, puis colle ici sa réponse : la leçon est rangée dans cette fiche. Vérifie-la toujours avec ton cours.</p>
+       <p class="small muted">Copie la consigne, colle-la dans ton IA (Claude, ChatGPT, Gemini…), puis colle ici sa réponse : la leçon est rangée dans cette fiche. Vérifie-la toujours avec ton cours.</p>
        <div class="row" style="flex-wrap:nowrap"><button class="btn btn-soft" style="flex:1" data-act="int-copy">Copier la consigne</button><a class="btn" style="flex:1;text-decoration:none" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude</a></div>
-       <label class="field">Réponse de Claude<textarea id="intPaste" placeholder="@@plan …"></textarea></label>
+       <label class="field">Réponse de l'IA<textarea id="intPaste" placeholder="@@plan …"></textarea></label>
        <button class="btn" data-act="int-paste">Ranger dans la fiche</button></section>`}`;
   }
   else body=(C.loading?`<section class="panel"><p class="muted">Chargement…</p></section>`:'')
@@ -3988,7 +3996,7 @@ document.addEventListener('click', async e=>{
     case 'note-edit': { const v=$('#noteView'), ta=$('#noteEdit'); if(ta.hidden){ ta.hidden=false; v.hidden=true; a.textContent='Terminé'; ta.focus(); } else { ta.hidden=true; v.hidden=false; v.innerHTML=ta.value?md(ta.value):'<p class="muted small">Pas de notes.</p>'; a.textContent=ta.value?'Modifier':'Écrire'; } break; }
     case 'lesson': {
       const id=d.id; const out=$('#lessonOut'); const prompt=buildLessonPrompt(id);
-      if(!AI.sample){ await copyText(prompt); out.hidden=false; out.innerHTML='<p class="small">Consigne copiée. Colle-la dans une conversation avec Claude.</p>'; break; }
+      if(!AI.sample){ await copyText(prompt); out.hidden=false; out.innerHTML='<p class="small">Consigne copiée. Colle-la dans une conversation avec ton IA (Claude, ChatGPT, Gemini…).</p>'; break; }
       a.disabled=true; a.innerHTML='Leçon en cours…';
       const text=await streamTo(out, prompt);
       a.disabled=false; a.innerHTML='Refaire la leçon';
@@ -4020,7 +4028,7 @@ document.addEventListener('click', async e=>{
     case 'gen-go': generate(); break;
     case 'gen-stop': if(aiCtl) aiCtl.abort(); break;
     case 'gen-copy': await copyText(buildCardPrompt(UI.gen)); break;
-    case 'gen-parse': { const res=parseLoose(UI.gen.paste); if(!res.length){ UI.gen.err="Je n'ai trouvé aucune carte dans ce texte. Colle toute la réponse de Claude."; } else { UI.gen.err=''; UI.gen.results=res; } rerender(); break; }
+    case 'gen-parse': { const res=parseLoose(UI.gen.paste); if(!res.length){ UI.gen.err="Je n'ai trouvé aucune carte dans ce texte. Colle toute la réponse de l'IA."; } else { UI.gen.err=''; UI.gen.results=res; } rerender(); break; }
     case 'gen-clear': UI.gen.results=null; rerender(); break;
     case 'gen-save': saveGenerated(); break;
     case 'imp-go': { const res=parseLoose(UI.impText||''); if(!res.length){ toast('Aucune carte reconnue. Vérifie le format.'); break; }
@@ -4039,7 +4047,7 @@ document.addEventListener('click', async e=>{
     case 'imp-exam-parse': { const m=UI.imp; if(!m.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; } m.items=parseExam(m.text); impRefresh(); const el=$('#impResults'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); break; }
     case 'imp-exam-ai': if(!UI.imp.text.trim()){ toast("Ajoute d'abord un fichier ou colle le texte."); break; } examWithClaude(); break;
     case 'imp-exam-copy': await copyText(buildExamPrompt(UI.imp)); break;
-    case 'imp-exam-read': { const m=UI.imp; const res=parseLoose(m.paste); if(!res.length){ m.err="Je n'ai trouvé aucune question dans ce texte. Colle toute la réponse de Claude."; } else { m.err=''; m.items=res; m.aiOpen=false; m.paste=''; } impRefresh(); break; }
+    case 'imp-exam-read': { const m=UI.imp; const res=parseLoose(m.paste); if(!res.length){ m.err="Je n'ai trouvé aucune question dans ce texte. Colle toute la réponse de l'IA."; } else { m.err=''; m.items=res; m.aiOpen=false; m.paste=''; } impRefresh(); break; }
     case 'imp-exam-clear': UI.imp.items=null; impRefresh(); break;
     case 'imp-ans': { const r=UI.imp.items[+d.i], j=+d.j; r.answer=r.answer.includes(j)?r.answer.filter(x=>x!==j):r.answer.concat(j).sort((a,b)=>a-b); impRefresh(); break; }
     case 'imp-exam-save': saveExamItems(); break;
