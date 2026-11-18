@@ -1288,6 +1288,62 @@ function forecastHTML(){
     <p class="small muted" style="margin:0">Chaque carte revient toute seule le jour prévu dans « Commencer », quelle que soit sa leçon : tu n'as pas besoin d'ouvrir les leçons.</p>
     ${susp?`<p class="small muted" style="margin:0">${susp} carte${susp>1?'s':''} retirée${susp>1?'s':''} des révisions.</p>`:''}</section>`;
 }
+// ---------- Écoute mains libres : les cartes lues à voix haute ----------
+const AUD={ids:[], i:0, phase:'q', on:false, timer:null, rate:1, pause:5, wl:null};
+const audStrip = s => String(s||'').replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/[*_=#>`]/g,'').replace(/^\s*-\s+/gm,'').replace(/\n+/g,'. ').replace(/\s+/g,' ').trim();
+function audText(c, side){
+  const cz=(s,show)=>String(s||'').replace(/\{\{(?:c\d+::)?(.*?)(?:::(.*?))?\}\}/g,(m,a)=>show?a:' blanc ');
+  if(side==='q') return audStrip(c.type==='cloze'?cz(c.front,false):c.front)+(c.type==='qcm'?'. '+c.choices.map((x,i)=>String.fromCharCode(65+i)+' : '+x).join('. '):'');
+  if(c.type==='cloze') return audStrip(cz(c.front,true)+'. '+(c.back||''));
+  if(c.type==='qcm') return audStrip((c.answer||[]).map(i=>String.fromCharCode(65+i)+' : '+c.choices[i]).join('. ')+'. '+(c.back||''));
+  return audStrip(c.back);
+}
+function audVoice(){ try{ const vs=speechSynthesis.getVoices(); return vs.find(v=>/^fr/i.test(v.lang)&&/google|natural|premium|enhanced/i.test(v.name))||vs.find(v=>/^fr/i.test(v.lang))||null; }catch{ return null; } }
+function audSay(txt, then){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt||'…'); u.lang='fr-FR'; const v=audVoice(); if(v) u.voice=v; u.rate=AUD.rate; u.onend=()=>{ if(AUD.on&&then) then(); }; u.onerror=()=>{ if(AUD.on&&then) then(); }; speechSynthesis.speak(u); }catch{ if(then) then(); } }
+async function audWake(on){ try{ if(on&&'wakeLock' in navigator&&!AUD.wl) AUD.wl=await navigator.wakeLock.request('screen'); else if(!on&&AUD.wl){ await AUD.wl.release(); AUD.wl=null; } }catch{} }
+function audStep(){ clearTimeout(AUD.timer); if(!AUD.on) return; const c=S.cards[AUD.ids[AUD.i]]; if(!c){ audNext(); return; } paintSheet(true);
+  if(AUD.phase==='q') audSay(audText(c,'q'), ()=>{ AUD.timer=setTimeout(()=>{ AUD.phase='a'; audStep(); }, AUD.pause*1000); });
+  else audSay('Réponse. '+audText(c,'a'), ()=>{ AUD.timer=setTimeout(audNext, 1800); }); }
+function audNext(){ if(AUD.i>=AUD.ids.length-1){ AUD.on=false; audSay("C'est fini. Bravo !"); audWake(false); paintSheet(true); return; } AUD.i++; AUD.phase='q'; audStep(); }
+function audStop(){ AUD.on=false; clearTimeout(AUD.timer); try{ speechSynthesis.cancel(); }catch{} audWake(false); }
+function audStart(scope){
+  if(!('speechSynthesis' in window)){ toast("La lecture à voix haute n'est pas disponible sur ce téléphone."); return; }
+  const p=todayPlan(scope||'all'); let ids=p.lrn.concat(p.rev,p.nw).map(c=>c.id);
+  if(!ids.length) ids=shuffle(liveCards(scope||'all').map(c=>c.id)).slice(0,40);
+  if(!ids.length){ toast('Aucune carte à écouter.'); return; }
+  AUD.ids=ids; AUD.i=0; AUD.phase='q'; AUD.on=true; audWake(true); openSheet(audSheet); audStep();
+}
+function audSheet(){
+  const c=S.cards[AUD.ids[AUD.i]]; const ch=c&&CH[c.chap];
+  return sheetTop('Écoute mains libres')+`<p class="small muted">Tes cartes du jour lues à voix haute : la question, un temps pour répondre dans ta tête, puis la réponse. Idéal dans le car rapide, en marchant ou en cuisinant. Rien n'est noté : ton planning ne change pas.</p>
+   <section class="panel stack"><p class="eyebrow">${AUD.i+1} sur ${AUD.ids.length}${ch?' · '+esc(ch.title):''}${AUD.on?' · lecture en cours':' · en pause'}</p>
+   ${c?`<div class="rt">${c.type==='cloze'?clozeFront(c.front):md(c.front)}</div>${AUD.phase==='a'?`<div class="divider"></div><div class="rt">${c.type==='cloze'?clozeBack(c.front):''}${c.back?md(c.back):''}</div>`:''}`:''}</section>
+   <div class="row" style="flex-wrap:nowrap"><button class="btn" style="flex:1" data-act="aud-prev" ${AUD.i?'':'disabled'}>Précédente</button><button class="btn btn-primary" style="flex:1" data-act="aud-toggle">${AUD.on?'Pause':'Reprendre'}</button><button class="btn" style="flex:1" data-act="aud-next" ${AUD.i<AUD.ids.length-1?'':'disabled'}>Suivante</button></div>
+   <label class="field">Temps pour répondre : ${AUD.pause} s<input type="range" min="2" max="15" value="${AUD.pause}" data-input="aud-pause"></label>
+   <label class="field">Vitesse de lecture<select data-input="aud-rate">${[0.8,0.9,1,1.15,1.3].map(r=>`<option value="${r}" ${AUD.rate===r?'selected':''}>${r===1?'Normale':r<1?'Plus lente':'Plus rapide'} (${r})</option>`).join('')}</select></label>
+   <p class="small muted">Garde l'écran allumé : sur certains téléphones, la lecture s'arrête quand l'écran se verrouille.</p>`;
+}
+// ---------- Internat : relectures espacées des leçons ----------
+const RREAD=[1,3,7,14,30,60];
+const intRev = () => (S.internat.rev||(S.internat.rev={}));
+function intSchedule(id, adv){ const R=intRev(); const r=R[id]; const step=r?(adv?Math.min(r.step+1, RREAD.length-1):r.step):0; R[id]={step, due:dayStart(now())+RREAD[step]*DAY, t:now()}; saveLocal(); return R[id]; }
+function intDueList(){ const R=intRev(), end=dayStart(now())+DAY; return Object.entries(R).filter(([id,r])=>INTQ[id]&&r.due<end).sort((a,b)=>a[1].due-b[1].due).map(([id])=>INTQ[id]); }
+function intRereadHTML(){ const L=intDueList(); if(!L.length) return '';
+  return `<div class="plan"><p class="today-line" style="margin:0"><strong>Internat : ${plural(L.length,'leçon')} à relire aujourd'hui</strong></p>${L.slice(0,3).map(x=>`<button class="plan-row" data-act="int-open" data-id="${x.id}"><span class="pr-name">${esc(x.t)}</span><span class="pr-n">↻</span><span class="pr-sub">Relecture espacée · ouvre la leçon puis touche « J'ai relu »</span></button>`).join('')}${L.length>3?`<button class="btn btn-line" data-act="goto-int">Voir les ${L.length} leçons</button>`:''}</div>`; }
+// ---------- Chercher partout ----------
+const GSR={q:''};
+function gsResults(){
+  const q=fold(GSR.q.trim()); if(q.length<2) return '<p class="small muted">Tape au moins 2 lettres : une maladie, un signe, un nom propre…</p>';
+  const hit=s=>fold(s).includes(q); const out=[];
+  const row=(act,id,icon,tt,dd)=>`<button data-act="${act}" data-id="${esc(id)}">${icon}<span><span class="t">${esc(tt)}</span>${dd?`<span class="d">${esc(dd)}</span>`:''}</span>${I.chev}</button>`;
+  const chs=Object.entries(CH).filter(([id,c])=>hit(c.title)).slice(0,15); if(chs.length) out.push(['Cours', chs.map(([id,c])=>row('chap',id,I.book,c.title,SUBS[c.sub]?SUBS[c.sub].name:''))]);
+  const iq=Object.values(INTQ).filter(x=>hit(x.t)).slice(0,15); if(iq.length) out.push(['Internat', iq.map(x=>row('int-open',x.id,I.exam,x.t,(INT.find(e=>e.id===x.ep)||{}).name||''))]);
+  const sy=SYNDROMES.filter(x=>hit(x.n+' '+x.s.join(' ')+' '+x.c.join(' ')+' '+x.k)).slice(0,15); if(sy.length) out.push(['Fiches syndromes', sy.map(x=>row('gs-syn',x.id,I.stetho||I.exam,x.n,SYN_SYS[x.sys]))]);
+  const tr=TRIADES.filter(x=>hit(x.n+' '+x.t.join(' ')+' '+x.m)).slice(0,15); if(tr.length) out.push(['Triades', tr.map(x=>row('gs-tri',x.id,I.brain||I.exam,x.n,x.t.join(' · ')))]);
+  const cs=Object.values(S.cards).filter(c=>hit(String(c.front)+' '+String(c.back))).slice(0,20); if(cs.length) out.push(['Mes cartes', cs.map(c=>row('gs-card',c.id,I.cards,plain(c.front).slice(0,90),CH[c.chap]?CH[c.chap].title:''))]);
+  return out.length?out.map(([h,items])=>`<h3 class="syn-sys">${h} <span class="small muted">· ${items.length}</span></h3><div class="menu">${items.join('')}</div>`).join(''):'<p class="muted">Rien trouvé. Essaie un autre mot.</p>';
+}
+function gsSheet(){ return sheetTop('Chercher partout')+`<div class="search">${I.search}<input type="search" id="gsQ" placeholder="Ex. drépanocytose, Charcot, ictère…" value="${esc(GSR.q)}" data-input="gs-q" aria-label="Chercher dans tout XamXam"></div><div id="gsRes" class="stack">${gsResults()}</div>`; }
 function weakSpot(){
   const by={}; for(const c of liveCards('all')){ const ch=CH[c.chap]; if(!ch||!isHard(c)) continue; by[ch.sub]=(by[ch.sub]||0)+1; }
   let best=null; for(const [id,n] of Object.entries(by)){ if(n>=3 && (!best||n>best.n)) best={id, n, name:SUBS[id].name}; }
@@ -1571,6 +1627,9 @@ function homeSection(k){
       :`<p>Tout est à jour pour aujourd'hui. Les cartes reviendront toutes seules le jour prévu.</p>${upcomingHTML(3, 3)}
         ${recent?`<button class="btn btn-line" data-act="start" data-mode="recent" data-scope="all">Consolider les cartes de la semaine (${recent})</button>`:''}
         <button class="btn btn-ghost" data-act="tab" data-tab="rev">Bachoter un module</button>`}
+      ${intRereadHTML()}
+      ${n?`<button class="btn btn-line" data-act="aud-start" data-scope="all">${I.ear} Écouter mes cartes (mains libres)</button>`:''}
+      <button class="btn btn-ghost" data-act="gs-open">${I.search} Chercher dans tout XamXam</button>
       ${w?`<button class="btn btn-ghost today-weak" data-act="start" data-mode="hard" data-scope="s:${w.id}">Point faible : ${esc(w.name)} (${plural(w.n,'carte')} à retravailler)</button>`:''}
     </section>`;
   }
@@ -1746,6 +1805,7 @@ function viewRev(){
     ${r.mode==='srs'?`<p style="margin:0"><strong>${plural(n,'carte')} à faire aujourd'hui</strong>${n?' · environ '+plural(Math.max(1,Math.round(n*avgSec()/60)),'minute'):''}</p><div class="sess-counts" aria-label="À faire"><span class="c-rev">${cnt.rev} à revoir</span><span class="c-lrn">${cnt.lrn} en cours</span><span class="c-new">${cnt.nw} nouvelles</span></div>${n?dayPlanHTML(99, r.scope):''}`:`<p class="small"><strong>${plural(n,'carte')}</strong> dans cette sélection</p>`}
     <button class="btn btn-primary btn-lg" data-act="start" data-mode="${r.mode}" data-scope="${esc(r.scope)}" ${n?'':'disabled'}>${n?'Commencer':'Rien à réviser ici'}</button>
     ${r.mode==='srs'&&n>8?`<button class="btn" data-act="start" data-mode="srs" data-scope="${esc(r.scope)}" data-min="${q}">Séance express · ${q} min</button>`:''}
+    ${pool.length?`<button class="btn btn-line" data-act="aud-start" data-scope="${esc(r.scope)}">${I.ear} Écouter ces cartes (mains libres)</button>`:''}
    </section>
    ${r.mode==='srs'?forecastHTML():''}
    <section class="panel"><div class="section-title"><h3>Mes cartes</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="share-scope">Partager</button><button class="btn btn-ghost" data-act="edit-card">${I.plus} Nouvelle</button></div></div>
@@ -1865,6 +1925,7 @@ function viewMe(){
   ${layoutPanel()}
   ${PWA?gsPanel():''}
   ${drivePanel()}
+  <section class="panel stack"><h3>Rappel de révision</h3><p class="small">Un rappel chaque jour dans l'agenda de ton téléphone, même quand XamXam est fermée.</p><label class="field">Heure du rappel<input type="time" id="remTime" value="${esc(S.prefs.remTime||'20:00')}"></label><button class="btn btn-soft" data-act="rem-ics">Ajouter le rappel à mon agenda</button></section>
   <section class="panel stack"><h3>Sauvegarde</h3>${syncHTML()}
    <div class="row"><button class="btn" style="flex:1" data-act="export-json">Exporter une sauvegarde</button><button class="btn" style="flex:1" data-act="export-anki">Exporter pour Anki</button></div>
    <button class="btn" data-act="import-json">Importer une sauvegarde</button>
@@ -2059,7 +2120,7 @@ function paintSession(anim){
   const actions = cur.disc ? discButtons(c) : !cur.revealed
     ? (c.type==='qcm'?`<button class="btn btn-primary btn-lg" data-act="reveal">Valider mes réponses</button>`:`<button class="btn btn-primary btn-lg" data-act="reveal">Afficher la réponse</button>`)
     : gradeButtons(c);
-  $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}</div>
+  $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}${s.undo?'<button class="icon-btn" data-act="sess-undo" aria-label="Annuler la dernière note" title="Annuler la dernière note" style="font-size:1.25rem">↶</button>':''}</div>
    <article class="flash ${anim&&S.prefs.anim!=='none'?'anim-'+S.prefs.anim:''}" id="flash">
      <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):'Sans chapitre')}</p>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
      ${img('front')}${front}${back}
@@ -2085,6 +2146,7 @@ function reveal(){
 function grade(g){
   const s=SESS, cur=s.cur, c=S.cards[cur.id]; if(!c) return nextCard();
   const ms=now()-cur.t0; const wasNew=c.srs.state==='new';
+  s.undo={id:c.id, srs:clone(c.srs), queue:s.queue.slice(), later:s.later.slice(), done:s.done, ok:s.ok, missed:s.missed.slice(), day:S.stats.days[dayKey()]?clone(S.stats.days[dayKey()]):null, cur:{...cur, picked:new Set(cur.picked)}};
   s.done++; if(g>=3) s.ok++;
   if(s.mode==='srs'){
     c.srs=nextSrs(c.srs,g); saveCard(c,{fast:true});
@@ -3781,6 +3843,7 @@ function intSheet(){
     <p class="small muted">${x.oral?'Oral · question d\'urgence le plus souvent':'Écrit · coefficient '+ep.coef+' · épreuve de '+INT_DUR/60+' h'}${x.extra?' · hors liste officielle':''}${x.an?' · vue en cours en '+x.an:''}</p>
     ${x.note?`<p class="small" style="color:var(--hard)">${esc(x.note)}</p>`:''}</div>
    <div class="seg" role="group" aria-label="Où en es-tu ?">${INT_STATUS.map((l,i)=>`<button data-act="int-status" data-s="${i}" aria-pressed="${st===i}">${l}</button>`).join('')}</div>
+   ${(()=>{ const r=intRev()[id]; if(!r) return st>=1?`<button class="btn btn-ghost" data-act="int-reread" data-id="${id}">Programmer des relectures espacées</button>`:''; const dd=Math.round((r.due-dayStart(now()))/DAY); return `<div class="exam-row"><span style="min-width:0"><span class="t">${dd<=0?"À relire aujourd'hui":'Prochaine relecture '+(dd===1?'demain':'dans '+dd+' jours')}</span><span class="m">Relectures espacées : 1, 3, 7, 14, 30 puis 60 jours. Elles arrivent toutes seules sur l'accueil.</span></span><button class="btn ${dd<=0?'btn-primary':''}" data-act="int-reread" data-id="${id}">J'ai relu</button></div>`; })()}
    ${links.length?`<section class="panel"><h3>Dans tes cours</h3>
      <p class="small muted" style="margin-bottom:8px">${links.some(c=>statusOf(c)>=1)?'Tu as déjà vu cette leçon en cours : apprends-la maintenant au format de l\'internat.':'Ces cours préparent cette question : travaille-les ensemble.'}</p>
      <div class="menu">${links.map(c=>`<button data-act="chap" data-id="${c}">${I.book}<span><span class="t">${esc(CH[c].title)}</span><span class="d">${MODS[CH[c].mod].lvl} · ${esc(SUBS[CH[c].sub].name)} · ${STATUS[statusOf(c)]}</span></span>${I.chev}</button>`).join('')}</div></section>`:''}
@@ -3904,7 +3967,8 @@ document.addEventListener('click', async e=>{
     case 'int-f': UI.intFilter=d.f; rerender(); break;
     case 'int-open': intOpen(d.id); break;
     case 'int-tab': UI.intTab=d.t; UI.intRecite=null; paintSheet(true); break;
-    case 'int-status': setIntSt(UI.intId, +d.s); paintSheet(true); break;
+    case 'int-status': setIntSt(UI.intId, +d.s); if(+d.s>=2 && !intRev()[UI.intId]){ intSchedule(UI.intId,false); toast('Première relecture prévue demain'); } paintSheet(true); break;
+    case 'int-reread': { const had=!!intRev()[d.id]; const r=intSchedule(d.id, had); const n=RREAD[r.step]; toast(had?'Bravo ! Prochaine relecture dans '+n+' jour'+(n>1?'s':''):'Relectures programmées : la première demain'); paintSheet(true); break; }
     case 'int-plans': openSheet(plansSheet); break;
     case 'int-recite': UI.intRecite=0; paintSheet(true); break;
     case 'int-next': UI.intRecite++; paintSheet(true); break;
@@ -4138,7 +4202,19 @@ document.addEventListener('click', async e=>{
     case 'lesson-cards': UI.gen.chap=d.id; UI.gen.source='text'; UI.gen.text=UI.lastLesson||''; UI.gen.results=null; UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); render(); break;
     case 'gen-for': UI.gen.chap=d.id; UI.gen.results=null; UI.gen.err=''; UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render(); break;
     case 'edit-card': openEditor(d.id||null, d.chap||(UI.tab==='rev'&&UI.rev.scope.startsWith('c:')?UI.rev.scope.slice(2):''), d.type); break;
-    case 'sheet-back': closeSheet(); break;
+    case 'sheet-back': audStop(); closeSheet(); break;
+    case 'aud-start': audStart(d.scope||'all'); break;
+    case 'aud-toggle': if(AUD.on){ audStop(); paintSheet(true); } else { AUD.on=true; audWake(true); audStep(); } break;
+    case 'aud-next': if(AUD.i<AUD.ids.length-1){ AUD.i++; AUD.phase='q'; if(AUD.on) audStep(); else paintSheet(true); } break;
+    case 'aud-prev': if(AUD.i>0){ AUD.i--; AUD.phase='q'; if(AUD.on) audStep(); else paintSheet(true); } break;
+    case 'gs-open': openSheet(gsSheet); setTimeout(()=>{ const i=$('#gsQ'); if(i) i.focus(); }, 60); break;
+    case 'gs-syn': { const x=SYN_BY[d.id]; if(!x) break; UI.syn.q=x.n; UI.syn.sys='all'; UI.synOpen=d.id; openSheet(synSheet); break; }
+    case 'gs-tri': { const x=TRI_BY[d.id]; if(!x) break; UI.tri.q=x.n; UI.tri.sys='all'; UI.tri.sn=false; UI.triOpen=d.id; openSheet(triSheet); break; }
+    case 'gs-card': openEditor(d.id); break;
+    case 'rem-ics': { const v=($('#remTime')||{}).value||'20:00'; S.prefs.remTime=v; saveLocal(); const [hh,mm]=v.split(':').map(Number); const dt=new Date(); const p2=n=>String(n).padStart(2,'0');
+      const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//XamXam//Rappel//FR','BEGIN:VEVENT','UID:xamxam-rappel-'+Date.now()+'@xamxam','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z','DTSTART:'+dt.getFullYear()+p2(dt.getMonth()+1)+p2(dt.getDate())+'T'+p2(hh||0)+p2(mm||0)+'00','DURATION:PT20M','RRULE:FREQ=DAILY','SUMMARY:Révisions XamXam','DESCRIPTION:Tes cartes du jour t\'attendent : '+appUrl(),'URL:'+appUrl(),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:Révisions XamXam','TRIGGER:-PT0M','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
+      const a2=document.createElement('a'); a2.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'})); a2.download='xamxam-rappel.ics'; document.body.appendChild(a2); a2.click(); setTimeout(()=>{ URL.revokeObjectURL(a2.href); a2.remove(); }, 1500);
+      toast("Ouvre le fichier téléchargé : ton agenda ajoute le rappel de chaque jour.", 4200); break; }
     case 'start': if(d.syn||d.tri){ const ids=Object.values(S.cards).filter(c=>d.syn?c.syn===d.syn:c.tri===d.tri).map(c=>c.id); UI.sheetStack=[]; paintSheet(); if(SESS){ $('#session').hidden=true; SESS=null; } startSession('list','all',{ids}); break; }
       UI.sheetStack=[]; paintSheet(); if(SESS) { $('#session').hidden=true; SESS=null; } startSession(d.mode, d.scope, d.min?{minutes:+d.min}:null); break;
     case 'start-missed': { const ids=UI.lastMissed||[]; if(SESS){ $('#session').hidden=true; SESS=null; } startSession('list','all',{ids}); break; }
@@ -4148,8 +4224,11 @@ document.addEventListener('click', async e=>{
     case 'grade': grade(+d.g); break;
     case 'sess-close': closeSession(); break;
     case 'sess-edit': { const id=SESS.cur.id; openEditor(id); break; }
-    case 'sess-suspend': { const c=S.cards[SESS.cur.id]; if(c){ c.suspended=true; saveCard(c); SESS.later=SESS.later.filter(x=>x!==c.id); } updateDueDot(); toast('Carte retirée de tes révisions. Tu peux la réactiver en la modifiant dans Mes cartes.', 3600); nextCard(); break; }
-    case 'sess-later': { const c=S.cards[SESS.cur.id]; if(c){ c.later=dayKey(); saveCard(c); } updateDueDot(); toast('Elle reviendra un autre jour.'); nextCard(); break; }
+    case 'sess-undo': { const s=SESS, u=s&&s.undo; if(!u) break; const c=S.cards[u.id]; if(c){ c.srs=u.srs; saveCard(c,{fast:true}); }
+      s.queue=u.queue; s.later=u.later; s.done=u.done; s.ok=u.ok; s.missed=u.missed; if(u.day) S.stats.days[dayKey()]=u.day; else delete S.stats.days[dayKey()]; saveLocal();
+      s.cur=u.cur; s.cur.revealed=true; s.undo=null; updateDueDot(); paintSession(); toast('Note annulée : choisis à nouveau'); break; }
+    case 'sess-suspend': { SESS.undo=null; const c=S.cards[SESS.cur.id]; if(c){ c.suspended=true; saveCard(c); SESS.later=SESS.later.filter(x=>x!==c.id); } updateDueDot(); toast('Carte retirée de tes révisions. Tu peux la réactiver en la modifiant dans Mes cartes.', 3600); nextCard(); break; }
+    case 'sess-later': { SESS.undo=null; const c=S.cards[SESS.cur.id]; if(c){ c.later=dayKey(); saveCard(c); } updateDueDot(); toast('Elle reviendra un autre jour.'); nextCard(); break; }
     case 'explain': { UI.explainCard=S.cards[SESS.cur.id]; openSheet(explainSheet); streamTo($('#explainOut'), buildExplainPrompt(UI.explainCard)); break; }
     case 'new-tab': UI.newTab=d.t; rerender(); break;
     case 'gen-src': UI.gen.source=d.s; rerender(); break;
@@ -4251,6 +4330,7 @@ document.addEventListener('input', e=>{
   switch(k){
     case 'progq': UI.progQuery=el.value; clearTimeout(UI.pq); UI.pq=setTimeout(()=>{ const pos=el.selectionStart; rerender(); const n=$('#progSearch'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch{} } }, 200); break;
     case 'tri-q': UI.tri.q=el.value; UI.triOpen=null; clearTimeout(UI.tq); UI.tq=setTimeout(()=>{ const l=$('#triList'); if(l) l.innerHTML=triList(); }, 150); break;
+    case 'gs-q': GSR.q=el.value; clearTimeout(UI.gq); UI.gq=setTimeout(()=>{ const l=$('#gsRes'); if(l) l.innerHTML=gsResults(); }, 160); break;
     case 'syn-q': UI.syn.q=el.value; UI.synOpen=null; clearTimeout(UI.sq); UI.sq=setTimeout(()=>{ const l=$('#synList'); if(l) l.innerHTML=synList(); }, 150); break;
     case 'card-q': UI.rev.q=el.value; $('#cardResults').innerHTML=cardResults(); break;
     case 'note': saveNote(d.id, el.value); break;
@@ -4290,6 +4370,8 @@ document.addEventListener('change', async e=>{
   switch(k){
     case 'tri-sys': UI.tri.sys=el.value; UI.triOpen=null; paintSheet(true); break;
     case 'syn-sys': UI.syn.sys=el.value; UI.synOpen=null; paintSheet(true); break;
+    case 'aud-pause': AUD.pause=+el.value; paintSheet(true); break;
+    case 'aud-rate': AUD.rate=+el.value; break;
     case 'rev-scope': UI.rev.scope=el.value; rerender(); break;
     case 'gen-chap': UI.gen.chap=el.value; rerender(); break;
     case 'imp-chap': UI.impChap=el.value; break;
