@@ -148,6 +148,20 @@ input::placeholder,textarea::placeholder{color:var(--muted);opacity:.75}
 .streak svg{width:18px;height:18px;color:#D9641E}
 .today{background:var(--accent);color:var(--accent-ink);border-radius:var(--r);padding:calc(19px*var(--sp)) calc(17px*var(--sp));display:flex;flex-direction:column;gap:calc(14px*var(--sp))}
 .today .eyebrow{color:inherit;opacity:.75}
+.plan{display:flex;flex-direction:column;gap:6px}
+.plan-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 10px;align-items:center;text-align:left;width:100%;padding:9px 12px;border-radius:var(--r-sm);border:1px solid color-mix(in srgb,currentColor 22%,transparent);background:color-mix(in srgb,currentColor 7%,transparent);color:inherit;font:inherit;cursor:pointer}
+.plan-row:disabled{cursor:default;opacity:.8}
+.plan-row .pr-name{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-row .pr-n{font-family:var(--font-display);font-weight:700;font-size:1.3rem;grid-row:span 2;font-variant-numeric:tabular-nums}
+.plan-row .pr-sub{font-size:.8125rem;opacity:.85}
+.fc{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:104px}
+.fc-d{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
+.fc-d i{display:block;width:100%;max-width:26px;border-radius:6px 6px 2px 2px;background:var(--accent)}
+.fc-n{font-size:.75rem;font-weight:700}.fc-l{font-size:.75rem;color:var(--muted)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat-grid b{display:block;font-family:var(--font-display);font-size:1.5rem;line-height:1.1}.stat-grid span{font-size:.75rem;color:var(--muted)}
+.badge.new{background:var(--hl-soft);color:var(--fg)}
+.disc-note{text-align:center;margin:0 0 8px;font-size:.875rem;color:var(--muted)}
 .today-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .today-nums .big{display:block;font-family:var(--font-display);font-size:3rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums lining-nums;margin-bottom:5px}
 .today-nums .lbl{font-size:0.9375rem;opacity:.8}
@@ -1218,9 +1232,9 @@ function scopeLabel(scope){
 function liveCards(scope){ return Object.values(S.cards).filter(c=>!c.suspended && inScope(c,scope)); }
 function counts(scope){
   const t=now(), end=dayStart(t)+DAY, today=S.stats.days[dayKey()]||{n:0,r:0};
-  let rev=0, lrn=0, nw=0, late=0;
+  let rev=0, lrn=0, nw=0, late=0; const dk=dayKey();
   for(const c of liveCards(scope)){
-    if(c.srs.state==='new') nw++;
+    if(c.srs.state==='new'){ if(c.later!==dk) nw++; }
     else if(isLearning(c)){ if(c.srs.due<=end) lrn++; }
     else if(c.srs.due<end){ rev++; if(c.srs.due<end-DAY) late++; }
   }
@@ -1231,6 +1245,34 @@ function counts(scope){
 const isHard = c => c.srs.lapses>0||c.srs.lastGrade===1||c.srs.lastGrade===2;
 function recentCards(scope){ const t=now()-7*DAY; return liveCards(scope).filter(c=>(c.created||0)>t); }
 function avgSec(){ let r=0, ms=0; const from=dayKey(now()-30*DAY); for(const [k,v] of Object.entries(S.stats.days)){ if(k>from){ r+=v.r||0; ms+=v.ms||0; } } return r>20 ? Math.max(6, Math.min(40, ms/r/1000)) : 12; }
+function todayPlan(scope){
+  const t=now(), end=dayStart(t)+DAY, c=counts(scope), dk=dayKey(); const cards=liveCards(scope);
+  return { lrn:cards.filter(x=>isLearning(x)&&x.srs.due<=end),
+    rev:cards.filter(x=>x.srs.state==='review'&&x.srs.due<end).sort((a,b)=>a.srs.due-b.srs.due).slice(0,c.rev),
+    nw:cards.filter(x=>x.srs.state==='new'&&x.later!==dk).sort((a,b)=>(a.created||0)-(b.created||0)).slice(0,c.nw) };
+}
+function cardGroup(c){ const ch=CH[c.chap]; if(ch) return {k:'s:'+ch.sub, name:SUBS[ch.sub].name}; if(c.syn) return {k:'syn', name:'Fiches syndromes'}; if(c.tri) return {k:'tri', name:'Triades'}; if(c.exam) return {k:'exam', name:'Annales'}; return {k:'', name:'Sans chapitre'}; }
+function planGroups(p){
+  const g={}; const add=(c,f)=>{ const o=cardGroup(c); const key=o.k+'|'+o.name; const x=g[key]||(g[key]={k:o.k, name:o.name, rev:0, lrn:0, nw:0}); x[f]++; };
+  p.rev.forEach(c=>add(c,'rev')); p.lrn.forEach(c=>add(c,'lrn')); p.nw.forEach(c=>add(c,'nw'));
+  return Object.values(g).map(x=>({...x, n:x.rev+x.lrn+x.nw})).sort((a,b)=>b.n-a.n);
+}
+function dayPlanHTML(limit, scope){
+  const gs=planGroups(todayPlan(scope||'all')); if(!gs.length) return '';
+  const sub=g=>[g.rev?g.rev+' à revoir':'', g.lrn?g.lrn+' en cours':'', g.nw?g.nw+(g.nw>1?' nouvelles':' nouvelle'):''].filter(Boolean).join(' · ');
+  return `<div class="plan" aria-label="Matières du jour">${gs.slice(0,limit).map(g=>`<button class="plan-row" ${g.k?`data-act="start" data-mode="srs" data-scope="${esc(g.k)}"`:'disabled'} aria-label="Réviser ${esc(g.name)}"><span class="pr-name">${esc(g.name)}</span><span class="pr-n">${g.n}</span><span class="pr-sub">${sub(g)}${g.k?' · réviser seulement ça':''}</span></button>`).join('')}${gs.length>limit?`<button class="btn btn-line" data-act="tab" data-tab="rev">Voir les ${gs.length} matières du jour</button>`:''}</div>`;
+}
+function forecastHTML(){
+  const t0=dayStart(now()); const live=liveCards('all'); const J=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+  const days=[]; for(let i=1;i<=7;i++){ const a=t0+i*DAY, b=a+DAY; days.push({d:new Date(a), n:live.filter(c=>c.srs.state!=='new'&&c.srs.due>=a&&c.srs.due<b).length}); }
+  const max=Math.max(1,...days.map(x=>x.n)); let r=0, ok=0; const from=dayKey(now()-30*DAY);
+  for(const [k,v] of Object.entries(S.stats.days)){ if(k>from){ r+=v.r||0; ok+=v.ok||0; } }
+  const seen=live.filter(c=>c.srs.state!=='new').length; const solid=live.filter(c=>c.srs.state==='review'&&c.srs.ivl>=21).length; const susp=Object.values(S.cards).filter(c=>c.suspended).length;
+  return `<section class="panel stack"><h3 style="margin:0">Les 7 prochains jours</h3>
+    <div class="fc" role="img" aria-label="Cartes à revoir les 7 prochains jours">${days.map(x=>`<div class="fc-d"><span class="fc-n">${x.n}</span><i style="height:${Math.round(4+62*x.n/max)}px"></i><span class="fc-l">${J[x.d.getDay()]}</span></div>`).join('')}</div>
+    <div class="stat-grid"><div><b>${r?Math.round(100*ok/r)+' %':'–'}</b><span>de réussite sur 30 jours</span></div><div><b>${seen}</b><span>cartes déjà vues</span></div><div><b>${solid}</b><span>bien ancrées (3 semaines et +)</span></div></div>
+    ${susp?`<p class="small muted" style="margin:0">${susp} carte${susp>1?'s':''} retirée${susp>1?'s':''} des révisions.</p>`:''}</section>`;
+}
 function weakSpot(){
   const by={}; for(const c of liveCards('all')){ const ch=CH[c.chap]; if(!ch||!isHard(c)) continue; by[ch.sub]=(by[ch.sub]||0)+1; }
   let best=null; for(const [id,n] of Object.entries(by)){ if(n>=3 && (!best||n>best.n)) best={id, n, name:SUBS[id].name}; }
@@ -1507,7 +1549,8 @@ function homeSection(k){
     const q=S.prefs.quick||10; const w=weakSpot(); const recent=recentCards('all').length;
     return `<section class="today"><p class="eyebrow">Révisions du jour</p>
       <div class="today-nums"><div><span class="big">${c.rev}</span><span class="lbl">à revoir</span></div><div><span class="big">${c.lrn}</span><span class="lbl">en cours</span></div><div><span class="big">${c.nw}</span><span class="lbl">nouvelles</span></div></div>
-      ${n?`<p class="today-line">${c.late?`<strong>${plural(c.late,'carte')} en retard</strong> · `:''}environ ${plural(mins,'minute')}</p>
+      ${n?dayPlanHTML(4):''}
+      ${n?`<p class="today-line"><strong>${plural(n,'carte')} aujourd'hui</strong> · ${c.late?`<strong>${plural(c.late,'carte')} en retard</strong> · `:''}environ ${plural(mins,'minute')}</p>
         <button class="btn btn-primary btn-lg" data-act="start" data-mode="srs" data-scope="all">Commencer</button>
         ${n>8?`<button class="btn btn-line" data-act="start" data-mode="srs" data-scope="all" data-min="${q}">Séance express · ${q} min</button>`:''}`
       :`<p>Tout est à jour. Les prochaines cartes reviendront demain.</p>
@@ -1685,10 +1728,11 @@ function viewRev(){
     <div class="seg grid2" role="group" aria-label="Mode">${modes.map(([k,l])=>`<button data-act="rev-mode" data-m="${k}" aria-pressed="${r.mode===k}">${l}</button>`).join('')}</div>
     <p class="small muted">${desc}</p>
     <label class="field">Quoi réviser<select id="revScope" data-input="rev-scope">${scopeOptions(r.scope)}</select></label>
-    ${r.mode==='srs'?`<div class="sess-counts" aria-label="À faire"><span class="c-rev">${cnt.rev} à revoir</span><span class="c-lrn">${cnt.lrn} en cours</span><span class="c-new">${cnt.nw} nouvelles</span></div>`:`<p class="small"><strong>${plural(n,'carte')}</strong> dans cette sélection</p>`}
+    ${r.mode==='srs'?`<p style="margin:0"><strong>${plural(n,'carte')} à faire aujourd'hui</strong>${n?' · environ '+plural(Math.max(1,Math.round(n*avgSec()/60)),'minute'):''}</p><div class="sess-counts" aria-label="À faire"><span class="c-rev">${cnt.rev} à revoir</span><span class="c-lrn">${cnt.lrn} en cours</span><span class="c-new">${cnt.nw} nouvelles</span></div>${n?dayPlanHTML(99, r.scope):''}`:`<p class="small"><strong>${plural(n,'carte')}</strong> dans cette sélection</p>`}
     <button class="btn btn-primary btn-lg" data-act="start" data-mode="${r.mode}" data-scope="${esc(r.scope)}" ${n?'':'disabled'}>${n?'Commencer':'Rien à réviser ici'}</button>
     ${r.mode==='srs'&&n>8?`<button class="btn" data-act="start" data-mode="srs" data-scope="${esc(r.scope)}" data-min="${q}">Séance express · ${q} min</button>`:''}
    </section>
+   ${r.mode==='srs'?forecastHTML():''}
    <section class="panel"><div class="section-title"><h3>Mes cartes</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="share-scope">Partager</button><button class="btn btn-ghost" data-act="edit-card">${I.plus} Nouvelle</button></div></div>
     <div class="search" style="margin-bottom:8px">${I.search}<input type="search" id="cardSearch" placeholder="Chercher dans mes cartes" value="${esc(r.q)}" data-input="card-q" aria-label="Chercher dans mes cartes"></div>
     <div id="cardResults">${cardResults()}</div></section>`;
@@ -1942,7 +1986,7 @@ function startSession(mode, scope, opt){
     const c=counts(scope); const end=dayStart(t)+DAY;
     const lrn=cards.filter(x=>isLearning(x)&&x.srs.due<=end).sort((a,b)=>a.srs.due-b.srs.due);
     const rev=shuffle(cards.filter(x=>x.srs.state==='review'&&x.srs.due<end)).sort((a,b)=>a.srs.due-b.srs.due).slice(0,c.rev); // les plus en retard d'abord
-    const nw=cards.filter(x=>x.srs.state==='new').sort((a,b)=>(a.created||0)-(b.created||0)).slice(0,c.nw);
+    const dk=dayKey(); const nw=cards.filter(x=>x.srs.state==='new'&&x.later!==dk).sort((a,b)=>(a.created||0)-(b.created||0)).slice(0,c.nw);
     // on intercale les nouvelles parmi les révisions
     const mixed=[]; const step=nw.length?Math.max(1,Math.floor(rev.length/nw.length)):0; let ni=0;
     rev.forEach((r,i)=>{ mixed.push(r); if(step && (i+1)%step===0 && ni<nw.length) mixed.push(nw[ni++]); });
@@ -1973,7 +2017,8 @@ function nextCard(){
   } else if(s.queue.length) id=s.queue.shift();
   while(id && !S.cards[id]){ id=s.queue.shift()||null; }
   if(!id){ sessionDone(); return; }
-  s.cur={id, revealed:false, picked:new Set(), t0:now()};
+  const cc=S.cards[id]; const disc=s.mode==='srs' && cc.srs.state==='new';
+  s.cur={id, revealed:disc, disc, picked:new Set(), t0:now()};
   paintSession();
 }
 function remaining(){ const s=SESS; if(s.mode!=='srs') return {n:s.queue.length+(s.cur?1:0)};
@@ -1996,17 +2041,21 @@ function paintSession(anim){
   if(cur.revealed){
     back=`<div class="divider"></div>${img('back')}${c.back?`<div class="rt">${md(c.back)}</div>`:''}${c.hint?`<div class="hintbox"><p class="eyebrow">Pour retenir</p><div class="rt">${md(c.hint)}</div></div>`:''}`;
   }
-  const actions = !cur.revealed
+  const actions = cur.disc ? discButtons(c) : !cur.revealed
     ? (c.type==='qcm'?`<button class="btn btn-primary btn-lg" data-act="reveal">Valider mes réponses</button>`:`<button class="btn btn-primary btn-lg" data-act="reveal">Afficher la réponse</button>`)
     : gradeButtons(c);
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}</div>
    <article class="flash ${anim&&S.prefs.anim!=='none'?'anim-'+S.prefs.anim:''}" id="flash">
-     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):'Sans chapitre')}</p>${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
+     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):'Sans chapitre')}</p>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
      ${img('front')}${front}${back}
    </article>
-   ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button></div>`:''}
+   ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button>${c.srs.state==='new'&&s.mode==='srs'?'<button class="btn btn-ghost" data-act="sess-later">Pas aujourd\'hui</button>':''}<button class="btn btn-ghost" data-act="sess-suspend">Retirer de mes révisions</button></div>`:''}
    <div class="sess-actions">${actions}</div>`;
   $('#session').scrollTop=0;
+}
+function discButtons(c){
+  const iv=g=>fmtIvl(nextSrs(c.srs,g,false).due-now());
+  return `<p class="disc-note">Nouvelle carte : lis la réponse tranquillement, il n'y a rien à noter.</p><div class="grades two"><button class="grade g3" data-act="grade" data-g="3">Je l'ai lue<small>revient dans ${iv(3)}</small></button><button class="grade g4" data-act="grade" data-g="4">Je la savais déjà<small>dans ${iv(4)}</small></button></div>`;
 }
 function gradeButtons(c){
   const s=SESS;
@@ -4031,6 +4080,10 @@ document.addEventListener('click', async e=>{
   switch(act){
     case 'syn-open': openSheet(synSheet); break;
     case 'tri-open': openSheet(triSheet); break;
+    case 'syn-del': { const n=synRemove(d.id); UI.synOpen=d.id; updateDueDot(); paintSheet(true); toast(n?'Fiche retirée de tes révisions':'Elle n\'était pas dans tes révisions'); break; }
+    case 'tri-del': { const n=triRemove(d.id); UI.triOpen=d.id; updateDueDot(); paintSheet(true); toast(n?'Triade retirée de tes révisions':'Elle n\'était pas dans tes révisions'); break; }
+    case 'syn-del-all': { if(!confirm('Retirer ces fiches syndromes de tes révisions ? Leur progression sera effacée, tu pourras les rajouter plus tard.')) break; let n=0; for(const x of SYNDROMES){ if(UI.syn.sys==='all'||x.sys===UI.syn.sys) n+=synRemove(x.id); } updateDueDot(); paintSheet(true); toast(n+' cartes retirées de tes révisions'); break; }
+    case 'tri-del-all': { if(!confirm('Retirer ces triades de tes révisions ? Leur progression sera effacée, tu pourras les rajouter plus tard.')) break; let n=0; for(const x of TRIADES){ if(triMatch(x)) n+=triRemove(x.id); } updateDueDot(); paintSheet(true); toast(n+' cartes retirées de tes révisions'); break; }
     case 'tri-view': UI.tri.view=d.v; paintSheet(true); break;
     case 'tri-sn': UI.tri.sn=d.v==='1'; UI.triOpen=null; paintSheet(true); break;
     case 'tri-add': { const n=triAdd(d.id); UI.triOpen=d.id; updateDueDot(); paintSheet(true); toast(n?n+' cartes ajoutées à tes révisions':'Déjà dans tes révisions'); break; }
@@ -4080,6 +4133,8 @@ document.addEventListener('click', async e=>{
     case 'grade': grade(+d.g); break;
     case 'sess-close': closeSession(); break;
     case 'sess-edit': { const id=SESS.cur.id; openEditor(id); break; }
+    case 'sess-suspend': { const c=S.cards[SESS.cur.id]; if(c){ c.suspended=true; saveCard(c); SESS.later=SESS.later.filter(x=>x!==c.id); } updateDueDot(); toast('Carte retirée de tes révisions. Tu peux la réactiver en la modifiant dans Mes cartes.', 3600); nextCard(); break; }
+    case 'sess-later': { const c=S.cards[SESS.cur.id]; if(c){ c.later=dayKey(); saveCard(c); } updateDueDot(); toast('Elle reviendra un autre jour.'); nextCard(); break; }
     case 'explain': { UI.explainCard=S.cards[SESS.cur.id]; openSheet(explainSheet); streamTo($('#explainOut'), buildExplainPrompt(UI.explainCard)); break; }
     case 'new-tab': UI.newTab=d.t; rerender(); break;
     case 'gen-src': UI.gen.source=d.s; rerender(); break;
@@ -5086,6 +5141,8 @@ function synAdd(id){
   ].forEach(f=>saveCard(newCard({...f, type:'qa', syn:id})));
   return 3;
 }
+function synRemove(id){ let n=0; for(const c of Object.values(S.cards)){ if(c.syn===id){ deleteCard(c.id); n++; } } return n; }
+function triRemove(id){ let n=0; for(const c of Object.values(S.cards)){ if(c.tri===id){ deleteCard(c.id); n++; } } return n; }
 function synFiche(x){
   const u=UI.syn, has=synHas(x.id);
   const simple=`<div class="syn-box simple"><p class="eyebrow">En mots simples</p><p>${esc(x.e)}</p></div>`;
@@ -5095,7 +5152,7 @@ function synFiche(x){
     <div><h4>Signes</h4><ul>${x.s.map(t=>'<li>'+esc(t)+'</li>').join('')}</ul></div>
     <div><h4>Causes principales</h4><ul>${x.c.map(t=>'<li>'+esc(t)+'</li>').join('')}</ul></div>
     <p class="syn-key"><strong>À retenir.</strong> ${esc(x.k)}</p>
-    ${has?`<div class="row"><span class="badge">Dans tes révisions</span><button class="btn btn-ghost" data-act="start" data-mode="cram" data-scope="syn" data-syn="${x.id}">Me tester sur cette fiche</button></div>`
+    ${has?`<div class="row"><span class="badge">Dans tes révisions</span><button class="btn btn-ghost" data-act="start" data-mode="cram" data-scope="syn" data-syn="${x.id}">Me tester sur cette fiche</button><button class="btn btn-ghost" data-act="syn-del" data-id="${x.id}">Retirer de mes révisions</button></div>`
         :`<button class="btn btn-soft" data-act="syn-add" data-id="${x.id}">${I.plus} Ajouter à mes révisions (3 cartes)</button>`}
   </div></details>`;
 }
@@ -5126,8 +5183,9 @@ function synSheet(){
     <label class="field">Appareil<select id="synSys" data-input="syn-sys"><option value="all" ${u.sys==='all'?'selected':''}>Tous les appareils</option>${Object.entries(SYN_SYS).map(([k,l])=>`<option value="${k}" ${u.sys===k?'selected':''}>${esc(l)} (${SYNDROMES.filter(x=>x.sys===k).length})</option>`).join('')}</select></label>
     <div class="search">${I.search}<input type="search" id="synSearch" placeholder="Chercher un syndrome ou un signe" value="${esc(u.q)}" data-input="syn-q" aria-label="Chercher un syndrome ou un signe"></div>
     <div class="stack">${nTest?`<button class="btn btn-primary" data-act="start" data-mode="cram" data-scope="${scope}">Me tester (${nTest} cartes)</button>`:''}
-      ${missing?`<button class="btn btn-soft" data-act="syn-add-all">Tout ajouter à mes révisions (${missing})</button>`:''}</div>
-    <p class="small muted">${mine} fiche${mine>1?'s':''} dans tes révisions. Ces fiches sont un résumé : en cas de différence, c'est le cours de ton professeur qui fait foi.</p>
+      ${missing?`<button class="btn btn-soft" data-act="syn-add-all">Tout ajouter à mes révisions (${missing})</button>`:''}
+      ${mine?`<button class="btn btn-ghost" data-act="syn-del-all">Retirer ${u.sys==='all'?'toutes les fiches':'les fiches de cet appareil'} de mes révisions</button>`:''}</div>
+    <p class="small muted">Rien n'entre dans tes révisions sans ton accord : ajoute une fiche, toutes, ou aucune. ${mine} fiche${mine>1?'s':''} dans tes révisions. Ces fiches sont un résumé : en cas de différence, c'est le cours de ton professeur qui fait foi.</p>
    </div>
    <div id="synList" class="stack">${synList()}</div>`;
 }
@@ -5263,7 +5321,7 @@ function triFiche(x){
     <ol class="tri-ol">${x.t.map(s=>'<li>'+esc(s)+'</li>').join('')}</ol>
     <p><strong>Évoque :</strong> ${esc(x.m)}</p>
     <p class="syn-key"><strong>À retenir.</strong> ${esc(x.k)}</p>
-    ${has?`<div class="row"><span class="badge">Dans tes révisions</span><button class="btn btn-ghost" data-act="start" data-mode="cram" data-scope="tri" data-tri="${x.id}">Me tester sur cette triade</button></div>`
+    ${has?`<div class="row"><span class="badge">Dans tes révisions</span><button class="btn btn-ghost" data-act="start" data-mode="cram" data-scope="tri" data-tri="${x.id}">Me tester sur cette triade</button><button class="btn btn-ghost" data-act="tri-del" data-id="${x.id}">Retirer de mes révisions</button></div>`
         :`<button class="btn btn-soft" data-act="tri-add" data-id="${x.id}">${I.plus} Ajouter à mes révisions (2 cartes)</button>`}
   </div></details>`;
 }
@@ -5292,8 +5350,9 @@ function triSheet(){
     <label class="field">Appareil<select id="triSys" data-input="tri-sys"><option value="all" ${u.sys==='all'?'selected':''}>Tous les appareils</option>${Object.entries(TRI_SYS).map(([k,l])=>`<option value="${k}" ${u.sys===k?'selected':''}>${esc(l)} (${TRIADES.filter(x=>x.sys===k).length})</option>`).join('')}</select></label>
     <div class="search">${I.search}<input type="search" id="triSearch" placeholder="Chercher une triade ou un signe" value="${esc(u.q)}" data-input="tri-q" aria-label="Chercher une triade ou un signe"></div>
     <div class="stack">${nTest?`<button class="btn btn-primary" data-act="start" data-mode="cram" data-scope="tri">Me tester (${nTest} cartes)</button>`:''}
-      ${missing?`<button class="btn btn-soft" data-act="tri-add-all">Tout ajouter à mes révisions (${missing})</button>`:''}</div>
-    <p class="small muted">${mine} triade${mine>1?'s':''} dans tes révisions. En cas de différence, c'est le cours de ton professeur qui fait foi.</p>
+      ${missing?`<button class="btn btn-soft" data-act="tri-add-all">Tout ajouter à mes révisions (${missing})</button>`:''}
+      ${mine?`<button class="btn btn-ghost" data-act="tri-del-all">Retirer les triades affichées de mes révisions</button>`:''}</div>
+    <p class="small muted">Rien n'entre dans tes révisions sans ton accord : ajoute une triade, toutes, ou aucune. ${mine} triade${mine>1?'s':''} dans tes révisions. En cas de différence, c'est le cours de ton professeur qui fait foi.</p>
    </div>
    <div id="triList" class="stack">${triList()}</div>`;
 }
