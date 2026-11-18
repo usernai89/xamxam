@@ -1,6 +1,6 @@
 // XamXam : fonctionnement hors ligne.
 // Changer VERSION à chaque mise à jour de l'appli pour rafraîchir le cache.
-const VERSION = 'xamxam-v26';
+const VERSION = 'xamxam-v27';
 // Ces caches-là sont gardés d'une version à l'autre : les bibliothèques (lecture des PDF et des photos, environ 10 Mo)
 // et les polices ne sont pas retéléchargées à chaque mise à jour.
 const LIB = 'xamxam-lib-1', FONTS = 'xamxam-fonts-1', SHARE = 'xamxam-share', LESSONS = 'xamxam-internat-1';
@@ -26,7 +26,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
     for (const k of await caches.keys()) {
-      if (KEEP.includes(k)) continue;
+      if (KEEP.includes(k) || k.startsWith('aplomb-')) continue;
       try { // on récupère les bibliothèques et les polices des anciennes versions avant de les effacer
         const old = await caches.open(k);
         for (const req of await old.keys()) {
@@ -46,6 +46,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   const url = new URL(req.url);
+  // L'appli Aplomb (dossier aplomb/) a son propre fonctionnement hors ligne : on n'y touche pas.
+  if (url.origin === self.location.origin && url.pathname.includes('/aplomb/')) return;
   // Fichier partagé vers XamXam (WhatsApp → Partager → XamXam) : on le garde, puis on ouvre l'appli.
   if (req.method === 'POST' && url.pathname.endsWith('/share-target')) {
     e.respondWith((async () => {
