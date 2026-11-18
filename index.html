@@ -154,6 +154,7 @@ input::placeholder,textarea::placeholder{color:var(--muted);opacity:.75}
 .plan-row .pr-name{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .plan-row .pr-n{font-family:var(--font-display);font-weight:700;font-size:1.3rem;grid-row:span 2;font-variant-numeric:tabular-nums}
 .plan-row .pr-sub{font-size:.8125rem;opacity:.85}
+.upc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}.upc li{display:flex;flex-direction:column;gap:1px;font-size:.875rem;line-height:1.35}.upc span{opacity:.85}
 .fc{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:104px}
 .fc-d{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
 .fc-d i{display:block;width:100%;max-width:26px;border-radius:6px 6px 2px 2px;background:var(--accent)}
@@ -1251,26 +1252,40 @@ function todayPlan(scope){
     rev:cards.filter(x=>x.srs.state==='review'&&x.srs.due<end).sort((a,b)=>a.srs.due-b.srs.due).slice(0,c.rev),
     nw:cards.filter(x=>x.srs.state==='new'&&x.later!==dk).sort((a,b)=>(a.created||0)-(b.created||0)).slice(0,c.nw) };
 }
-function cardGroup(c){ const ch=CH[c.chap]; if(ch) return {k:'s:'+ch.sub, name:SUBS[ch.sub].name}; if(c.syn) return {k:'syn', name:'Fiches syndromes'}; if(c.tri) return {k:'tri', name:'Triades'}; if(c.exam) return {k:'exam', name:'Annales'}; return {k:'', name:'Sans chapitre'}; }
+function cardGroup(c){ const ch=CH[c.chap]; if(ch) return {k:'c:'+c.chap, name:ch.title, sub:SUBS[ch.sub].name}; if(c.syn) return {k:'syn', name:'Fiches syndromes'}; if(c.tri) return {k:'tri', name:'Triades'}; if(c.exam) return {k:'exam', name:'Annales'}; return {k:'', name:'Sans chapitre'}; }
 function planGroups(p){
-  const g={}; const add=(c,f)=>{ const o=cardGroup(c); const key=o.k+'|'+o.name; const x=g[key]||(g[key]={k:o.k, name:o.name, rev:0, lrn:0, nw:0}); x[f]++; };
+  const g={}; const add=(c,f)=>{ const o=cardGroup(c); const key=o.k+'|'+o.name; const x=g[key]||(g[key]={k:o.k, name:o.name, sub:o.sub||'', rev:0, lrn:0, nw:0}); x[f]++; };
   p.rev.forEach(c=>add(c,'rev')); p.lrn.forEach(c=>add(c,'lrn')); p.nw.forEach(c=>add(c,'nw'));
   return Object.values(g).map(x=>({...x, n:x.rev+x.lrn+x.nw})).sort((a,b)=>b.n-a.n);
 }
 function dayPlanHTML(limit, scope){
   const gs=planGroups(todayPlan(scope||'all')); if(!gs.length) return '';
   const sub=g=>[g.rev?g.rev+' à revoir':'', g.lrn?g.lrn+' en cours':'', g.nw?g.nw+(g.nw>1?' nouvelles':' nouvelle'):''].filter(Boolean).join(' · ');
-  return `<div class="plan" aria-label="Matières du jour">${gs.slice(0,limit).map(g=>`<button class="plan-row" ${g.k?`data-act="start" data-mode="srs" data-scope="${esc(g.k)}"`:'disabled'} aria-label="Réviser ${esc(g.name)}"><span class="pr-name">${esc(g.name)}</span><span class="pr-n">${g.n}</span><span class="pr-sub">${sub(g)}${g.k?' · réviser seulement ça':''}</span></button>`).join('')}${gs.length>limit?`<button class="btn btn-line" data-act="tab" data-tab="rev">Voir les ${gs.length} matières du jour</button>`:''}</div>`;
+  return `<div class="plan" aria-label="Leçons du jour">${gs.slice(0,limit).map(g=>`<button class="plan-row" ${g.k?`data-act="start" data-mode="srs" data-scope="${esc(g.k)}"`:'disabled'} aria-label="Réviser ${esc(g.name)}"><span class="pr-name">${esc(g.name)}</span><span class="pr-n">${g.n}</span><span class="pr-sub">${g.sub?esc(g.sub)+' · ':''}${sub(g)}</span></button>`).join('')}${gs.length>limit?`<button class="btn btn-line" data-act="tab" data-tab="rev">Voir les ${gs.length} leçons du jour</button>`:''}</div>`;
+}
+function upcoming(nDays){
+  const t0=dayStart(now()); const live=liveCards('all'); const days=[];
+  for(let i=1;i<=nDays;i++){ const a=t0+i*DAY, b=a+DAY; const cs=live.filter(c=>c.srs.state!=='new'&&c.srs.due>=a&&c.srs.due<b); days.push({i, d:new Date(a), n:cs.length, groups:planGroups({rev:cs, lrn:[], nw:[]})}); }
+  return days;
+}
+const dayName = x => x.i===1?'Demain':x.i===2?'Après-demain':['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'][x.d.getDay()]+' '+x.d.getDate();
+const groupsTxt = (gs, k) => gs.slice(0,k).map(g=>esc(g.name)+' ('+g.n+')').join(', ')+(gs.length>k?' et '+(gs.length-k)+' autre'+(gs.length-k>1?'s':''):'');
+function upcomingHTML(nDays, k){
+  const days=upcoming(nDays).filter(x=>x.n);
+  if(!days.length) return '';
+  return `<ul class="upc">${days.map(x=>`<li><strong>${dayName(x)} · ${plural(x.n,'carte')}</strong><span>${groupsTxt(x.groups, k)}</span></li>`).join('')}</ul>`;
 }
 function forecastHTML(){
-  const t0=dayStart(now()); const live=liveCards('all'); const J=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
-  const days=[]; for(let i=1;i<=7;i++){ const a=t0+i*DAY, b=a+DAY; days.push({d:new Date(a), n:live.filter(c=>c.srs.state!=='new'&&c.srs.due>=a&&c.srs.due<b).length}); }
+  const J=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+  const days=upcoming(7);
   const max=Math.max(1,...days.map(x=>x.n)); let r=0, ok=0; const from=dayKey(now()-30*DAY);
   for(const [k,v] of Object.entries(S.stats.days)){ if(k>from){ r+=v.r||0; ok+=v.ok||0; } }
-  const seen=live.filter(c=>c.srs.state!=='new').length; const solid=live.filter(c=>c.srs.state==='review'&&c.srs.ivl>=21).length; const susp=Object.values(S.cards).filter(c=>c.suspended).length;
+  const live=liveCards('all'); const seen=live.filter(c=>c.srs.state!=='new').length; const solid=live.filter(c=>c.srs.state==='review'&&c.srs.ivl>=21).length; const susp=Object.values(S.cards).filter(c=>c.suspended).length;
   return `<section class="panel stack"><h3 style="margin:0">Les 7 prochains jours</h3>
     <div class="fc" role="img" aria-label="Cartes à revoir les 7 prochains jours">${days.map(x=>`<div class="fc-d"><span class="fc-n">${x.n}</span><i style="height:${Math.round(4+62*x.n/max)}px"></i><span class="fc-l">${J[x.d.getDay()]}</span></div>`).join('')}</div>
     <div class="stat-grid"><div><b>${r?Math.round(100*ok/r)+' %':'–'}</b><span>de réussite sur 30 jours</span></div><div><b>${seen}</b><span>cartes déjà vues</span></div><div><b>${solid}</b><span>bien ancrées (3 semaines et +)</span></div></div>
+    ${upcomingHTML(7, 4)}
+    <p class="small muted" style="margin:0">Chaque carte revient toute seule le jour prévu dans « Commencer », quelle que soit sa leçon : tu n'as pas besoin d'ouvrir les leçons.</p>
     ${susp?`<p class="small muted" style="margin:0">${susp} carte${susp>1?'s':''} retirée${susp>1?'s':''} des révisions.</p>`:''}</section>`;
 }
 function weakSpot(){
@@ -1549,11 +1564,11 @@ function homeSection(k){
     const q=S.prefs.quick||10; const w=weakSpot(); const recent=recentCards('all').length;
     return `<section class="today"><p class="eyebrow">Révisions du jour</p>
       <div class="today-nums"><div><span class="big">${c.rev}</span><span class="lbl">à revoir</span></div><div><span class="big">${c.lrn}</span><span class="lbl">en cours</span></div><div><span class="big">${c.nw}</span><span class="lbl">nouvelles</span></div></div>
-      ${n?dayPlanHTML(4):''}
+      ${n?`<p class="today-line" style="margin:0">Toutes les cartes prévues aujourd'hui, de toutes tes leçons, arrivent ici toutes seules.</p>${dayPlanHTML(4)}`:''}
       ${n?`<p class="today-line"><strong>${plural(n,'carte')} aujourd'hui</strong> · ${c.late?`<strong>${plural(c.late,'carte')} en retard</strong> · `:''}environ ${plural(mins,'minute')}</p>
         <button class="btn btn-primary btn-lg" data-act="start" data-mode="srs" data-scope="all">Commencer</button>
         ${n>8?`<button class="btn btn-line" data-act="start" data-mode="srs" data-scope="all" data-min="${q}">Séance express · ${q} min</button>`:''}`
-      :`<p>Tout est à jour. Les prochaines cartes reviendront demain.</p>
+      :`<p>Tout est à jour pour aujourd'hui. Les cartes reviendront toutes seules le jour prévu.</p>${upcomingHTML(3, 3)}
         ${recent?`<button class="btn btn-line" data-act="start" data-mode="recent" data-scope="all">Consolider les cartes de la semaine (${recent})</button>`:''}
         <button class="btn btn-ghost" data-act="tab" data-tab="rev">Bachoter un module</button>`}
       ${w?`<button class="btn btn-ghost today-weak" data-act="start" data-mode="hard" data-scope="s:${w.id}">Point faible : ${esc(w.name)} (${plural(w.n,'carte')} à retravailler)</button>`:''}
