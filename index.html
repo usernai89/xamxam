@@ -482,6 +482,8 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 .syn-body h4{font-size:0.9375rem;margin-bottom:6px}
 .syn-body ul{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:6px;line-height:1.5}
 .syn-key{border-left:4px solid var(--hl);padding:6px 0 6px 14px;line-height:1.5}
+.tri-ol{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:6px;line-height:1.45;font-weight:600}
+.badge.sn{margin-left:6px;font-family:var(--font-body);font-size:0.6875rem;font-weight:700;vertical-align:middle;background:var(--hl-soft);color:var(--fg)}
 .syn-sys{font-family:var(--font-display);font-size:1.125rem;margin:calc(10px*var(--sp)) 2px 0}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);-webkit-overflow-scrolling:touch}
 .tbl-wrap table{border-collapse:collapse;min-width:760px;width:100%;font-size:0.9375rem;line-height:1.45}
@@ -852,10 +854,10 @@ const FONTS = {
  serif:{name:'Livre', css:"'Source Serif 4',Georgia,'Times New Roman',serif"},
  system:{name:'Système', css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"}
 };
-const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
+const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
 const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'nunito', heads:'expressive', size:17, radius:'soft', density:'normal', anim:'flip', buttons:4,
   semStart:'2026-11-19', examDate:'', newPerDay:25, maxRev:300, capExam:true, quick:10, lastExport:0,
-  home:[['today',1],['exams',1],['internat',1],['syn',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
+  home:[['today',1],['exams',1],['internat',1],['syn',1],['tri',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
 
 // ---------- Icons ----------
 const I = {
@@ -1189,6 +1191,7 @@ const isLearning = c => c.srs.state==='learning'||c.srs.state==='relearning';
 function inScope(c, scope){
   if(!scope||scope==='all') return true;
   if(scope==='syn') return !!c.syn;
+  if(scope==='tri') return !!c.tri;
   if(scope==='exam') return !!c.exam;
   if(scope.startsWith('e:')) return c.exam===scope.slice(2);
   const [k,v]=scope.split(':'); const ch=CH[c.chap];
@@ -1202,6 +1205,7 @@ function inScope(c, scope){
 function scopeLabel(scope){
   if(!scope||scope==='all') return 'Tout le programme';
   if(scope==='syn') return 'Fiches syndromes';
+  if(scope==='tri') return 'Triades';
   if(scope==='exam') return 'Annales';
   if(scope.startsWith('e:')) return annLabel(scope.slice(2));
   const [k,v]=scope.split(':');
@@ -1234,7 +1238,7 @@ function weakSpot(){
 }
 function ensureHome(){
   const h=Array.isArray(S.prefs.home)?S.prefs.home:[];
-  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
+  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
   S.prefs.home=h.filter(r=>HOME_SECTIONS[r[0]]);
 }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -1532,6 +1536,12 @@ function homeSection(k){
       <p>Tous les grands syndromes, expliqués deux fois : en mots simples, puis en langage hospitalier. En fiches ou en tableau.</p>
       <div class="row"><button class="btn btn-soft" style="flex:1" data-act="syn-open">Ouvrir les fiches</button>${mine?`<button class="btn" style="flex:1" data-act="start" data-mode="cram" data-scope="syn">Me tester</button>`:''}</div></section>`;
   }
+  if(k==='tri'){
+    const mine=Object.values(S.cards).filter(c=>c.tri).length;
+    return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Triades</h3><span class="small muted">${TRIADES.length} triades</span></div>
+      <p>Les triades de médecine à connaître, avec les plus fréquentes au Sénégal et en Afrique mises en avant. En fiches ou en tableau.</p>
+      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="tri-open">Ouvrir les triades</button>${mine?`<button class="btn" style="flex:1" data-act="start" data-mode="cram" data-scope="tri">Me tester</button>`:''}</div></section>`;
+  }
   if(k==='countdown'){
     const st=semStart(), dSem=daysUntil(st), ex=examDate(), dEx=daysUntil(ex.date);
     const revStart=new Date(ex.date); revStart.setDate(revStart.getDate()-10);
@@ -1658,6 +1668,7 @@ function scopeOptions(sel, withNone){
   const exams=withNone?[]:Array.from(new Set(Object.values(S.cards).map(c=>c.exam).filter(Boolean))).sort().reverse();
   if(exams.length){ o+=`<optgroup label="Annales d'examen"><option value="exam" ${sel==='exam'?'selected':''}>Toutes les annales</option>`; for(const e of exams) o+=`<option value="e:${esc(e)}" ${sel==='e:'+e?'selected':''}>${esc(annLabel(e))}</option>`; o+='</optgroup>'; }
   if(!withNone && Object.values(S.cards).some(c=>c.syn)) o+=`<option value="syn" ${sel==='syn'?'selected':''}>Fiches syndromes (toutes)</option>`;
+  if(!withNone && Object.values(S.cards).some(c=>c.tri)) o+=`<option value="tri" ${sel==='tri'?'selected':''}>Triades (toutes)</option>`;
   return o;
 }
 function viewRev(){
@@ -1990,7 +2001,7 @@ function paintSession(anim){
     : gradeButtons(c);
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}</div>
    <article class="flash ${anim&&S.prefs.anim!=='none'?'anim-'+S.prefs.anim:''}" id="flash">
-     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):'Sans chapitre')}</p>${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
+     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):'Sans chapitre')}</p>${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
      ${img('front')}${front}${back}
    </article>
    ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button></div>`:''}
@@ -2773,7 +2784,7 @@ function gsPanel(){
 function gsPaint(){ const el=$('#gsPanel'); if(el) el.outerHTML=gsPanel(); }
 
 // ---------- Partager des questions ----------
-function shareCardData(c){ return {type:c.type, front:c.front, back:c.back, hint:c.hint||'', choices:c.choices||[], answer:c.answer||[], img:c.img||'', imgSide:c.imgSide||'front', exam:c.exam||'', chap:c.chap||'', syn:c.syn||''}; }
+function shareCardData(c){ return {type:c.type, front:c.front, back:c.back, hint:c.hint||'', choices:c.choices||[], answer:c.answer||[], img:c.img||'', imgSide:c.imgSide||'front', exam:c.exam||'', chap:c.chap||'', syn:c.syn||'', tri:c.tri||''}; }
 async function shareFile(title, cards, exams){
   if(!cards.length && !exams.length){ toast('Rien à partager ici.'); return; }
   const d={app:'xamxam', kind:'share', v:1, title, from:S.prefs.name||'', created:new Date().toISOString(), cards:cards.map(shareCardData), exams:exams.map(e=>({mod:e.mod, title:e.title, date:e.date||'', items:e.items}))};
@@ -2789,7 +2800,7 @@ function importShare(d){
   const have=new Set(Object.values(S.cards).map(c=>c.type+'|'+c.front+'|'+(c.exam||'')));
   let n=0, ne=0;
   for(const c of d.cards||[]){ if(!c||!c.front) continue; const k=(c.type||'qa')+'|'+c.front+'|'+(c.exam||''); if(have.has(k)) continue; have.add(k);
-    saveCard(newCard({type:['qa','cloze','qcm'].includes(c.type)?c.type:'qa', front:String(c.front), back:String(c.back||''), hint:String(c.hint||''), choices:Array.isArray(c.choices)?c.choices:[], answer:Array.isArray(c.answer)?c.answer:[], img:c.img||'', imgSide:c.imgSide||'front', exam:c.exam||'', chap:CH[c.chap]?c.chap:'', syn:c.syn&&SYN_BY[c.syn]?c.syn:''})); n++; }
+    saveCard(newCard({type:['qa','cloze','qcm'].includes(c.type)?c.type:'qa', front:String(c.front), back:String(c.back||''), hint:String(c.hint||''), choices:Array.isArray(c.choices)?c.choices:[], answer:Array.isArray(c.answer)?c.answer:[], img:c.img||'', imgSide:c.imgSide||'front', exam:c.exam||'', chap:CH[c.chap]?c.chap:'', syn:c.syn&&SYN_BY[c.syn]?c.syn:'', tri:c.tri&&TRI_BY[c.tri]?c.tri:''})); n++; }
   for(const e of d.exams||[]){ if(!e||!Array.isArray(e.items)) continue;
     if(Object.values(S.exams).some(x=>x.title===e.title && x.date===(e.date||'') && x.items.length===e.items.length)) continue;
     const id=uid('e'); S.exams[id]={id, mod:MODS[e.mod]?e.mod:PROGRAMME[0].id, title:String(e.title||'Examen'), date:e.date||'', files:[], items:e.items, attempts:[], created:now(), t:now()}; ne++; }
@@ -3920,7 +3931,7 @@ function viewLevel(lvl, sem){
     return html+(hits.length?`<p class="small muted">${plural(hits.length,'cours trouvé','cours trouvés')}</p><div class="listbox">${hits.slice(0,80).map(c=>chapRow(c,K,true)).join('')}</div>`:'<p class="muted">Aucun cours ne correspond.</p>'); }
   html+=`<div class="cahiers">${mods.map(m=>cahierCard(m)).join('')}<button class="cahier add" data-act="mod-add" data-l="${lvl}" data-s="${sem}">${I.plus}<span>Ajouter une matière</span></button></div>`;
   if(hid.length) html+=`<details class="peek"><summary>${plural(hid.length,'matière masquée','matières masquées')}</summary><div class="chips" style="margin-top:6px">${hid.map(m=>`<button class="chip" data-act="mod-unhide" data-id="${m.id}">Réafficher ${esc(m.short)}</button>`).join('')}</div></details>`;
-  if(LV[lvl].i>=2) html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button>`;
+  if(LV[lvl].i>=2) html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button><button class="btn btn-soft" data-act="tri-open" style="justify-content:space-between;width:100%"><span>Triades · ${TRIADES.length} triades</span>${I.chev}</button>`;
   return html;
 }
 function modSheet(){
@@ -4019,6 +4030,11 @@ document.addEventListener('click', async e=>{
   const act=a.dataset.act, d=a.dataset;
   switch(act){
     case 'syn-open': openSheet(synSheet); break;
+    case 'tri-open': openSheet(triSheet); break;
+    case 'tri-view': UI.tri.view=d.v; paintSheet(true); break;
+    case 'tri-sn': UI.tri.sn=d.v==='1'; UI.triOpen=null; paintSheet(true); break;
+    case 'tri-add': { const n=triAdd(d.id); UI.triOpen=d.id; updateDueDot(); paintSheet(true); toast(n?n+' cartes ajoutées à tes révisions':'Déjà dans tes révisions'); break; }
+    case 'tri-add-all': { let n=0; for(const x of TRIADES){ if(triMatch(x)) n+=triAdd(x.id); } updateDueDot(); paintSheet(true); toast(n+' cartes ajoutées. Elles arriveront peu à peu dans tes révisions du jour.'); break; }
     case 'syn-view': UI.syn.view=d.v; paintSheet(true); break;
     case 'syn-lang': UI.syn.lang=d.v; paintSheet(true); break;
     case 'syn-add': { const n=synAdd(d.id); UI.synOpen=d.id; updateDueDot(); paintSheet(true); toast(n?n+' cartes ajoutées à tes révisions':'Déjà dans tes révisions'); break; }
@@ -4055,7 +4071,7 @@ document.addEventListener('click', async e=>{
     case 'gen-for': UI.gen.chap=d.id; UI.gen.results=null; UI.gen.err=''; UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render(); break;
     case 'edit-card': openEditor(d.id||null, d.chap||(UI.tab==='rev'&&UI.rev.scope.startsWith('c:')?UI.rev.scope.slice(2):''), d.type); break;
     case 'sheet-back': closeSheet(); break;
-    case 'start': if(d.syn){ const ids=Object.values(S.cards).filter(c=>c.syn===d.syn).map(c=>c.id); UI.sheetStack=[]; paintSheet(); if(SESS){ $('#session').hidden=true; SESS=null; } startSession('list','all',{ids}); break; }
+    case 'start': if(d.syn||d.tri){ const ids=Object.values(S.cards).filter(c=>d.syn?c.syn===d.syn:c.tri===d.tri).map(c=>c.id); UI.sheetStack=[]; paintSheet(); if(SESS){ $('#session').hidden=true; SESS=null; } startSession('list','all',{ids}); break; }
       UI.sheetStack=[]; paintSheet(); if(SESS) { $('#session').hidden=true; SESS=null; } startSession(d.mode, d.scope, d.min?{minutes:+d.min}:null); break;
     case 'start-missed': { const ids=UI.lastMissed||[]; if(SESS){ $('#session').hidden=true; SESS=null; } startSession('list','all',{ids}); break; }
     case 'rev-mode': UI.rev.mode=d.m; rerender(); break;
@@ -4164,6 +4180,7 @@ document.addEventListener('input', e=>{
   const el=e.target; const k=el.dataset&&el.dataset.input; if(!k) return; const d=el.dataset;
   switch(k){
     case 'progq': UI.progQuery=el.value; clearTimeout(UI.pq); UI.pq=setTimeout(()=>{ const pos=el.selectionStart; rerender(); const n=$('#progSearch'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch{} } }, 200); break;
+    case 'tri-q': UI.tri.q=el.value; UI.triOpen=null; clearTimeout(UI.tq); UI.tq=setTimeout(()=>{ const l=$('#triList'); if(l) l.innerHTML=triList(); }, 150); break;
     case 'syn-q': UI.syn.q=el.value; UI.synOpen=null; clearTimeout(UI.sq); UI.sq=setTimeout(()=>{ const l=$('#synList'); if(l) l.innerHTML=synList(); }, 150); break;
     case 'card-q': UI.rev.q=el.value; $('#cardResults').innerHTML=cardResults(); break;
     case 'note': saveNote(d.id, el.value); break;
@@ -4201,6 +4218,7 @@ document.addEventListener('change', async e=>{
   if(el.id==='fileJson'){ const f=el.files&&el.files[0]; el.value=''; if(!f) return; const text=await f.text(); if(UI.tab==='new' && !/"app"\s*:\s*"xamxam"/.test(text)){ UI.impText=text; UI.newTab='hand'; rerender(); toast('Ce fichier contient des cartes : vérifie-les puis ajoute-les.', 3600); return; } importBackup(text); return; }
   if(!k) return;
   switch(k){
+    case 'tri-sys': UI.tri.sys=el.value; UI.triOpen=null; paintSheet(true); break;
     case 'syn-sys': UI.syn.sys=el.value; UI.synOpen=null; paintSheet(true); break;
     case 'rev-scope': UI.rev.scope=el.value; rerender(); break;
     case 'gen-chap': UI.gen.chap=el.value; rerender(); break;
@@ -4216,7 +4234,7 @@ document.addEventListener('change', async e=>{
     case 'home-toggle': { const row=S.prefs.home.find(r=>r[0]===d.k); if(row) row[1]=el.checked?1:0; savePrefs(); break; }
   }
 });
-document.addEventListener('toggle', e=>{ const el=e.target; if(el.matches && el.matches('details.syn')){ if(el.open) UI.synOpen=el.dataset.syn; else if(UI.synOpen===el.dataset.syn) UI.synOpen=null; } if(el.matches && el.matches('details.mod')){ if(el.open) UI.open.add(el.dataset.mod); else UI.open.delete(el.dataset.mod); } }, true);
+document.addEventListener('toggle', e=>{ const el=e.target; if(el.matches && el.matches('details[data-tri]')){ if(el.open) UI.triOpen=el.dataset.tri; else if(UI.triOpen===el.dataset.tri) UI.triOpen=null; return; } if(el.matches && el.matches('details.syn')){ if(el.open) UI.synOpen=el.dataset.syn; else if(UI.synOpen===el.dataset.syn) UI.synOpen=null; } if(el.matches && el.matches('details.mod')){ if(el.open) UI.open.add(el.dataset.mod); else UI.open.delete(el.dataset.mod); } }, true);
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape' && !e.target.closest('input,textarea,select')){ if(UI.sheetStack.length){ closeSheet(); return; } if(!$('#session').hidden){ closeSession(); return; } }
   if(!SESS||!SESS.cur||$('#session').hidden||!$('#sheet').hidden) return;
@@ -4230,7 +4248,7 @@ function addChapSheet(){ const s=SUBS[UI.addSub]; return sheetTop('Nouveau cours
 // ---------- Fiches syndromes ----------
 // Chaque fiche : n = nom, e = explication simple (comme à un enfant), h = version hospitalière (langage soutenu),
 // s = signes, c = causes principales, k = à retenir (signe clé, piège, urgence).
-const SYN_SYS = {neuro:'Neurologie', cardio:'Cardio-vasculaire', pneumo:'Pleuro-pulmonaire', hemato:'Hématologie', gen:'Général', dig:'Digestif', nephro:'Néphrologie', rhumato:'Rhumatologie', endoc:'Endocrinologie'};
+const SYN_SYS = {neuro:'Neurologie', cardio:'Cardio-vasculaire', pneumo:'Pleuro-pulmonaire', hemato:'Hématologie', gen:'Général', dig:'Digestif', nephro:'Néphrologie', rhumato:'Rhumatologie', endoc:'Endocrinologie', meta:'Ionique et métabolique', infect:'Infectieux et tropical', tox:'Toxicologie', gyneco:'Gynécologie-obstétrique', ped:'Pédiatrie', psy:'Psychiatrie', uro:'Urologie', orl:'ORL et ophtalmologie', dermato:'Dermatologie'};
 const SYNDROMES = [
 /* ===== Neurologie ===== */
 {id:'pyramidal', sys:'neuro', n:"Syndrome pyramidal",
@@ -4642,7 +4660,416 @@ const SYNDROMES = [
  h:"Tumeur de la médullosurrénale sécrétant des catécholamines, responsable d'une hypertension artérielle permanente ou paroxystique.",
  s:["Triade de Ménard : céphalées, sueurs, palpitations","Hypertension artérielle paroxystique ou permanente, parfois hypotension orthostatique","Pâleur pendant les accès, anxiété, tremblements","Amaigrissement, hyperglycémie"],
  c:["Tumeur de la médullosurrénale, le plus souvent bénigne","Formes familiales : néoplasies endocriniennes multiples de type 2, maladie de von Hippel-Lindau, neurofibromatose"],
- k:"Diagnostic biologique : dosage des métanéphrines plasmatiques ou urinaires. HTA du sujet jeune avec triade de Ménard."}
+ k:"Diagnostic biologique : dosage des métanéphrines plasmatiques ou urinaires. HTA du sujet jeune avec triade de Ménard."},
+/* ===== Ajouts : syndromes complémentaires ===== */
+{id:"x-confusionnel", sys:"neuro", n:"Syndrome confusionnel",
+ e:"Le cerveau « se brouille » d'un coup : la personne ne sait plus où elle est ni quel jour on est, ne suit pas une conversation, et cela varie dans la journée, souvent pire la nuit.",
+ h:"Défaillance aiguë et globale des fonctions cognitives, d'installation rapide (heures à jours) et d'évolution fluctuante, dominée par un trouble de la vigilance et de l'attention. C'est une urgence : il traduit presque toujours une cause organique.",
+ s:["Début brutal, fluctuations dans la journée, aggravation nocturne", "Troubles de l'attention et de la vigilance (obnubilation)", "Désorientation temporo-spatiale, troubles de la mémoire récente", "Onirisme, hallucinations surtout visuelles, agitation ou au contraire prostration", "Inversion du rythme veille-sommeil"],
+ c:["Infections (paludisme grave, méningo-encéphalite, sepsis, infection urinaire du sujet âgé)", "Troubles métaboliques : hypoglycémie, hyponatrémie, hypercalcémie, insuffisance hépatique ou rénale", "Médicaments et toxiques (benzodiazépines, anticholinergiques, opiacés), sevrage alcoolique", "Causes neurologiques : AVC, hématome sous-dural, état de mal non convulsif"],
+ k:"Glycémie capillaire et goutte épaisse d'abord. Un délire d'apparition brutale avec trouble de la vigilance n'est pas « psychiatrique » tant qu'une cause organique n'a pas été éliminée."},
+{id:"x-comateux", sys:"neuro", n:"Syndrome comateux (coma)",
+ e:"La personne ne se réveille pas, même quand on lui parle fort ou qu'on la pince : le « bouton de l'éveil » du cerveau ne fonctionne plus.",
+ h:"Abolition de la conscience et de la vigilance, non réversible par les stimulations, par atteinte de la substance réticulée activatrice du tronc cérébral ou atteinte diffuse des deux hémisphères. Sa profondeur se mesure par le score de Glasgow (3 à 15 ; coma si ≤ 8).",
+ s:["Absence d'ouverture des yeux, de réponse verbale et motrice adaptées (score de Glasgow)", "Signes de localisation : hémiplégie, asymétrie pupillaire", "Réflexes du tronc : photomoteur, cornéen, oculocéphalique", "Troubles respiratoires (Cheyne-Stokes, Kussmaul), troubles végétatifs", "Signes d'engagement : mydriase unilatérale aréactive"],
+ c:["Métaboliques : hypoglycémie, acidocétose, coma hyperosmolaire, encéphalopathie hépatique ou urémique", "Infectieuses : neuropaludisme, méningites, encéphalites", "Vasculaires : AVC, hémorragie méningée, hématomes", "Toxiques : barbituriques, alcool, monoxyde de carbone, organophosphorés", "Traumatiques et épileptiques (état post-critique, état de mal)"],
+ k:"Devant tout coma : liberté des voies aériennes, glycémie capillaire, goutte épaisse en zone d'endémie. Un coma calme sans signe de localisation fait penser à une cause toxique ou métabolique."},
+{id:"x-horner", sys:"neuro", n:"Syndrome de Claude Bernard-Horner",
+ e:"Le petit nerf qui garde l'œil grand ouvert ne marche plus d'un côté : la paupière tombe un peu, la pupille est plus petite et l'œil paraît enfoncé.",
+ h:"Atteinte de la voie sympathique oculaire, à n'importe quel niveau de son trajet (hypothalamus, tronc cérébral, moelle cervico-thoracique, apex pulmonaire, carotide). Il associe myosis, ptosis et énophtalmie du même côté.",
+ s:["Myosis (pupille plus petite, surtout visible dans l'obscurité)", "Ptosis partiel (chute modérée de la paupière supérieure)", "Énophtalmie (œil paraissant enfoncé)", "Parfois anhidrose de l'hémiface et rougeur conjonctivale"],
+ c:["Cancer de l'apex pulmonaire (syndrome de Pancoast-Tobias)", "Dissection de l'artère carotide interne (urgence)", "Syndrome de Wallenberg, tumeurs médullaires, syringomyélie", "Adénopathies et tumeurs cervicales, chirurgie du cou"],
+ k:"Un Claude Bernard-Horner douloureux récent impose de chercher une dissection carotidienne ; chez un fumeur avec douleur de l'épaule, pense au cancer de l'apex."},
+{id:"x-wallenberg", sys:"neuro", n:"Syndrome de Wallenberg (syndrome alterne)",
+ e:"Un petit infarctus dans le bulbe, en bas du cerveau, abîme d'un côté le visage et l'équilibre, et de l'autre côté la sensibilité du corps à la chaleur et à la douleur.",
+ h:"Syndrome alterne bulbaire latéral, le plus souvent par occlusion de l'artère vertébrale ou de la cérébelleuse postéro-inférieure. Atteinte des nerfs crâniens et du cervelet du côté de la lésion, sensibilité thermo-algique de l'hémicorps opposé.",
+ s:["Du côté de la lésion : anesthésie thermo-algique de l'hémiface (V), Claude Bernard-Horner, syndrome cérébelleux", "Troubles de la déglutition et de la phonation (IX, X), syndrome vestibulaire (vertige, nystagmus)", "Du côté opposé : anesthésie thermo-algique de l'hémicorps, sans déficit moteur", "Début brutal par vertige, vomissements, hoquet, douleur de la nuque"],
+ c:["Infarctus du bulbe latéral (athérome vertébral)", "Dissection de l'artère vertébrale chez le sujet jeune"],
+ k:"Pas de paralysie dans le Wallenberg : c'est un AVC qui ne « paralyse » pas mais fait tomber et avaler de travers. Risque de pneumopathie d'inhalation : vérifier la déglutition avant de faire manger."},
+{id:"x-gbs", sys:"neuro", n:"Syndrome de Guillain-Barré (polyradiculonévrite aiguë)",
+ e:"Après une infection banale, les défenses du corps attaquent par erreur la gaine des nerfs : les jambes faiblissent, puis la faiblesse monte, parfois jusqu'aux muscles de la respiration.",
+ h:"Polyradiculonévrite aiguë inflammatoire démyélinisante, d'origine auto-immune, survenant souvent 1 à 3 semaines après une infection (Campylobacter, virus). Déficit moteur ascendant, symétrique, aréflexique, avec dissociation albumino-cytologique du liquide cérébrospinal.",
+ s:["Paresthésies distales puis déficit moteur ascendant, symétrique, en quelques jours (maximum en moins de 4 semaines)", "Aréflexie ostéotendineuse", "Atteinte des nerfs crâniens (diplégie faciale), troubles de la déglutition", "Troubles respiratoires (risque vital), dysautonomie (troubles du rythme, variations tensionnelles)", "Ponction lombaire : protéinorachie élevée, cellules normales (dissociation albumino-cytologique)"],
+ c:["Infections précédentes : Campylobacter jejuni, CMV, EBV, VIH (primo-infection), Zika", "Vaccinations (exceptionnel), chirurgie"],
+ k:"Surveiller la capacité vitale et la déglutition : la mort vient de la respiration et du cœur. Traitement : immunoglobulines ou échanges plasmatiques, jamais de corticoïdes."},
+{id:"x-hta-maligne", sys:"cardio", n:"Hypertension artérielle maligne (urgence hypertensive)",
+ e:"La tension est si haute qu'elle abîme en quelques heures ou jours le cerveau, les yeux, le cœur et les reins.",
+ h:"Élévation tensionnelle sévère (souvent ≥ 180/120 mmHg) associée à une souffrance aiguë d'organes cibles. Elle se distingue de la simple poussée hypertensive, sans atteinte viscérale, qui ne demande pas de baisse brutale.",
+ s:["Céphalées, troubles visuels, encéphalopathie (confusion, convulsions)", "Fond d'œil : hémorragies, exsudats, œdème papillaire (stade III-IV)", "Œdème aigu du poumon, douleur thoracique (dissection, syndrome coronarien)", "Insuffisance rénale aiguë, protéinurie, hématurie, microangiopathie thrombotique", "Soif, amaigrissement, syndrome polyuro-polydipsique (hyperaldostéronisme secondaire)"],
+ c:["HTA essentielle mal traitée ou arrêt du traitement (fréquent en Afrique, sujet noir)", "Néphropathies, sténose des artères rénales", "Pré-éclampsie, phéochromocytome, toxiques (cocaïne)"],
+ k:"Baisser la tension progressivement (environ 25 % la première heure) avec un traitement intraveineux : une chute brutale peut provoquer un AVC ou un infarctus."},
+{id:"x-raynaud", sys:"cardio", n:"Syndrome de Raynaud",
+ e:"Au froid ou au stress, les doigts deviennent tout blancs et engourdis, puis bleus, puis rouges et douloureux quand le sang revient.",
+ h:"Acrosyndrome vasculaire paroxystique, déclenché par le froid ou l'émotion, lié à un spasme des artères digitales. Il est primitif (maladie de Raynaud) ou secondaire, notamment aux connectivites.",
+ s:["Phase syncopale : doigts blancs, froids, insensibles, bien limités", "Phase asphyxique : doigts cyanosés", "Phase hyperhémique : rougeur, chaleur, douleurs, picotements", "Signes de gravité : ulcérations, nécroses pulpaires"],
+ c:["Primitif : femme jeune, bilatéral, symétrique, sans complication", "Sclérodermie systémique et autres connectivites (lupus, Gougerot-Sjögren)", "Vibrations professionnelles, médicaments (bêtabloquants, dérivés de l'ergot), compression (défilé thoraco-brachial)"],
+ k:"Une capillaroscopie anormale ou des anticorps antinucléaires orientent vers une sclérodermie. Le Raynaud unilatéral ou du sujet âgé doit faire chercher une cause artérielle."},
+{id:"x-rm", sys:"cardio", n:"Syndrome de rétrécissement mitral",
+ e:"La valve entre l'oreillette et le ventricule gauche, abîmée par un ancien rhumatisme, ne s'ouvre plus bien : le sang s'accumule en amont et remonte vers les poumons.",
+ h:"Réduction de la surface de l'orifice mitral (< 2 cm² significatif, < 1,5 cm² serré), le plus souvent séquelle de rhumatisme articulaire aigu, encore fréquente en Afrique. Elle entraîne une hypertension auriculaire gauche puis pulmonaire.",
+ s:["Dyspnée d'effort progressive, hémoptysie, œdème aigu du poumon (grossesse, fibrillation atriale)", "Auscultation : éclat du B1, claquement d'ouverture mitrale, roulement diastolique apexien avec renforcement présystolique", "Pouls irrégulier (fibrillation atriale), embolies systémiques (AVC)", "ECG : hypertrophie auriculaire gauche ; radiographie : arc moyen gauche convexe", "Échographie : valve épaissie, fusion commissurale, surface mitrale réduite"],
+ c:["Rhumatisme articulaire aigu (cause de loin la plus fréquente)", "Calcifications de l'anneau mitral du sujet âgé, causes congénitales (rares)"],
+ k:"Le rétrécissement mitral se décompense volontiers pendant la grossesse. Prévention : traiter toute angine de l'enfant par pénicilline (prévention du RAA)."},
+{id:"x-bronchique", sys:"pneumo", n:"Syndrome bronchique",
+ e:"Les tuyaux de l'air sont irrités ou encombrés : on tousse et on crache, et à l'écoute on entend des bruits de bulles ou de sifflement.",
+ h:"Ensemble des signes traduisant une atteinte des bronches : toux, expectoration et râles bronchiques (ronchi, sibilants), sans signe de condensation ni d'épanchement.",
+ s:["Toux sèche ou productive, expectoration muqueuse ou purulente", "Ronchi (râles graves qui se modifient à la toux), sibilants", "Dyspnée variable, sifflante dans l'asthme", "Radiographie souvent normale ou épaississement des parois bronchiques"],
+ c:["Bronchite aiguë (virale), bronchite chronique, BPCO", "Asthme", "Bronchectasies (dilatation des bronches), corps étranger chez l'enfant"],
+ k:"Une toux qui dure plus de 3 semaines en Afrique impose de chercher une tuberculose (crachats)."},
+{id:"x-suppuration", sys:"pneumo", n:"Syndrome de suppuration bronchopulmonaire",
+ e:"Du pus se forme dans le poumon ou les bronches et sort en crachats abondants, souvent malodorants.",
+ h:"Production chronique ou aiguë d'expectorations purulentes abondantes (bronchorrhée), traduisant une infection d'une cavité pulmonaire (abcès) ou de bronches dilatées.",
+ s:["Bronchorrhée purulente abondante, parfois fétide (anaérobies)", "Vomique : rejet brutal d'une grande quantité de pus (abcès)", "Fièvre, altération de l'état général, hippocratisme digital (chronique)", "Râles bronchiques ou crépitants en foyer ; radiographie : image hydro-aérique (abcès)"],
+ c:["Abcès du poumon (inhalation, mauvaise hygiène bucco-dentaire, alcoolisme)", "Dilatation des bronches (séquelles de tuberculose, de rougeole, de coqueluche)", "Cancer bronchique abcédé, kyste hydatique surinfecté, empyème ouvert dans les bronches"],
+ k:"En Afrique, les séquelles de tuberculose sont une grande cause de dilatation des bronches ; toujours chercher le bacille avant de conclure."},
+{id:"x-mediastinal", sys:"pneumo", n:"Syndrome médiastinal",
+ e:"Une masse au milieu de la poitrine écrase ce qui passe à côté : les grosses veines, l'œsophage, la trachée, les nerfs.",
+ h:"Ensemble des signes de compression des organes du médiastin par un processus expansif (tumeur, adénopathies). Les signes dépendent de l'organe comprimé.",
+ s:["Compression veineuse : syndrome cave supérieur (œdème en pèlerine, circulation collatérale)", "Compression trachéale : toux sèche, dyspnée, wheezing ; œsophagienne : dysphagie", "Compression nerveuse : dysphonie (récurrent gauche), hoquet ou paralysie diaphragmatique (phrénique), Claude Bernard-Horner (sympathique)", "Radiographie : élargissement du médiastin ; scanner thoracique pour la localisation"],
+ c:["Cancer bronchique et ses adénopathies", "Lymphomes, tuberculose ganglionnaire", "Thymome (médiastin antérieur), goitre plongeant, tumeurs germinales, tumeurs neurogènes (postérieur)"],
+ k:"Les « 4 T » du médiastin antérieur : thymome, thyroïde (goitre), tératome, « terrible » lymphome."},
+{id:"x-sdra", sys:"pneumo", n:"Syndrome de détresse respiratoire aiguë (SDRA)",
+ e:"Les poumons se remplissent de liquide à cause d'une agression grave du corps, sans que le cœur soit en cause : le sang n'arrive plus à prendre l'oxygène.",
+ h:"Œdème pulmonaire lésionnel par atteinte de la membrane alvéolo-capillaire, survenant dans la semaine suivant une agression, avec hypoxémie sévère (rapport PaO2/FiO2 ≤ 300) et opacités bilatérales non expliquées par une cause cardiaque.",
+ s:["Polypnée, tirage, cyanose, hypoxémie réfractaire à l'oxygène simple", "Radiographie : opacités alvéolaires bilatérales diffuses (« poumons blancs »)", "Pas de signe d'insuffisance cardiaque gauche (échographie)", "Souvent associé à une défaillance multiviscérale"],
+ c:["Pneumonies graves (bactériennes, virales : grippe, COVID-19), paludisme grave", "Sepsis, choc, pancréatite aiguë, polytraumatisme, transfusions massives", "Inhalation (de liquide gastrique, noyade), fumées toxiques"],
+ k:"Le traitement est surtout la ventilation protectrice (petits volumes) et le décubitus ventral ; traiter la cause."},
+{id:"x-mononucleose", sys:"hemato", n:"Syndrome mononucléosique",
+ e:"Dans le sang, on trouve beaucoup de grands globules blancs « activés », comme si le corps se battait fort contre un virus.",
+ h:"Présence dans le sang d'un nombre élevé de grandes cellules mononucléées hyperbasophiles (lymphocytes T activés), dans le cadre d'une réaction immunitaire, le plus souvent virale.",
+ s:["Hyperlymphocytose avec grands lymphocytes hyperbasophiles au frottis", "Fièvre, asthénie, angine (souvent pseudo-membraneuse dans la mononucléose)", "Adénopathies cervicales, splénomégalie", "Cytolyse hépatique modérée"],
+ c:["Mononucléose infectieuse (virus d'Epstein-Barr)", "Primo-infection VIH (sérologie obligatoire)", "Cytomégalovirus, toxoplasmose, hépatites virales", "Médicaments (syndrome DRESS)"],
+ k:"Devant un syndrome mononucléosique, la sérologie VIH est indispensable. Ampicilline dans la mononucléose : éruption presque constante."},
+{id:"x-civd", sys:"hemato", n:"Coagulation intravasculaire disséminée (CIVD)",
+ e:"La coagulation s'emballe partout dans les vaisseaux : elle consomme tous les éléments qui servent à coaguler, et le malade se met à saigner de partout.",
+ h:"Activation systémique et excessive de la coagulation, avec formation de microthrombi et consommation des plaquettes et des facteurs de coagulation, aboutissant à des hémorragies et à des défaillances d'organes.",
+ s:["Saignements diffus : points de ponction, gencives, purpura, hémorragies viscérales", "Thromboses, ischémies, défaillances d'organes (rein, poumon)", "Biologie : thrombopénie, TP abaissé, fibrinogène bas, D-dimères très élevés", "Schizocytes possibles au frottis"],
+ c:["Obstétricales : hématome rétroplacentaire, embolie amniotique, mort fœtale, hémorragie du post-partum", "Sepsis graves (méningococcémie, purpura fulminans), paludisme grave", "Cancers (leucémie aiguë promyélocytaire), polytraumatismes, envenimations (vipères)"],
+ k:"Le traitement est celui de la cause (vider l'utérus, antibiotiques) ; plasma, plaquettes et fibrinogène si hémorragie."},
+{id:"x-drepano", sys:"hemato", n:"Syndrome drépanocytaire majeur",
+ e:"Les globules rouges ont une mauvaise hémoglobine qui les déforme en faucille : ils se cassent (anémie) et bouchent les petits vaisseaux (crises douloureuses).",
+ h:"Hémoglobinopathie héréditaire autosomique récessive (HbSS, HbSC, S-bêta-thalassémie), très fréquente au Sénégal et en Afrique. Elle associe anémie hémolytique chronique, crises vaso-occlusives et sensibilité aux infections.",
+ s:["Crises vaso-occlusives douloureuses : os, abdomen, thorax ; syndrome pieds-mains du nourrisson (dactylite)", "Anémie hémolytique chronique : pâleur, ictère, splénomégalie du petit enfant", "Infections graves (pneumocoque, salmonelles : ostéomyélite), asplénie fonctionnelle", "Complications : syndrome thoracique aigu, séquestration splénique, AVC, priapisme, ulcères de jambe, ostéonécrose de hanche", "Diagnostic : électrophorèse de l'hémoglobine (HbS)"],
+ c:["Transmission de deux gènes anormaux (parents porteurs AS)", "Facteurs déclenchant les crises : froid, déshydratation, infection, fièvre, effort, altitude"],
+ k:"Prévention : pénicilline orale et vaccins (pneumocoque), acide folique, hydratation, hydroxyurée. Une fièvre chez un drépanocytaire est une urgence."},
+{id:"x-sta", sys:"hemato", n:"Syndrome thoracique aigu (drépanocytose)",
+ e:"Chez un drépanocytaire, les globules rouges en faucille bouchent les vaisseaux du poumon : douleur dans la poitrine, fièvre et manque d'oxygène.",
+ h:"Complication pulmonaire aiguë de la drépanocytose, associant une nouvelle opacité pulmonaire à la radiographie et des signes respiratoires (douleur thoracique, fièvre, toux, hypoxémie). Première cause de décès de l'adulte drépanocytaire.",
+ s:["Douleur thoracique, fièvre, toux, polypnée", "Hypoxémie (saturation qui baisse)", "Nouvel infiltrat pulmonaire à la radiographie", "Souvent après une crise osseuse ou une chirurgie"],
+ c:["Infection (pneumocoque, germes atypiques), embolie graisseuse de moelle osseuse, thrombose in situ", "Hypoventilation (douleur thoracique, morphine)"],
+ k:"Urgence : oxygène, antalgiques, antibiotiques, spirométrie incitative et transfusion ou échange transfusionnel si grave."},
+{id:"x-sepsis", sys:"gen", n:"Sepsis et choc septique",
+ e:"Une infection devient si forte que le corps, en se défendant, abîme ses propres organes : la tension baisse et les organes s'éteignent les uns après les autres.",
+ h:"Le sepsis est une dysfonction d'organe menaçant la vie, due à une réponse inappropriée de l'hôte à une infection. Le choc septique associe une hypotension nécessitant des vasopresseurs et un lactate > 2 mmol/L malgré le remplissage.",
+ s:["Fièvre ou hypothermie, frissons, tachycardie, polypnée", "Hypotension, marbrures, temps de recoloration allongé, oligurie", "Confusion, troubles de la conscience", "Lactates élevés, défaillances d'organes (rein, foie, coagulation)", "Score qSOFA : fréquence respiratoire ≥ 22, confusion, pression systolique ≤ 100 mmHg"],
+ c:["Pneumonies, infections urinaires, abdominales, cutanées", "Méningococcémie, salmonelloses, paludisme grave (non bactérien mais tableau proche)", "Infections sur cathéter, post-partum et post-abortum"],
+ k:"Antibiotiques dans l'heure, après hémocultures ; remplissage (30 mL/kg) ; noradrénaline si choc ; chercher et drainer la source."},
+{id:"x-aeg", sys:"gen", n:"Altération de l'état général",
+ e:"La personne est fatiguée, n'a plus faim et maigrit sans le vouloir : le corps signale qu'une maladie le ronge.",
+ h:"Association d'asthénie, d'anorexie et d'amaigrissement involontaire (les « 3 A »), signe non spécifique mais souvent révélateur d'une maladie organique sérieuse.",
+ s:["Asthénie (fatigue persistante, non améliorée par le repos)", "Anorexie (perte d'appétit)", "Amaigrissement involontaire (> 5 % du poids en un mois ou > 10 % en six mois)", "Fièvre, sueurs nocturnes associées (orientent vers une infection ou un lymphome)"],
+ c:["Infections chroniques : tuberculose, VIH", "Cancers et hémopathies", "Endocrinopathies (diabète, hyperthyroïdie, insuffisance surrénale), maladies inflammatoires", "Dépression, causes digestives (malabsorption)"],
+ k:"Une AEG avec fièvre et sueurs nocturnes en Afrique : tuberculose et VIH en premier. Toujours peser et noter l'évolution du poids."},
+{id:"x-hemorragie", sys:"dig", n:"Syndrome d'hémorragie digestive",
+ e:"Du sang s'écoule dans le tube digestif : on peut le vomir, rouge ou « marc de café », ou le retrouver dans les selles, noires ou rouges.",
+ h:"Saignement d'origine digestive, haut (en amont de l'angle duodéno-jéjunal) ou bas. Il s'extériorise par hématémèse, méléna ou rectorragie et peut entraîner un choc hémorragique.",
+ s:["Hématémèse (vomissement de sang) : hémorragie haute", "Méléna (selles noires, goudronneuses, fétides) : surtout haute", "Rectorragie (sang rouge par l'anus) : surtout basse, ou haute très abondante", "Retentissement : pâleur, tachycardie, hypotension, choc ; anémie"],
+ c:["Hautes : ulcère gastro-duodénal (AINS), rupture de varices œsophagiennes (cirrhose, bilharziose hépatique), gastrite, Mallory-Weiss, cancer gastrique", "Basses : hémorroïdes, diverticules, cancer colorectal, colites infectieuses (amibiase, shigellose), angiodysplasies"],
+ k:"Évaluer la gravité avant tout : deux voies veineuses, groupe sanguin, remplissage. Endoscopie haute dans les 24 heures ; vasoactifs et antibiotiques si cirrhose."},
+{id:"x-dyspeptique", sys:"dig", n:"Syndrome dyspeptique",
+ e:"Après les repas, l'estomac est lourd, on a vite le ventre plein, on brûle ou on a des nausées.",
+ h:"Ensemble de symptômes digestifs hauts : douleur ou gêne épigastrique, sensation de plénitude postprandiale, satiété précoce, ballonnements, nausées. Il est fonctionnel ou lésionnel.",
+ s:["Pesanteur, plénitude après les repas, satiété précoce", "Douleurs ou brûlures épigastriques", "Nausées, éructations, ballonnements", "Signes d'alarme : âge > 45-50 ans, amaigrissement, anémie, dysphagie, vomissements, hémorragie"],
+ c:["Dyspepsie fonctionnelle (la plus fréquente)", "Ulcère gastro-duodénal, gastrite à Helicobacter pylori (très fréquent en Afrique)", "Cancer gastrique, médicaments (AINS), causes biliaires et pancréatiques"],
+ k:"Devant des signes d'alarme : endoscopie haute avec biopsies. Recherche et traitement d'Helicobacter pylori."},
+{id:"x-appendiculaire", sys:"dig", n:"Syndrome appendiculaire",
+ e:"L'appendice, un petit morceau d'intestin en bas à droite du ventre, s'infecte : douleur à droite, petite fièvre, nausées.",
+ h:"Tableau évocateur d'appendicite aiguë : douleur de la fosse iliaque droite, fébricule et signes digestifs, avec réaction péritonéale localisée à l'examen.",
+ s:["Douleur épigastrique ou péri-ombilicale qui migre en fosse iliaque droite", "Fébricule (37,5 à 38 °C), nausées, vomissements, langue saburrale", "Douleur provoquée au point de McBurney, défense en fosse iliaque droite", "Signe de Blumberg (douleur à la décompression), signe de Rovsing ; toucher rectal douloureux à droite", "Hyperleucocytose, CRP élevée ; échographie ou scanner si doute"],
+ c:["Obstruction de l'appendice (stercolithe, hyperplasie lymphoïde, parasites)", "Diagnostics différentiels : adénolymphite mésentérique, salpingite, grossesse extra-utérine, colique néphrétique, iléite (typhoïde, tuberculose)"],
+ k:"Chez la femme jeune, faire un test de grossesse. Formes trompeuses chez l'enfant, le sujet âgé et la femme enceinte : se méfier de la péritonite."},
+{id:"x-koenig", sys:"dig", n:"Syndrome de Koenig (subocclusion)",
+ e:"Un rétrécissement de l'intestin gêne le passage : le ventre se gonfle et fait mal par crises, puis tout se débloque avec des gargouillements et des gaz.",
+ h:"Crises douloureuses abdominales paroxystiques, avec ballonnement et ondulations péristaltiques, se terminant par une débâcle de gaz ou de selles ; il traduit une sténose incomplète de l'intestin grêle.",
+ s:["Douleurs abdominales en crises, toujours au même endroit", "Ballonnement localisé pendant la crise, ondulations péristaltiques visibles", "Fin de crise par un gargouillement et une débâcle de gaz ou de selles", "Amaigrissement, signes de la cause"],
+ c:["Tuberculose iléo-cæcale (fréquente en Afrique)", "Maladie de Crohn", "Tumeurs du grêle (lymphome, carcinoïde), brides"],
+ k:"En Afrique, un syndrome de Koenig chez l'adulte jeune fait chercher une tuberculose intestinale."},
+{id:"x-rachidien", sys:"rhumato", n:"Syndrome rachidien",
+ e:"Le dos est raide et douloureux, la personne bouge mal la colonne et a des points douloureux quand on appuie.",
+ h:"Ensemble de signes traduisant une atteinte du rachis : douleur rachidienne, raideur segmentaire, attitude antalgique et douleur à la pression des épineuses ou des muscles paravertébraux.",
+ s:["Douleur rachidienne (cervicalgie, dorsalgie, lombalgie)", "Raideur, diminution des amplitudes (indice de Schober diminué), attitude antalgique", "Douleur à la pression des épineuses, contracture des muscles paravertébraux", "Rythme mécanique (dégénératif) ou inflammatoire (nocturne : infection, tumeur, spondyloarthrite)"],
+ c:["Lombalgie commune, discopathie, arthrose", "Spondylodiscites : tuberculose (mal de Pott), brucellose, staphylocoque", "Métastases vertébrales, myélome, spondyloarthrites, tassements ostéoporotiques"],
+ k:"Signes d'alerte (« drapeaux rouges ») : fièvre, douleur nocturne, âge > 50 ans, cancer connu, déficit neurologique. En Afrique, pense au mal de Pott."},
+{id:"x-canal-carpien", sys:"rhumato", n:"Syndrome du canal carpien",
+ e:"Le nerf de la main passe dans un petit tunnel au poignet ; quand il est serré, les doigts fourmillent, surtout la nuit.",
+ h:"Neuropathie canalaire par compression du nerf médian sous le ligament annulaire antérieur du carpe. C'est la plus fréquente des neuropathies canalaires.",
+ s:["Paresthésies des trois premiers doigts et de la moitié du 4e, surtout nocturnes, réveillant la patiente", "Soulagement en secouant la main ; maladresse, lâchage d'objets", "Signes de Tinel (percussion du poignet) et de Phalen (flexion forcée du poignet)", "Formes évoluées : amyotrophie de l'éminence thénar, déficit de l'abduction du pouce", "Électromyogramme : ralentissement de conduction du médian au poignet"],
+ c:["Idiopathique (femme de 40 à 60 ans), travail manuel répétitif", "Grossesse, hypothyroïdie, diabète, acromégalie, polyarthrite rhumatoïde", "Amylose (dialysés), séquelles de fracture du poignet"],
+ k:"Les fourmillements nocturnes des doigts chez une femme enceinte ou hypothyroïdienne : canal carpien. Attelle de nuit, infiltration, chirurgie si déficit."},
+{id:"x-metabolique", sys:"endoc", n:"Syndrome métabolique",
+ e:"Plusieurs petits problèmes ensemble : gros ventre, tension, sucre et graisses du sang un peu élevés. Ensemble, ils augmentent fortement le risque d'infarctus, d'AVC et de diabète.",
+ h:"Association de facteurs de risque cardiovasculaire liés à l'insulinorésistance et à l'obésité abdominale. Défini (NCEP-ATP III / IDF) par au moins 3 critères : tour de taille élevé, triglycérides élevés, HDL bas, pression artérielle élevée, glycémie à jeun élevée.",
+ s:["Obésité abdominale (tour de taille ≥ 94 cm chez l'homme, ≥ 80 cm chez la femme, selon les critères IDF)", "Triglycérides ≥ 1,5 g/L ; HDL-cholestérol < 0,4 g/L (homme) ou < 0,5 g/L (femme)", "Pression artérielle ≥ 130/85 mmHg", "Glycémie à jeun ≥ 1 g/L", "Associés : stéatose hépatique, hyperuricémie, syndrome des ovaires polykystiques, apnées du sommeil"],
+ c:["Sédentarité, alimentation riche (sucres, graisses), urbanisation", "Prédisposition génétique, vieillissement"],
+ k:"En forte hausse dans les villes africaines. Le traitement de fond est l'activité physique et l'alimentation, avant les médicaments."},
+{id:"x-conn", sys:"endoc", n:"Hyperaldostéronisme primaire (syndrome de Conn)",
+ e:"Une glande surrénale fabrique trop d'aldostérone, l'hormone qui retient le sel : la tension monte et le potassium du sang baisse.",
+ h:"Production autonome et excessive d'aldostérone par la corticosurrénale (adénome de Conn ou hyperplasie bilatérale), responsable d'une HTA avec hypokaliémie et rénine basse.",
+ s:["HTA souvent sévère ou résistante au traitement", "Hypokaliémie avec kaliurèse inadaptée (> 30 mmol/24 h) : crampes, faiblesse musculaire, polyurie", "Alcalose métabolique", "Biologie : aldostérone élevée, rénine basse (rapport aldostérone/rénine élevé)"],
+ c:["Adénome de Conn (unilatéral, curable par chirurgie)", "Hyperplasie bilatérale des surrénales (traitement par spironolactone)", "Rares : formes familiales, corticosurrénalome"],
+ k:"Penser à Conn devant toute HTA avec hypokaliémie, HTA résistante ou HTA du sujet jeune. Corriger la kaliémie avant les dosages."},
+{id:"x-hyperkaliemie", sys:"meta", n:"Hyperkaliémie",
+ e:"Il y a trop de potassium dans le sang. Le cœur y est très sensible : il peut ralentir puis s'arrêter.",
+ h:"Kaliémie > 5 mmol/L (sévère si > 6,5 mmol/L ou avec signes ECG). Urgence vitale par risque de troubles du rythme et de conduction cardiaques.",
+ s:["Souvent asymptomatique ; faiblesse musculaire, paresthésies", "ECG : ondes T amples, pointues et symétriques, puis allongement de PR, disparition de P, QRS larges, bradycardie", "Risque de fibrillation ventriculaire et d'asystolie"],
+ c:["Insuffisance rénale aiguë ou chronique", "Médicaments : IEC, ARA2, spironolactone, AINS, cotrimoxazole", "Acidose (acidocétose), lyse cellulaire (rhabdomyolyse, hémolyse, lyse tumorale, brûlures), insuffisance surrénale", "Fausse hyperkaliémie : hémolyse du prélèvement"],
+ k:"Hyperkaliémie avec signes ECG : gluconate de calcium IV d'abord (protège le cœur), puis insuline-glucose, bicarbonates si acidose, et dialyse si besoin."},
+{id:"x-hypokaliemie", sys:"meta", n:"Hypokaliémie",
+ e:"Il n'y a pas assez de potassium dans le sang : les muscles faiblissent et le cœur peut se dérégler.",
+ h:"Kaliémie < 3,5 mmol/L (sévère si < 2,5 mmol/L). Elle résulte de pertes digestives ou rénales, d'apports insuffisants ou d'un transfert vers les cellules.",
+ s:["Faiblesse musculaire, crampes, paralysies (formes sévères), constipation, iléus", "ECG : ondes T plates, ondes U, sous-décalage de ST, allongement de QT, extrasystoles, torsades de pointes", "Polyurie (atteinte rénale chronique)"],
+ c:["Pertes digestives : diarrhée (choléra, gastro-entérites), vomissements", "Pertes rénales : diurétiques, hyperaldostéronisme, acidose tubulaire", "Transfert : insuline, bêta-2-mimétiques, alcalose ; apports insuffisants (malnutrition)"],
+ k:"Corriger aussi le magnésium. Le potassium IV se donne toujours dilué et lentement, jamais en bolus."},
+{id:"x-hyponatremie", sys:"meta", n:"Hyponatrémie",
+ e:"Le sang est trop dilué en sel : l'eau entre dans les cellules du cerveau qui gonfle, d'où maux de tête, confusion et convulsions.",
+ h:"Natrémie < 135 mmol/L, traduisant le plus souvent un excès d'eau par rapport au sodium (hyperhydratation intracellulaire). Le volume extracellulaire (diminué, normal ou augmenté) oriente la cause.",
+ s:["Nausées, vomissements, céphalées", "Confusion, troubles de la conscience, convulsions, coma (formes aiguës sévères)", "Signes de la cause : déshydratation ou œdèmes"],
+ c:["Volume extracellulaire diminué : pertes digestives ou rénales de sel (diurétiques thiazidiques, insuffisance surrénale)", "Volume normal : SIADH (pneumopathies, méningites, cancers, médicaments), potomanie, hypothyroïdie", "Volume augmenté : insuffisance cardiaque, cirrhose, syndrome néphrotique"],
+ k:"Corriger lentement (pas plus de 8 à 10 mmol/L par 24 h) : une correction trop rapide provoque une myélinolyse centropontine."},
+{id:"x-hypernatremie", sys:"meta", n:"Hypernatrémie",
+ e:"Le sang est trop concentré en sel parce que le corps a perdu trop d'eau : les cellules du cerveau se dessèchent.",
+ h:"Natrémie > 145 mmol/L, traduisant un déficit en eau (déshydratation intracellulaire), surtout chez ceux qui ne peuvent pas boire seuls : nourrisson, sujet âgé, patient comateux.",
+ s:["Soif intense, sécheresse des muqueuses", "Fièvre, troubles de la conscience, agitation, convulsions", "Hémorragies cérébro-méningées chez le nourrisson"],
+ c:["Pertes d'eau non compensées : fièvre, coup de chaleur, diarrhée du nourrisson", "Diabète insipide (central ou néphrogénique), diurèse osmotique (hyperglycémie)", "Apport excessif de sel (erreurs de préparation des biberons, solutés hypertoniques)"],
+ k:"Corriger lentement (sur 48 heures chez l'enfant) : une correction trop rapide provoque un œdème cérébral."},
+{id:"x-acidose", sys:"meta", n:"Acidose métabolique",
+ e:"Le sang devient trop acide ; le corps essaie de rejeter l'acide en respirant vite et profondément.",
+ h:"Baisse du pH (< 7,38) et des bicarbonates plasmatiques, avec compensation respiratoire (hyperventilation, baisse de la PaCO2). Le trou anionique oriente la cause.",
+ s:["Respiration de Kussmaul (ample et profonde), polypnée", "Troubles de la conscience, collapsus, troubles du rythme (hyperkaliémie associée)", "Gaz du sang : pH bas, HCO3− bas, PaCO2 basse"],
+ c:["Trou anionique élevé : acidocétose diabétique, acidose lactique (choc, sepsis, paludisme grave, metformine), insuffisance rénale, intoxications (méthanol, éthylène glycol, aspirine)", "Trou anionique normal : diarrhées (perte de bicarbonates), acidoses tubulaires rénales"],
+ k:"Trou anionique = Na − (Cl + HCO3) ; normal environ 12 mmol/L. Traiter la cause ; les bicarbonates ne sont utiles que dans certains cas."},
+{id:"x-palu-simple", sys:"infect", n:"Accès palustre simple",
+ e:"Un moustique (anophèle) injecte un parasite qui envahit les globules rouges : grosse fièvre, frissons, maux de tête et courbatures.",
+ h:"Paludisme sans signe de gravité, dû à Plasmodium falciparum dans la majorité des cas au Sénégal. Toute fièvre en zone d'endémie est un paludisme jusqu'à preuve du contraire.",
+ s:["Fièvre, frissons, sueurs (accès typique : frissons, chaleur, sueurs)", "Céphalées, courbatures, asthénie", "Troubles digestifs : nausées, vomissements, diarrhée", "Splénomégalie possible, sans signe de gravité", "Diagnostic : test de diagnostic rapide ou goutte épaisse et frottis"],
+ c:["Plasmodium falciparum (dominant en Afrique de l'Ouest), P. malariae, P. ovale", "Facteurs : saison des pluies, absence de moustiquaire imprégnée, voyage du non-immun"],
+ k:"Traitement : combinaison à base d'artémisinine (CTA) ; surveiller l'apparition de signes de gravité. Prévention : moustiquaire imprégnée, chimioprévention saisonnière chez l'enfant."},
+{id:"x-palu-grave", sys:"infect", n:"Paludisme grave",
+ e:"Le parasite du paludisme se multiplie tellement qu'il bloque les petits vaisseaux du cerveau, des reins, des poumons : la vie est en danger.",
+ h:"Paludisme à P. falciparum avec au moins un critère de gravité de l'OMS (neurologique, respiratoire, rénal, hématologique, métabolique ou parasitologique). Urgence absolue.",
+ s:["Neuropaludisme : troubles de la conscience, coma, convulsions répétées", "Détresse respiratoire, acidose (respiration de Kussmaul), choc", "Anémie sévère, ictère, hémoglobinurie, saignements", "Insuffisance rénale, hypoglycémie, hyperlactatémie", "Prostration, hyperparasitémie"],
+ c:["Plasmodium falciparum", "Terrain : enfant de moins de 5 ans, femme enceinte, sujet non immun, retard de traitement"],
+ k:"Artésunate intraveineux sans attendre ; glycémie capillaire répétée (hypoglycémie fréquente, surtout chez l'enfant et la femme enceinte)."},
+{id:"x-typhique", sys:"infect", n:"Syndrome typhique (fièvre typhoïde)",
+ e:"Une bactérie avalée avec de l'eau ou des aliments sales passe dans le sang : fièvre qui monte par paliers, maux de tête, ventre douloureux, malade abruti.",
+ h:"Infection systémique à Salmonella Typhi ou Paratyphi, transmise par voie oro-fécale. Fièvre progressive en plateau, tuphos et signes digestifs, avec risque de perforation et d'hémorragie intestinales.",
+ s:["Fièvre progressive puis en plateau à 40 °C, avec pouls dissocié (relativement lent)", "Céphalées, insomnie, épistaxis, puis tuphos (prostration, obnubilation)", "Douleurs abdominales, diarrhée « jus de melon » ou constipation, langue saburrale, splénomégalie", "Taches rosées lenticulaires sur le tronc (inconstantes)", "Hémocultures positives (1re semaine), leucopénie"],
+ c:["Salmonella enterica Typhi et Paratyphi A, B, C", "Eau et aliments contaminés, mauvaise hygiène, porteurs chroniques"],
+ k:"Le sérodiagnostic de Widal est peu fiable : les hémocultures font le diagnostic. Complications à craindre : perforation intestinale (péritonite) et hémorragie."},
+{id:"x-sida", sys:"infect", n:"Syndrome d'immunodéficience acquise (sida)",
+ e:"Le VIH détruit petit à petit les globules blancs chefs de la défense ; quand il en reste trop peu, des microbes habituellement inoffensifs rendent très malade.",
+ h:"Stade avancé de l'infection par le VIH, défini par la survenue d'infections opportunistes ou de cancers classants, ou par un taux de lymphocytes CD4 < 200/mm³.",
+ s:["Altération de l'état général, amaigrissement (> 10 %), fièvre et diarrhée prolongées", "Infections opportunistes : tuberculose, pneumocystose, toxoplasmose cérébrale, cryptococcose neuroméningée, candidose œsophagienne", "Cancers : maladie de Kaposi, lymphomes", "Signes cutanéo-muqueux : candidose buccale, prurigo, zona"],
+ c:["Virus VIH-1 (dominant) et VIH-2 (présent en Afrique de l'Ouest, Sénégal)", "Transmission sexuelle, sanguine, de la mère à l'enfant"],
+ k:"Proposer le dépistage largement. Tuberculose et VIH vont souvent ensemble : chercher l'une chez tout patient atteint de l'autre."},
+{id:"x-tetanos", sys:"infect", n:"Syndrome tétanique",
+ e:"Une bactérie qui vit dans la terre entre par une plaie et fabrique un poison qui contracte les muscles : la mâchoire se bloque, puis tout le corps se raidit par crises.",
+ h:"Toxi-infection due à la toxine tétanospasmine de Clostridium tetani, provoquant des contractures musculaires permanentes et des paroxysmes de spasmes, sans trouble de la conscience.",
+ s:["Trismus (contracture des masséters), premier signe, avec rire sardonique", "Contractures généralisées permanentes : opisthotonos, ventre de bois", "Paroxysmes de spasmes douloureux déclenchés par les stimuli (bruit, lumière, toucher)", "Conscience normale ; dysphagie, spasmes laryngés, dysautonomie"],
+ c:["Plaies souillées, injections non stériles, avortements septiques", "Tétanos néonatal (section du cordon non stérile)", "Absence de vaccination ou de rappels"],
+ k:"Prévention par la vaccination (enfants, femmes enceintes) et la sérothérapie après plaie. Au Sénégal, le pronostic s'évalue avec le score de Dakar."},
+{id:"x-icterohemorragique", sys:"infect", n:"Syndrome ictéro-hémorragique fébrile",
+ e:"Une infection donne à la fois de la fièvre, un teint jaune et des saignements : le foie et la coagulation sont touchés en même temps.",
+ h:"Association de fièvre, d'ictère et de manifestations hémorragiques, traduisant une atteinte hépatique et de l'hémostase au cours d'infections tropicales graves.",
+ s:["Fièvre élevée, frissons, myalgies", "Ictère (cytolyse hépatique)", "Hémorragies : épistaxis, gingivorragies, hématémèse, purpura", "Atteinte rénale fréquente (oligurie, protéinurie)"],
+ c:["Fièvre jaune (vaccination obligatoire, épidémies en Afrique de l'Ouest)", "Leptospirose (maladie de Weil : contact avec l'eau souillée par les rats)", "Paludisme grave, hépatites virales fulminantes, fièvres hémorragiques virales, sepsis avec CIVD"],
+ k:"En zone d'endémie, faire d'abord la goutte épaisse. Isoler le patient jusqu'à ce qu'une fièvre hémorragique virale soit éliminée."},
+{id:"x-fhv", sys:"infect", n:"Fièvre hémorragique virale",
+ e:"Un virus très contagieux provoque une forte fièvre puis des saignements et une défaillance des organes ; les soignants doivent se protéger.",
+ h:"Groupe d'infections virales (Ebola, Marburg, Lassa, Crimée-Congo, dengue sévère, fièvre jaune) associant fièvre, atteinte vasculaire avec fuite capillaire et hémorragies, parfois très contagieuses par les liquides biologiques.",
+ s:["Début brutal : fièvre, céphalées, myalgies, grande asthénie", "Vomissements, diarrhée, douleurs abdominales", "Hémorragies (tardives et inconstantes), éruption, conjonctivite", "Choc, défaillance multiviscérale"],
+ c:["Ebola et Marburg (filovirus), Lassa (arenavirus, Afrique de l'Ouest)", "Dengue sévère (moustique Aedes), fièvre jaune, fièvre de Crimée-Congo"],
+ k:"Devant une fièvre au retour d'une zone d'épidémie ou après contact : isoler, se protéger (gants, blouse, masque, lunettes) et alerter."},
+{id:"x-rabique", sys:"infect", n:"Syndrome rabique (rage)",
+ e:"Un virus transmis par la morsure d'un chien remonte par les nerfs jusqu'au cerveau ; une fois les signes apparus, la maladie est mortelle.",
+ h:"Encéphalite virale due au virus rabique (Lyssavirus), transmise surtout par la salive de chien. Mortelle dans presque 100 % des cas après l'apparition des symptômes ; évitable par la prophylaxie après exposition.",
+ s:["Prodromes : paresthésies ou douleurs au site de la morsure, fièvre", "Forme furieuse : hydrophobie (spasmes à la vue de l'eau), aérophobie, agitation, hallucinations, hypersalivation", "Forme paralytique : paralysie ascendante", "Évolution vers le coma et la mort"],
+ c:["Morsure, griffure ou léchage d'une plaie par un chien enragé (plus rarement chat, chauve-souris, singe)"],
+ k:"Après morsure : laver la plaie à l'eau et au savon 15 minutes, vaccin antirabique et immunoglobulines selon le risque. Ne pas attendre les signes."},
+{id:"x-bilharziose-u", sys:"infect", n:"Bilharziose urinaire",
+ e:"Un ver, attrapé en se baignant dans l'eau douce, pond des œufs dans la vessie : on urine du sang à la fin de la miction.",
+ h:"Schistosomose à Schistosoma haematobium, endémique au Sénégal (vallée du fleuve Sénégal, Casamance). Les œufs, retenus dans la paroi vésicale, provoquent une inflammation chronique.",
+ s:["Hématurie terminale (sang en fin de miction), signe majeur", "Pollakiurie, brûlures mictionnelles", "Hyperéosinophilie (surtout en phase d'invasion : fièvre, urticaire = fièvre de Katayama)", "Diagnostic : œufs à éperon terminal dans les urines de midi", "Complications : sténose urétérale, hydronéphrose, cancer de la vessie, bilharziose génitale"],
+ c:["Baignade, lessive ou pêche dans l'eau douce contaminée (mollusques Bulinus)"],
+ k:"Traitement : praziquantel. Un enfant qui « urine du sang » en zone d'endémie : bilharziose jusqu'à preuve du contraire."},
+{id:"x-cholinergique", sys:"tox", n:"Syndrome cholinergique (organophosphorés)",
+ e:"Un pesticide bloque l'enzyme qui arrête l'action d'un messager nerveux : le corps « coule » de partout (salive, larmes, sueurs, diarrhée), les pupilles rétrécissent et les muscles tremblent.",
+ h:"Toxidrome par inhibition des cholinestérases (insecticides organophosphorés et carbamates), associant des signes muscariniques, nicotiniques et centraux.",
+ s:["Muscariniques : myosis, hypersalivation, larmoiement, sueurs, bronchorrhée, bronchospasme, bradycardie, vomissements, diarrhée, incontinence urinaire", "Nicotiniques : fasciculations, crampes, faiblesse puis paralysie musculaire (y compris respiratoire), tachycardie, HTA", "Centraux : agitation, confusion, convulsions, coma", "Odeur d'ail ou de solvant"],
+ c:["Pesticides agricoles (ingestion volontaire ou accidentelle, exposition professionnelle)", "Carbamates, gaz de combat (sarin)"],
+ k:"Traitement : décontamination (déshabiller, laver la peau), atropine à doses répétées jusqu'à l'assèchement des bronches, pralidoxime, ventilation si besoin."},
+{id:"x-anticholinergique", sys:"tox", n:"Syndrome anticholinergique",
+ e:"Certains médicaments ou plantes bloquent un messager nerveux : la personne est rouge, chaude, sèche, a les pupilles dilatées et délire.",
+ h:"Toxidrome par blocage des récepteurs muscariniques, associant signes périphériques (sécheresse, mydriase, tachycardie, rétention) et centraux (confusion, agitation, hallucinations).",
+ s:["Mydriase, vision floue", "Peau sèche, rouge, chaude ; bouche sèche ; hyperthermie", "Tachycardie, rétention urinaire, iléus", "Confusion, agitation, hallucinations, convulsions"],
+ c:["Antidépresseurs tricycliques, antihistaminiques, neuroleptiques, antiparkinsoniens anticholinergiques", "Atropine, plantes (datura)"],
+ k:"Moyen mnémotechnique : « rouge comme une tomate, sec comme un os, chaud comme un lièvre, aveugle comme une chauve-souris, fou comme un chapelier ». Tricycliques : surveiller l'ECG (QRS larges)."},
+{id:"x-opioide", sys:"tox", n:"Syndrome opioïde",
+ e:"Un produit de la famille de la morphine endort, rétrécit les pupilles comme des pointes d'aiguille et ralentit la respiration jusqu'à l'arrêter.",
+ h:"Toxidrome par stimulation des récepteurs opioïdes, associant coma, myosis serré et dépression respiratoire (bradypnée).",
+ s:["Troubles de la conscience, coma calme", "Myosis serré, bilatéral (« en tête d'épingle »)", "Bradypnée, apnées, cyanose", "Hypotension, bradycardie, hypothermie"],
+ c:["Héroïne, morphine, tramadol (mésusage), méthadone, codéine, fentanyl"],
+ k:"Antidote : naloxone IV en titration ; sa durée d'action est courte, surveiller la récidive. Le tramadol peut aussi donner des convulsions."},
+{id:"x-serotoninergique", sys:"tox", n:"Syndrome sérotoninergique",
+ e:"Trop de sérotonine dans le cerveau, souvent par mélange de médicaments : agitation, sueurs, fièvre et muscles qui sursautent.",
+ h:"Toxidrome par excès de stimulation sérotoninergique, souvent après association ou surdosage de médicaments sérotoninergiques. Triade : troubles mentaux, dysautonomie, anomalies neuromusculaires.",
+ s:["Agitation, confusion, anxiété", "Sueurs, tachycardie, hyperthermie, mydriase, diarrhée", "Myoclonies, hyperréflexie, clonus (surtout aux membres inférieurs), tremblements"],
+ c:["Antidépresseurs (ISRS, IMAO, tricycliques) associés entre eux", "Tramadol, linézolide, triptans, ecstasy (MDMA)"],
+ k:"Arrêter les médicaments en cause ; benzodiazépines, refroidissement. Le clonus et l'hyperréflexie le distinguent du syndrome malin des neuroleptiques (rigidité, réflexes lents)."},
+{id:"x-smn", sys:"tox", n:"Syndrome malin des neuroleptiques",
+ e:"Une réaction rare mais grave aux médicaments antipsychotiques : forte fièvre, muscles très raides, tension et pouls qui s'affolent.",
+ h:"Complication rare et potentiellement mortelle des neuroleptiques, liée au blocage dopaminergique, associant hyperthermie, rigidité musculaire, dysautonomie et troubles de la conscience, avec élévation des CPK.",
+ s:["Hyperthermie (> 38,5 °C)", "Rigidité musculaire intense (« en tuyau de plomb »)", "Dysautonomie : tachycardie, tension instable, sueurs", "Troubles de la conscience ; CPK très élevées, rhabdomyolyse, insuffisance rénale"],
+ c:["Neuroleptiques (halopéridol surtout), début ou augmentation de dose", "Arrêt brutal des antiparkinsoniens dopaminergiques"],
+ k:"Arrêter le neuroleptique, refroidir, hydrater, réanimation ; dantrolène ou bromocriptine dans les formes graves."},
+{id:"x-preeclampsie", sys:"gyneco", n:"Pré-éclampsie",
+ e:"Pendant la grossesse, le placenta fonctionne mal et libère des substances qui abîment les vaisseaux de la mère : la tension monte et les reins laissent passer des protéines.",
+ h:"Association, après 20 semaines d'aménorrhée, d'une HTA gravidique (≥ 140/90 mmHg) et d'une protéinurie (≥ 0,3 g/24 h) ou d'une atteinte d'organe. Maladie du placenta, fréquente et grave en Afrique.",
+ s:["HTA, protéinurie, œdèmes (surtout s'ils sont brutaux, du visage et des mains)", "Signes de gravité : céphalées, troubles visuels (phosphènes), acouphènes, barre épigastrique", "Oligurie, OAP, HTA sévère (≥ 160/110 mmHg)", "Retentissement fœtal : retard de croissance, souffrance fœtale"],
+ c:["Primiparité, grossesse multiple, antécédent de pré-éclampsie", "HTA chronique, diabète, obésité, maladie rénale, âge extrême"],
+ k:"Complications : éclampsie (convulsions), HELLP syndrome, hématome rétroplacentaire. Sulfate de magnésium pour prévenir les convulsions ; le seul traitement est l'accouchement."},
+{id:"x-hellp", sys:"gyneco", n:"HELLP syndrome",
+ e:"Une forme grave de la pré-éclampsie : les globules rouges se cassent, le foie souffre et les plaquettes chutent.",
+ h:"Complication de la pré-éclampsie associant hémolyse (Hemolysis), cytolyse hépatique (Elevated Liver enzymes) et thrombopénie (Low Platelets), avec risque d'hématome sous-capsulaire du foie et de CIVD.",
+ s:["Douleur épigastrique en barre ou de l'hypochondre droit, nausées, vomissements", "Hémolyse : schizocytes, LDH élevées, haptoglobine effondrée, bilirubine élevée", "Transaminases élevées", "Plaquettes < 100 000/mm³"],
+ c:["Pré-éclampsie (parfois tension peu élevée)"],
+ k:"Une « gastrite » du 3e trimestre chez une femme enceinte hypertendue : penser au HELLP et doser plaquettes et transaminases."},
+{id:"x-geu", sys:"gyneco", n:"Grossesse extra-utérine",
+ e:"L'œuf s'implante en dehors de l'utérus, le plus souvent dans une trompe ; en grossissant, il peut la faire éclater et provoquer une grave hémorragie interne.",
+ h:"Implantation de l'œuf hors de la cavité utérine, tubaire dans plus de 95 % des cas. Urgence gynécologique : toute femme en âge de procréer avec douleurs pelviennes ou saignements doit avoir un dosage de βhCG.",
+ s:["Retard de règles (aménorrhée), métrorragies peu abondantes, noirâtres", "Douleurs pelviennes latéralisées", "Rupture : douleur brutale, scapulalgie, malaise, choc hémorragique, cri du Douglas au toucher vaginal", "βhCG positive avec utérus vide à l'échographie (au-delà du seuil de discrimination)"],
+ c:["Infections génitales hautes (salpingites, chlamydia), antécédent de GEU", "Chirurgie tubaire, stérilet, tabac, procréation médicalement assistée"],
+ k:"Devant un état de choc chez une jeune femme : GEU rompue jusqu'à preuve du contraire, chirurgie en urgence."},
+{id:"x-hrp", sys:"gyneco", n:"Hématome rétroplacentaire",
+ e:"Le placenta se décolle de l'utérus avant la naissance ; du sang s'accumule derrière lui, l'utérus devient dur comme du bois et le bébé est en danger.",
+ h:"Décollement prématuré du placenta normalement inséré, avec formation d'un hématome entre placenta et utérus. Urgence obstétricale grave pour l'enfant (mort fœtale) et la mère (choc, CIVD).",
+ s:["Douleur abdominale brutale, intense, permanente (« en coup de poignard »)", "Métrorragies noirâtres, peu abondantes, sans rapport avec la gravité", "Contracture utérine permanente (« utérus de bois »), hauteur utérine qui augmente", "Bruits du cœur fœtal anormaux ou absents, choc maternel"],
+ c:["Pré-éclampsie et HTA (cause principale)", "Traumatisme abdominal, cocaïne, tabac", "Décompression utérine brutale (rupture des membranes d'un hydramnios)"],
+ k:"Extraction fœtale en urgence ; surveiller la coagulation (CIVD). Forme typique : femme hypertendue, douleur brutale, utérus de bois."},
+{id:"x-prerupture", sys:"gyneco", n:"Syndrome de pré-rupture utérine (Bandl-Frommel)",
+ e:"Pendant un travail bloqué, l'utérus se contracte si fort qu'il est sur le point de se déchirer.",
+ h:"Signes précédant la rupture utérine au cours d'un travail dystocique (disproportion fœto-pelvienne, présentation vicieuse), surtout chez la multipare ou sur utérus cicatriciel.",
+ s:["Contractions violentes, subintrantes, très douloureuses ; agitation de la parturiente", "Anneau de Bandl : utérus en sablier", "Signe de Frommel : ligaments ronds tendus comme des cordes", "Souffrance fœtale"],
+ c:["Disproportion fœto-pelvienne, présentation de l'épaule", "Utérus cicatriciel (césarienne), multiparité", "Mauvais usage de l'ocytocine, travail prolongé sans surveillance"],
+ k:"Urgence : arrêter les ocytociques, tocolyse et césarienne immédiate. La surveillance du travail (partogramme) prévient cette complication encore fréquente en Afrique."},
+{id:"x-hpp", sys:"gyneco", n:"Hémorragie du post-partum",
+ e:"Après l'accouchement, la femme saigne trop, souvent parce que l'utérus ne se contracte pas : c'est la première cause de mort maternelle.",
+ h:"Perte sanguine ≥ 500 mL dans les 24 heures suivant l'accouchement (sévère ≥ 1 000 mL), quelle que soit la voie d'accouchement. Première cause de mortalité maternelle en Afrique.",
+ s:["Saignement vaginal abondant après la naissance", "Utérus mou, haut situé, mal rétracté (atonie)", "Signes de choc : tachycardie, hypotension, pâleur, sueurs"],
+ c:["Atonie utérine (la plus fréquente) : travail long, grossesse multiple, hydramnios, gros enfant", "Rétention placentaire, déchirures du col ou du vagin", "Troubles de la coagulation (HRP, CIVD), inversion utérine, rupture utérine"],
+ k:"Prévention : ocytocine après la naissance (délivrance dirigée). Traitement : massage utérin, révision utérine, ocytocine, acide tranexamique, puis gestes chirurgicaux."},
+{id:"x-dr-nn", sys:"ped", n:"Détresse respiratoire du nouveau-né",
+ e:"Le nouveau-né respire vite et avec effort : on voit ses côtes se creuser et ses narines battre.",
+ h:"Association de signes de lutte respiratoire et/ou de cyanose chez le nouveau-né. Sa gravité se mesure par le score de Silverman (0 à 10).",
+ s:["Polypnée (> 60/min), cyanose", "Signes de lutte (score de Silverman) : battement des ailes du nez, tirage intercostal, entonnoir xiphoïdien, balancement thoraco-abdominal, geignement expiratoire", "Radiographie selon la cause"],
+ c:["Maladie des membranes hyalines (prématuré : déficit en surfactant)", "Retard de résorption du liquide pulmonaire (césarienne), inhalation de liquide méconial", "Infection néonatale, pneumothorax, hernie diaphragmatique, cardiopathies"],
+ k:"Score de Silverman > 4 : détresse grave. Chez le prématuré, la corticothérapie anténatale prévient la maladie des membranes hyalines."},
+{id:"x-ictere-nn", sys:"ped", n:"Ictère du nouveau-né",
+ e:"La peau du bébé devient jaune parce que son foie encore immature n'élimine pas assez vite la bilirubine. Souvent bénin, mais un excès peut abîmer le cerveau.",
+ h:"Coloration jaune de la peau et des muqueuses par hyperbilirubinémie, le plus souvent libre (non conjuguée). La bilirubine libre en excès peut entraîner un ictère nucléaire (encéphalopathie).",
+ s:["Ictère cutanéo-muqueux, progression de la tête vers les pieds", "Signes de gravité : apparition avant 24 heures, bilirubine élevée selon les courbes, prématurité, hémolyse", "Signes neurologiques (ictère nucléaire) : somnolence, hypotonie puis hypertonie, cri aigu", "Ictère cholestatique : selles décolorées, urines foncées"],
+ c:["Ictère physiologique (2e-3e jour), ictère au lait de mère", "Hémolyses : incompatibilité ABO ou rhésus, déficit en G6PD", "Infection néonatale ; cholestase (atrésie des voies biliaires)"],
+ k:"Ictère avant 24 heures = pathologique. Selles décolorées : atrésie des voies biliaires, à opérer avant 6 semaines. Traitement : photothérapie, exsanguinotransfusion."},
+{id:"x-kwashiorkor", sys:"ped", n:"Kwashiorkor",
+ e:"Un enfant, souvent après le sevrage, ne reçoit pas assez de protéines : il gonfle, sa peau et ses cheveux changent et il devient triste et sans réaction.",
+ h:"Malnutrition aiguë sévère œdémateuse, typiquement entre 1 et 3 ans après le sevrage, à alimentation pauvre en protéines, souvent déclenchée par une infection.",
+ s:["Œdèmes bilatéraux prenant le godet (pieds, puis jambes, visage)", "Lésions cutanées (desquamation « en peinture écaillée »), cheveux défrisés, décolorés, cassants", "Apathie, anorexie, tristesse ; hépatomégalie (stéatose)", "Poids parfois peu diminué (masqué par les œdèmes), hypoalbuminémie"],
+ c:["Sevrage brutal, alimentation pauvre en protéines", "Infections (rougeole, diarrhée, paludisme), pauvreté"],
+ k:"Prise en charge OMS : traiter hypoglycémie, hypothermie, infections, déshydratation (ReSoMal) ; F-75 puis F-100 ou aliments thérapeutiques prêts à l'emploi."},
+{id:"x-marasme", sys:"ped", n:"Marasme",
+ e:"Un enfant ne mange pas assez de tout : il devient très maigre, « la peau sur les os », avec un visage de petit vieux.",
+ h:"Malnutrition aiguë sévère non œdémateuse par carence globale (calorique et protéique), avec fonte musculaire et graisseuse majeure.",
+ s:["Maigreur extrême, fonte musculaire (fesses « en culotte flottante »)", "Visage de vieillard, yeux enfoncés", "Rapport poids/taille < −3 Z-scores, périmètre brachial < 115 mm (6 à 59 mois)", "Enfant éveillé, souvent affamé ; pas d'œdème"],
+ c:["Apports insuffisants (pauvreté, sevrage précoce, allaitement insuffisant)", "Infections répétées, diarrhée chronique, VIH, tuberculose"],
+ k:"Le périmètre brachial (bracelet MUAC) dépiste la malnutrition au village. Chercher systématiquement tuberculose et VIH."},
+{id:"x-trisomie21", sys:"ped", n:"Trisomie 21 (syndrome de Down)",
+ e:"L'enfant a un chromosome 21 en trop : visage particulier, muscles mous et retard d'apprentissage, parfois une malformation du cœur.",
+ h:"Aberration chromosomique la plus fréquente (trisomie libre et homogène dans la majorité des cas), avec dysmorphie, déficience intellectuelle et malformations associées. Risque augmenté avec l'âge maternel.",
+ s:["Dysmorphie : fentes palpébrales obliques en haut et en dehors, épicanthus, nuque plate, langue protruse, pli palmaire unique", "Hypotonie, déficience intellectuelle", "Malformations : cardiopathies (canal atrio-ventriculaire), digestives (atrésie duodénale), hypothyroïdie", "Risques : leucémies, infections, maladie d'Alzheimer précoce"],
+ c:["Non-disjonction méiotique (âge maternel avancé), translocation robertsonienne (rarement héritée)"],
+ k:"Diagnostic par le caryotype. Échographie cardiaque systématique à la naissance et suivi de la thyroïde."},
+{id:"x-depressif", sys:"psy", n:"Syndrome dépressif",
+ e:"Une tristesse profonde qui dure, avec perte du plaisir, fatigue, troubles du sommeil et parfois idées de mort.",
+ h:"Épisode dépressif caractérisé : au moins cinq symptômes pendant au moins deux semaines, dont l'humeur dépressive ou la perte d'intérêt (anhédonie), avec souffrance ou altération du fonctionnement.",
+ s:["Humeur triste, anhédonie (perte d'intérêt et de plaisir)", "Ralentissement psychomoteur, fatigue, troubles de la concentration", "Troubles du sommeil (insomnie du petit matin) et de l'appétit, amaigrissement", "Dévalorisation, culpabilité, idées de mort ou de suicide", "En Afrique, plaintes somatiques souvent au premier plan (douleurs, fatigue)"],
+ c:["Dépression primaire, trouble bipolaire (épisode dépressif)", "Causes organiques : hypothyroïdie, VIH, cancers, AVC, maladie de Parkinson", "Médicaments et toxiques : alcool, corticoïdes, efavirenz ; deuils et événements de vie"],
+ k:"Toujours évaluer le risque suicidaire. Éliminer une cause organique (TSH) et un trouble bipolaire avant de traiter."},
+{id:"x-maniaque", sys:"psy", n:"Syndrome maniaque",
+ e:"Une excitation anormale : la personne est euphorique ou irritable, parle sans arrêt, dort peu, dépense beaucoup et se croit toute-puissante.",
+ h:"Élévation pathologique de l'humeur (euphorie ou irritabilité) avec augmentation de l'énergie, durant au moins une semaine, caractéristique du trouble bipolaire de type I.",
+ s:["Euphorie, irritabilité, labilité de l'humeur", "Tachypsychie (fuite des idées), logorrhée, jeux de mots", "Hyperactivité désordonnée, réduction du besoin de sommeil", "Idées de grandeur, désinhibition (dépenses, conduites sexuelles), parfois délire"],
+ c:["Trouble bipolaire", "Causes organiques : hyperthyroïdie, tumeurs frontales, encéphalites, corticoïdes, cannabis, amphétamines"],
+ k:"Urgence psychiatrique (conduites à risque, épuisement). Pas d'antidépresseur seul chez un bipolaire : risque de virage maniaque."},
+{id:"x-delirant", sys:"psy", n:"Syndrome délirant (bouffée délirante aiguë)",
+ e:"La personne croit fermement des choses fausses (on la poursuit, on l'ensorcelle, elle a une mission), parfois avec des voix ou des visions, et rien ne la fait changer d'avis.",
+ h:"Présence d'idées délirantes (convictions fausses, inébranlables) analysées selon le thème, le mécanisme, la systématisation, l'adhésion et l'humeur associée. La bouffée délirante aiguë en est la forme brutale.",
+ s:["Thèmes : persécution, mystique, grandeur, ensorcellement, jalousie", "Mécanismes : hallucinations (auditives surtout), interprétations, intuitions, imagination", "Adhésion totale, angoisse ou exaltation, troubles du comportement", "Début brutal « coup de tonnerre dans un ciel serein » (bouffée délirante)"],
+ c:["Bouffée délirante aiguë, schizophrénie, trouble délirant persistant", "Trouble de l'humeur avec caractéristiques psychotiques", "Causes organiques et toxiques : cannabis, paludisme, VIH, épilepsie, hyperthyroïdie, sevrage"],
+ k:"Un premier épisode délirant impose un bilan organique (goutte épaisse en zone d'endémie, sérologie VIH, toxiques). Les interprétations culturelles (maraboutage) ne doivent pas faire oublier la maladie."},
+{id:"x-dementiel", sys:"psy", n:"Syndrome démentiel",
+ e:"La mémoire et les autres capacités de la pensée baissent progressivement, au point que la personne ne peut plus se débrouiller seule.",
+ h:"Altération progressive et durable des fonctions cognitives (mémoire, langage, praxies, gnosies, fonctions exécutives) suffisante pour retentir sur l'autonomie dans la vie quotidienne, sans trouble de la vigilance.",
+ s:["Troubles de la mémoire (récente d'abord), désorientation", "Aphasie, apraxie, agnosie, troubles des fonctions exécutives", "Perte d'autonomie, troubles du comportement (apathie, agitation, délire)", "Vigilance normale (différence avec le syndrome confusionnel) ; dépistage par le MMSE"],
+ c:["Maladie d'Alzheimer, démence vasculaire, démence à corps de Lewy", "Causes curables : hypothyroïdie, carence en B12, hématome sous-dural, hydrocéphalie à pression normale, syphilis, VIH"],
+ k:"Toujours chercher une cause curable (TSH, B12, sérologies, imagerie) et une dépression qui peut imiter une démence."},
+{id:"x-sevrage-alcool", sys:"psy", n:"Syndrome de sevrage alcoolique",
+ e:"Une personne qui boit beaucoup arrête brusquement : tremblements, sueurs, angoisse, et parfois crises convulsives et délire avec visions d'animaux.",
+ h:"Ensemble des signes survenant dans les heures ou jours suivant l'arrêt ou la diminution brutale de l'alcool chez un sujet dépendant ; sa forme grave est le delirium tremens.",
+ s:["6 à 24 heures : tremblements, sueurs, anxiété, insomnie, tachycardie, nausées", "Crises convulsives généralisées (12 à 48 heures)", "Delirium tremens (48 à 72 heures) : confusion, onirisme (zoopsies), agitation, fièvre, déshydratation"],
+ c:["Arrêt brutal (hospitalisation, maladie, manque d'argent) chez un alcoolodépendant"],
+ k:"Prévention et traitement : benzodiazépines, hydratation, vitamine B1 avant tout glucosé (prévention de la Gayet-Wernicke)."},
+{id:"x-rau", sys:"uro", n:"Rétention aiguë d'urine",
+ e:"La vessie est pleine mais la personne ne peut plus uriner du tout : le bas du ventre est gonflé et très douloureux.",
+ h:"Impossibilité brutale et complète d'uriner malgré une vessie pleine (globe vésical), le plus souvent par obstacle sous-vésical chez l'homme âgé.",
+ s:["Envie impérieuse et douloureuse d'uriner sans pouvoir le faire", "Globe vésical : masse hypogastrique mate, convexe vers le haut, douloureuse", "Agitation, sueurs (douleur)"],
+ c:["Hypertrophie bénigne ou cancer de la prostate", "Rétrécissement de l'urètre (séquelles d'urétrites, très fréquent en Afrique), caillotage", "Médicaments anticholinergiques, causes neurologiques (compression médullaire), constipation sévère"],
+ k:"Drainage urgent par sonde urétrale ou cathéter sus-pubien (contre-indiqué de sonder en cas de prostatite aiguë ou de traumatisme de l'urètre : cathéter sus-pubien)."},
+{id:"x-bas-appareil", sys:"uro", n:"Syndrome du bas appareil urinaire (prostatisme)",
+ e:"Chez l'homme âgé, la prostate grossit et serre le canal de l'urine : jet faible, envies fréquentes, se lever la nuit pour uriner.",
+ h:"Ensemble de symptômes mictionnels : troubles de la phase de remplissage (pollakiurie, urgenturie, nycturie) et de la phase de vidange (dysurie, jet faible, gouttes retardataires).",
+ s:["Dysurie, jet faible, retard au démarrage, miction en plusieurs temps", "Pollakiurie, nycturie, urgenturie", "Sensation de vidange incomplète, gouttes retardataires", "Complications : rétention aiguë ou chronique, infections, lithiase, insuffisance rénale"],
+ c:["Hypertrophie bénigne de la prostate (la plus fréquente)", "Cancer de la prostate (fréquent et souvent agressif chez l'homme d'origine africaine)", "Rétrécissement urétral, vessie neurologique (diabète)"],
+ k:"Toucher rectal et PSA chez l'homme de plus de 50 ans (45 ans pour l'homme d'origine africaine), échographie avec résidu post-mictionnel."},
+{id:"x-bourse-aigue", sys:"uro", n:"Syndrome de la bourse aiguë",
+ e:"Une bourse devient brutalement grosse et très douloureuse ; chez l'adolescent, c'est souvent le testicule qui s'est tordu sur lui-même et qui va mourir s'il n'est pas opéré vite.",
+ h:"Douleur scrotale aiguë avec augmentation de volume de la bourse. La torsion du cordon spermatique est la première hypothèse chez l'enfant et l'adolescent : urgence chirurgicale (moins de 6 heures).",
+ s:["Douleur scrotale brutale, intense, parfois nausées et vomissements", "Torsion : testicule ascensionné, horizontalisé, réflexe crémastérien aboli, douleur non soulagée par l'élévation (signe de Prehn négatif)", "Orchi-épididymite : début progressif, fièvre, signes urinaires, douleur soulagée par l'élévation"],
+ c:["Torsion du cordon spermatique (adolescent), torsion d'hydatide", "Orchi-épididymite (infections sexuellement transmissibles, infections urinaires, oreillons)", "Hernie inguino-scrotale étranglée, traumatisme, tumeur"],
+ k:"Le doute impose l'exploration chirurgicale : ne jamais perdre de temps avec des examens devant une suspicion de torsion."},
+{id:"x-oeil-rouge", sys:"orl", n:"Syndrome de l'œil rouge douloureux",
+ e:"L'œil est rouge et fait mal ; si la vue baisse en plus, c'est grave et il faut voir l'ophtalmologiste rapidement.",
+ h:"Rougeur oculaire associée à une douleur ; la baisse d'acuité visuelle est le principal signe de gravité et oriente vers une kératite, une uvéite ou un glaucome aigu.",
+ s:["Rougeur conjonctivale ou cercle périkératique (autour de la cornée)", "Douleur, photophobie, larmoiement", "Baisse de l'acuité visuelle (signe de gravité)", "Glaucome aigu : œil dur, mydriase aréactive, nausées ; uvéite : myosis, cercle périkératique"],
+ c:["Kératites (traumatiques, infectieuses, herpès ; traitements traditionnels instillés dans l'œil)", "Uvéites (spondyloarthrites, tuberculose, VIH), glaucome aigu par fermeture de l'angle", "Sans baisse de vision : conjonctivite, hémorragie sous-conjonctivale"],
+ k:"Jamais de corticoïdes en collyre sans avis ophtalmologique (aggravation d'une kératite herpétique). Œil rouge + baisse de vision = urgence ophtalmologique."},
+{id:"x-angineux", sys:"orl", n:"Syndrome angineux (angine)",
+ e:"La gorge est rouge et fait mal pour avaler, avec de la fièvre ; une angine à streptocoque mal soignée peut abîmer le cœur plus tard.",
+ h:"Inflammation aiguë de l'oropharynx (amygdales), le plus souvent virale ; l'angine à streptocoque A doit être traitée pour prévenir le rhumatisme articulaire aigu, encore fréquent en Afrique.",
+ s:["Odynophagie (douleur à la déglutition), fièvre", "Angine érythémateuse ou érythémato-pultacée (dépôts blanchâtres)", "Pseudo-membraneuse (diphtérie, mononucléose), ulcéreuse (Vincent, syphilis), vésiculeuse (virus)", "Adénopathies cervicales sensibles"],
+ c:["Virus (la majorité)", "Streptocoque bêta-hémolytique du groupe A (enfant de 5 à 15 ans)", "Diphtérie (fausses membranes, enfant non vacciné), mononucléose infectieuse"],
+ k:"Une angine pseudo-membraneuse chez un enfant non vacciné : penser à la diphtérie (isolement, sérum). Pénicilline (amoxicilline) pour l'angine à streptocoque."},
+{id:"x-necrolyse", sys:"dermato", n:"Nécrolyse épidermique toxique (Stevens-Johnson, Lyell)",
+ e:"Un médicament déclenche une réaction très grave : la peau se décolle comme après une brûlure et les muqueuses s'abîment.",
+ h:"Toxidermie grave avec nécrose et décollement de l'épiderme : syndrome de Stevens-Johnson (< 10 % de la surface corporelle), syndrome de Lyell (> 30 %). Mortalité élevée.",
+ s:["Fièvre, malaise, puis éruption douloureuse (taches, cocardes atypiques)", "Bulles, décollement cutané, signe de Nikolsky positif", "Atteinte des muqueuses : buccale, oculaire, génitale", "Complications : déshydratation, infections, séquelles oculaires"],
+ c:["Médicaments : cotrimoxazole et autres sulfamides, névirapine, carbamazépine, phénobarbital, allopurinol, AINS", "Terrain favorisant : infection par le VIH"],
+ k:"Arrêter immédiatement le médicament suspect et hospitaliser (soins comme un brûlé). Interdire à vie le médicament responsable."},
+{id:"x-xessal", sys:"dermato", n:"Complications de la dépigmentation volontaire (« xessal »)",
+ e:"Les crèmes et savons pour éclaircir la peau contiennent souvent de la cortisone, de l'hydroquinone ou du mercure : ils abîment la peau et parfois tout le corps.",
+ h:"Usage cosmétique prolongé de produits dépigmentants (dermocorticoïdes puissants, hydroquinone, sels de mercure), fréquent au Sénégal, responsable de complications cutanées et générales.",
+ s:["Cutanées : vergetures, atrophie, acné, mycoses et infections étendues, retard de cicatrisation, ochronose exogène (taches bleu-noir)", "Générales liées aux corticoïdes : syndrome de Cushing, diabète, HTA, insuffisance surrénale à l'arrêt", "Mercure : néphropathie (syndrome néphrotique), troubles neurologiques"],
+ c:["Dermocorticoïdes très puissants (clobétasol), hydroquinone, sels de mercure"],
+ k:"Toujours interroger sur la dépigmentation devant une infection cutanée inhabituelle, un Cushing ou un syndrome néphrotique chez une femme. L'arrêt brutal peut révéler une insuffisance surrénale."}
 ];
 const SYN_BY = {}; SYNDROMES.forEach(x=>{ SYN_BY[x.id]=x; });
 
@@ -4673,7 +5100,7 @@ function synFiche(x){
   </div></details>`;
 }
 function synList(){
-  const u=UI.syn; const list=SYNDROMES.filter(synMatch);
+  const u=UI.syn; const ord=Object.keys(SYN_SYS); const list=SYNDROMES.filter(synMatch).sort((a,b)=>ord.indexOf(a.sys)-ord.indexOf(b.sys));
   if(!list.length) return '<p class="muted">Aucune fiche ne correspond à cette recherche.</p>';
   let html='';
   if(u.view==='table'){
@@ -4703,6 +5130,172 @@ function synSheet(){
     <p class="small muted">${mine} fiche${mine>1?'s':''} dans tes révisions. Ces fiches sont un résumé : en cas de différence, c'est le cours de ton professeur qui fait foi.</p>
    </div>
    <div id="synList" class="stack">${synList()}</div>`;
+}
+
+// ---------- Triades ----------
+const TRI_SYS = {infect:'Infectieux et tropical', neuro:'Neurologie', cardio:'Cardio-vasculaire', pneumo:'Pleuro-pulmonaire', dig:'Digestif', hemato:'Hématologie', nephro:'Néphro-urologie', endoc:'Endocrinologie', gyneco:'Gynécologie-obstétrique', ped:'Pédiatrie', rhumato:'Rhumatologie et traumatologie', orl:'ORL et ophtalmologie', tox:'Toxicologie', psy:'Psychiatrie'};
+const TRIADES = [
+{id:"infect-palu", sys:"infect", sn:true, n:"Triade de l'accès palustre", t:["Frissons", "Chaleur (fièvre à 40 °C)", "Sueurs"], m:"Accès palustre (paludisme) : les trois stades successifs de l'accès typique", k:"Au Sénégal, toute fièvre est un paludisme jusqu'à preuve du contraire : test de diagnostic rapide ou goutte épaisse."},
+{id:"infect-meningite", sys:"infect", sn:true, n:"Triade de la méningite bactérienne", t:["Fièvre", "Raideur de nuque", "Troubles de la conscience"], m:"Méningite bactérienne (méningocoque, pneumocoque) ; le Sénégal est dans la ceinture africaine de la méningite", k:"Triade incomplète dans la majorité des cas : la céphalée est presque constante. Purpura fébrile = antibiotique immédiat."},
+{id:"neuro-trepied-meninge", sys:"neuro", sn:true, n:"Trépied méningitique", t:["Céphalées", "Vomissements (en jet)", "Constipation (diarrhée chez le nourrisson)"], m:"Signes fonctionnels du syndrome méningé", k:"À l'examen : raideur de nuque, signes de Kernig et de Brudzinski. Ponction lombaire si pas de signe d'HTIC ou de localisation."},
+{id:"infect-purpura-fulminans", sys:"infect", sn:true, n:"Triade du purpura fulminans", t:["Fièvre", "Purpura extensif (au moins une tache nécrotique de plus de 3 mm)", "État de choc"], m:"Méningococcémie fulminante (Neisseria meningitidis)", k:"Injecter une céphalosporine de 3e génération (ceftriaxone) dès le domicile, avant tout examen."},
+{id:"infect-rougeole", sys:"infect", sn:true, n:"Triade catarrhale de la rougeole (les « 3 C »)", t:["Coryza (rhinite)", "Conjonctivite (yeux rouges, larmoyants)", "Toux (« cough »)"], m:"Phase d'invasion de la rougeole, avant l'éruption ; signe de Köplik associé", k:"Maladie à déclaration obligatoire, encore épidémique au Sénégal. Vitamine A à tout enfant atteint ; prévention par la vaccination (deux doses)."},
+{id:"infect-coqueluche", sys:"infect", sn:true, n:"Triade de la quinte de coqueluche", t:["Quinte de toux en salves, sans reprise respiratoire", "Reprise inspiratoire bruyante (« chant du coq »)", "Vomissements ou rejet de mucus en fin de quinte"], m:"Coqueluche (Bordetella pertussis)", k:"Chez le nourrisson, la coqueluche se manifeste par des apnées et une cyanose plutôt que par le chant du coq."},
+{id:"infect-tetanos", sys:"infect", sn:true, n:"Triade du tétanos généralisé", t:["Trismus (contracture des mâchoires)", "Contractures généralisées permanentes", "Paroxysmes (spasmes douloureux) déclenchés par les stimuli"], m:"Tétanos (Clostridium tetani), conscience normale", k:"Au Sénégal, le pronostic est évalué par le score de Dakar. Prévention : vaccination, y compris des femmes enceintes (tétanos néonatal)."},
+{id:"infect-fievre-jaune", sys:"infect", sn:true, n:"Triade de la fièvre jaune", t:["Ictère", "Hémorragies", "Albuminurie (atteinte rénale)"], m:"Fièvre jaune (forme grave, phase toxique) ; arbovirose transmise par Aedes", k:"Vaccin obligatoire pour les voyageurs et inclus dans le calendrier vaccinal du Sénégal (9 mois)."},
+{id:"infect-weil", sys:"infect", sn:true, n:"Triade de la maladie de Weil", t:["Ictère", "Insuffisance rénale aiguë", "Hémorragies"], m:"Leptospirose ictéro-hémorragique (contact avec l'eau ou la boue souillées par l'urine des rats)", k:"Penser à la leptospirose après les inondations et chez les riziculteurs ou éboueurs ; traitement par pénicilline ou doxycycline."},
+{id:"infect-katayama", sys:"infect", sn:true, n:"Triade de la fièvre de Katayama", t:["Fièvre", "Urticaire (prurit)", "Hyperéosinophilie"], m:"Phase d'invasion de la bilharziose (2 à 6 semaines après la baignade)", k:"À ce stade, les œufs sont encore absents des urines et des selles : diagnostic par la sérologie et l'éosinophilie."},
+{id:"infect-fontan", sys:"infect", sn:true, n:"Triade de Fontan", t:["Hépatomégalie douloureuse", "Fièvre", "Douleur de l'hypochondre droit irradiant à l'épaule droite"], m:"Abcès amibien du foie (Entamoeba histolytica)", k:"Diagnostic par échographie et sérologie amibienne ; traitement par métronidazole, la ponction n'est pas systématique."},
+{id:"infect-loffler", sys:"infect", sn:true, n:"Triade du syndrome de Löffler", t:["Toux sèche (parfois sifflante)", "Opacités pulmonaires labiles et fugaces", "Hyperéosinophilie"], m:"Migration larvaire pulmonaire de l'ascaris (et d'autres helminthes : ankylostomes, anguillule)", k:"Chez l'enfant africain qui tousse avec une éosinophilie élevée, penser aux vers."},
+{id:"infect-kala-azar", sys:"infect", sn:false, n:"Triade du kala-azar", t:["Fièvre prolongée irrégulière", "Splénomégalie importante", "Pâleur (anémie, pancytopénie)"], m:"Leishmaniose viscérale (Leishmania donovani, infantum)", k:"Fréquente en Afrique de l'Est et au Maghreb, plus rare en Afrique de l'Ouest ; aggravée par le VIH."},
+{id:"infect-onchocercose", sys:"infect", sn:true, n:"Triade de l'onchocercose", t:["Onchocercomes (nodules sous-cutanés)", "Onchodermatite (gale filarienne, prurit)", "Atteinte oculaire (kératite, cécité)"], m:"Onchocercose (« cécité des rivières »), Onchocerca volvulus transmise par les simulies", k:"Présente au Sénégal oriental ; traitement de masse par ivermectine."},
+{id:"infect-lepre", sys:"infect", sn:true, n:"Signes cardinaux de la lèpre (OMS)", t:["Tache cutanée hypopigmentée ou rougeâtre avec perte de sensibilité", "Nerf périphérique hypertrophié, avec troubles sensitifs ou moteurs", "Bacilles acido-alcoolo-résistants au frottis cutané"], m:"Lèpre (Mycobacterium leprae) ; un seul signe suffit au diagnostic", k:"La lèpre persiste au Sénégal. Polychimiothérapie gratuite (rifampicine, dapsone, clofazimine)."},
+{id:"infect-pott", sys:"infect", sn:true, n:"Triade de Pott", t:["Gibbosité (cyphose angulaire)", "Abcès froid", "Paraplégie (compression médullaire)"], m:"Mal de Pott (tuberculose vertébrale)", k:"Tableau tardif ; le pincement discal avec atteinte des vertèbres voisines oriente vers une spondylodiscite tuberculeuse."},
+{id:"infect-aeg", sys:"infect", sn:true, n:"Les « 3 A » de l'altération de l'état général", t:["Asthénie", "Anorexie", "Amaigrissement"], m:"Altération de l'état général : tuberculose, VIH, cancers, hémopathies", k:"Avec fièvre vespérale et sueurs nocturnes, penser d'abord à la tuberculose."},
+{id:"infect-austrian", sys:"infect", sn:false, n:"Triade d'Austrian (d'Osler)", t:["Pneumonie", "Méningite", "Endocardite"], m:"Infection invasive à pneumocoque, classiquement chez l'alcoolique", k:"Chercher un souffle cardiaque devant une méningite à pneumocoque."},
+{id:"infect-reiter", sys:"infect", sn:false, n:"Triade de Fiessinger-Leroy-Reiter", t:["Urétrite (ou diarrhée)", "Conjonctivite", "Arthrite"], m:"Arthrite réactionnelle après une infection génitale (Chlamydia) ou digestive (Shigella, Salmonella, Yersinia, Campylobacter)", k:"Souvent liée au HLA-B27 ; chercher et traiter l'infection génitale chez le patient et son partenaire."},
+{id:"infect-sabin", sys:"infect", sn:false, n:"Triade de Sabin", t:["Hydrocéphalie (ou microcéphalie)", "Choriorétinite", "Calcifications intracrâniennes"], m:"Toxoplasmose congénitale", k:"Prévention par la surveillance sérologique de la femme enceinte non immunisée et les règles d'hygiène (viande bien cuite)."},
+{id:"infect-gregg", sys:"infect", sn:false, n:"Triade de Gregg", t:["Cataracte", "Surdité", "Cardiopathie (persistance du canal artériel)"], m:"Rubéole congénitale (infection au 1er trimestre)", k:"Prévention par la vaccination rougeole-rubéole."},
+{id:"infect-hutchinson", sys:"infect", sn:false, n:"Triade de Hutchinson", t:["Kératite interstitielle", "Surdité (atteinte du VIII)", "Dents de Hutchinson (incisives en tournevis, échancrées)"], m:"Syphilis congénitale tardive", k:"Prévention par le dépistage de la syphilis chez toute femme enceinte (TPHA-VDRL) et la pénicilline."},
+{id:"neuro-htic", sys:"neuro", sn:false, n:"Triade de l'hypertension intracrânienne", t:["Céphalées (matinales, en casque)", "Vomissements en jet", "Troubles visuels (flou visuel, œdème papillaire au fond d'œil)"], m:"Hypertension intracrânienne : tumeur, abcès, hématome, hydrocéphalie", k:"Ponction lombaire contre-indiquée avant l'imagerie. Paralysie du VI sans valeur localisatrice."},
+{id:"neuro-cushing", sys:"neuro", sn:false, n:"Triade de Cushing", t:["Hypertension artérielle", "Bradycardie", "Troubles respiratoires (respiration irrégulière)"], m:"HTIC sévère avec menace d'engagement cérébral", k:"Signe tardif et grave : urgence neurochirurgicale (osmothérapie, dérivation)."},
+{id:"neuro-parkinson", sys:"neuro", sn:false, n:"Triade parkinsonienne", t:["Tremblement de repos", "Akinésie (bradykinésie)", "Hypertonie plastique (roue dentée)"], m:"Syndrome parkinsonien (maladie de Parkinson, neuroleptiques)", k:"Un parkinsonisme symétrique sous neuroleptiques est médicamenteux."},
+{id:"neuro-hakim", sys:"neuro", sn:false, n:"Triade de Hakim-Adams", t:["Troubles de la marche (marche à petits pas, « aimantée »)", "Troubles cognitifs", "Incontinence urinaire"], m:"Hydrocéphalie à pression normale du sujet âgé", k:"Une des rares démences curables (dérivation ventriculo-péritonéale) ; la marche s'améliore la première."},
+{id:"neuro-wernicke", sys:"neuro", sn:false, n:"Triade de Gayet-Wernicke", t:["Confusion", "Ataxie (troubles de l'équilibre)", "Troubles oculomoteurs (nystagmus, ophtalmoplégie)"], m:"Encéphalopathie de Gayet-Wernicke : carence en vitamine B1 (alcoolisme, vomissements gravidiques, dénutrition)", k:"Vitamine B1 avant tout apport de glucosé chez l'alcoolique ou le dénutri."},
+{id:"neuro-korsakoff", sys:"neuro", sn:false, n:"Triade de Korsakoff", t:["Amnésie antérograde (oubli à mesure)", "Fabulations", "Fausses reconnaissances"], m:"Syndrome de Korsakoff, séquelle d'une encéphalopathie de Gayet-Wernicke (alcoolisme)", k:"Souvent associé à une polynévrite des membres inférieurs."},
+{id:"neuro-charcot-sep", sys:"neuro", sn:false, n:"Triade de Charcot (neurologique)", t:["Nystagmus", "Tremblement intentionnel", "Parole scandée"], m:"Sclérose en plaques (atteinte cérébelleuse)", k:"Ne pas confondre avec la triade de Charcot biliaire (douleur, fièvre, ictère)."},
+{id:"neuro-horner", sys:"neuro", sn:false, n:"Triade de Claude Bernard-Horner", t:["Myosis", "Ptosis", "Énophtalmie"], m:"Atteinte de la voie sympathique oculaire : cancer de l'apex pulmonaire (Pancoast), dissection carotidienne, Wallenberg", k:"Récent et douloureux : dissection carotidienne jusqu'à preuve du contraire."},
+{id:"neuro-foster-kennedy", sys:"neuro", sn:false, n:"Triade de Foster Kennedy", t:["Atrophie optique du côté de la tumeur", "Œdème papillaire du côté opposé", "Anosmie"], m:"Tumeur de la base du lobe frontal (méningiome olfactif)", k:"L'atrophie optique est due à la compression directe ; l'œdème controlatéral à l'HTIC."},
+{id:"neuro-melkersson", sys:"neuro", sn:false, n:"Triade de Melkersson-Rosenthal", t:["Paralysie faciale périphérique récidivante", "Œdème oro-facial (lèvres)", "Langue plicaturée (scrotale)"], m:"Syndrome de Melkersson-Rosenthal (granulomatose oro-faciale)", k:"À évoquer devant une paralysie faciale qui récidive."},
+{id:"neuro-sclerose-tubereuse", sys:"neuro", sn:false, n:"Triade de Vogt", t:["Épilepsie", "Déficience intellectuelle", "Angiofibromes de la face (« adénomes sébacés »)"], m:"Sclérose tubéreuse de Bourneville", k:"Chercher les taches achromiques (lumière de Wood) chez tout nourrisson avec spasmes en flexion (syndrome de West)."},
+{id:"neuro-encephalite", sys:"neuro", sn:false, n:"Triade de l'encéphalite", t:["Fièvre", "Troubles de la conscience ou du comportement", "Crises convulsives ou signes focaux"], m:"Méningo-encéphalite (herpès, autres virus) ; en zone d'endémie, neuropaludisme", k:"Aciclovir IV dès la suspicion d'encéphalite herpétique, sans attendre la PCR."},
+{id:"cardio-beck", sys:"cardio", sn:false, n:"Triade de Beck", t:["Hypotension artérielle", "Turgescence des veines jugulaires", "Assourdissement des bruits du cœur"], m:"Tamponnade (épanchement péricardique compressif)", k:"Pouls paradoxal associé. Traitement : ponction péricardique en urgence. En Afrique, penser à la péricardite tuberculeuse."},
+{id:"cardio-virchow", sys:"cardio", sn:false, n:"Triade de Virchow", t:["Stase veineuse", "Lésion de la paroi vasculaire (endothélium)", "Hypercoagulabilité"], m:"Mécanismes de la thrombose veineuse (phlébite, embolie pulmonaire)", k:"Post-partum, chirurgie, alitement, cancer, contraception œstrogénique : penser à la prévention par anticoagulants."},
+{id:"cardio-ra", sys:"cardio", sn:false, n:"Triade du rétrécissement aortique", t:["Angor d'effort", "Syncope d'effort", "Dyspnée d'effort"], m:"Rétrécissement aortique serré symptomatique", k:"L'apparition de ces symptômes impose le remplacement valvulaire (risque de mort subite)."},
+{id:"cardio-dissection", sys:"cardio", sn:false, n:"Triade de la dissection aortique", t:["Douleur thoracique brutale, déchirante, migratrice (dos)", "Asymétrie des pouls ou de la tension aux deux bras", "Élargissement du médiastin à la radiographie"], m:"Dissection aortique (HTA mal contrôlée, Marfan)", k:"Ne pas thrombolyser un « infarctus » avec asymétrie tensionnelle : faire un angioscanner."},
+{id:"cardio-aaa", sys:"cardio", sn:false, n:"Triade de la rupture d'anévrisme de l'aorte abdominale", t:["Douleur abdominale ou lombaire brutale", "Masse abdominale pulsatile", "État de choc (hypotension)"], m:"Anévrisme de l'aorte abdominale rompu", k:"Urgence chirurgicale absolue ; pas de temps pour des examens chez un patient instable."},
+{id:"cardio-leriche", sys:"cardio", sn:false, n:"Triade de Leriche", t:["Claudication intermittente des fesses et des cuisses", "Impuissance (dysfonction érectile)", "Abolition des pouls fémoraux"], m:"Syndrome de Leriche : occlusion athéromateuse de la bifurcation aortique", k:"Facteurs de risque : tabac, diabète, HTA."},
+{id:"cardio-raynaud", sys:"cardio", sn:false, n:"Triade (phases) du phénomène de Raynaud", t:["Phase blanche (syncopale)", "Phase bleue (asphyxique)", "Phase rouge (hyperhémique, douloureuse)"], m:"Syndrome de Raynaud (primitif ou secondaire à une sclérodermie)", k:"Ulcérations ou nécroses digitales : chercher une connectivite."},
+{id:"cardio-fallot", sys:"cardio", sn:false, n:"Triade de Fallot", t:["Sténose pulmonaire", "Communication interauriculaire", "Hypertrophie ventriculaire droite"], m:"Cardiopathie congénitale cyanogène (à distinguer de la tétralogie de Fallot)", k:"La tétralogie de Fallot associe : sténose pulmonaire, CIV, aorte à cheval, hypertrophie ventriculaire droite."},
+{id:"cardio-ep", sys:"cardio", sn:false, n:"Triade de l'embolie pulmonaire", t:["Dyspnée brutale", "Douleur thoracique (de type pleural)", "Hémoptysie"], m:"Embolie pulmonaire (souvent après une phlébite)", k:"Triade rarement complète ; la tachycardie et la polypnée sont plus fréquentes. Score de Wells, D-dimères, angioscanner."},
+{id:"cardio-lethale", sys:"cardio", sn:false, n:"Triade létale du traumatisé", t:["Hypothermie", "Acidose", "Coagulopathie"], m:"Polytraumatisé en choc hémorragique", k:"Chacun aggrave les deux autres : réchauffer, transfuser précocement (plasma), arrêter le saignement (damage control)."},
+{id:"pneumo-kartagener", sys:"pneumo", sn:false, n:"Triade de Kartagener", t:["Situs inversus", "Sinusite chronique", "Bronchectasies (dilatation des bronches)"], m:"Dyskinésie ciliaire primitive", k:"Associée à une infertilité masculine (spermatozoïdes immobiles)."},
+{id:"pneumo-widal", sys:"pneumo", sn:false, n:"Triade de Widal (Fernand-Widal)", t:["Asthme", "Polypose naso-sinusienne", "Intolérance à l'aspirine et aux AINS"], m:"Maladie respiratoire exacerbée par l'aspirine", k:"Contre-indication de l'aspirine et des AINS chez ces patients (crises graves)."},
+{id:"pneumo-lofgren", sys:"pneumo", sn:false, n:"Triade de Löfgren", t:["Érythème noueux", "Adénopathies hilaires bilatérales", "Arthralgies (chevilles) et fièvre"], m:"Sarcoïdose aiguë (syndrome de Löfgren)", k:"Bon pronostic, guérison spontanée habituelle. En Afrique, éliminer d'abord une tuberculose devant des adénopathies médiastinales."},
+{id:"pneumo-pancoast", sys:"pneumo", sn:false, n:"Triade de Pancoast-Tobias", t:["Névralgie cervico-brachiale C8-T1 (bord interne du bras)", "Syndrome de Claude Bernard-Horner", "Lyse des premières côtes"], m:"Cancer de l'apex pulmonaire", k:"Chez un fumeur avec douleur de l'épaule résistante, faire une radiographie du thorax."},
+{id:"pneumo-embolie-graisseuse", sys:"pneumo", sn:false, n:"Triade de l'embolie graisseuse", t:["Détresse respiratoire", "Troubles neurologiques (confusion, coma)", "Pétéchies (aisselles, conjonctives, thorax)"], m:"Embolie graisseuse, 24 à 72 heures après une fracture des os longs (fémur)", k:"Prévention par l'immobilisation et l'ostéosynthèse précoces des fractures."},
+{id:"dig-charcot", sys:"dig", sn:true, n:"Triade de Charcot (biliaire)", t:["Douleur de l'hypochondre droit", "Fièvre (frissons)", "Ictère"], m:"Angiocholite (lithiase de la voie biliaire principale), signes apparaissant dans cet ordre en 24 à 48 heures", k:"Pentade de Reynolds (angiocholite grave) = triade de Charcot + choc + confusion. Urgence : antibiotiques et drainage biliaire."},
+{id:"dig-whipple", sys:"dig", sn:false, n:"Triade de Whipple", t:["Symptômes évocateurs d'hypoglycémie", "Glycémie basse mesurée au même moment", "Disparition des symptômes après correction de la glycémie"], m:"Définition d'une hypoglycémie vraie ; évoque un insulinome si elle survient à jeun chez un non-diabétique", k:"Chez le diabétique, cause médicamenteuse (insuline, sulfamides) d'abord."},
+{id:"dig-saint", sys:"dig", sn:false, n:"Triade de Saint", t:["Lithiase biliaire", "Diverticulose colique", "Hernie hiatale"], m:"Association fréquente chez le sujet âgé occidentalisé", k:"Rappelle qu'une douleur abdominale peut avoir plusieurs causes chez le même patient."},
+{id:"dig-sandblom", sys:"dig", sn:false, n:"Triade de Sandblom", t:["Hémorragie digestive", "Douleur biliaire", "Ictère"], m:"Hémobilie (saignement dans les voies biliaires : traumatisme du foie, biopsie, tumeur)", k:"Penser à l'hémobilie devant une hémorragie digestive après un geste sur le foie."},
+{id:"dig-iia", sys:"dig", sn:true, n:"Triade de l'invagination intestinale aiguë", t:["Douleurs abdominales paroxystiques (crises de pleurs, pâleur)", "Vomissements", "Rectorragies (selles « gelée de groseille »)"], m:"Invagination intestinale aiguë du nourrisson (souvent après une infection virale)", k:"Boudin d'invagination à la palpation ; échographie, puis réduction par lavement si pas de péritonite."},
+{id:"dig-pylore", sys:"dig", sn:false, n:"Triade de la sténose hypertrophique du pylore", t:["Vomissements en jet, alimentaires, sans bile", "Olive pylorique palpable", "Ondulations péristaltiques visibles"], m:"Sténose hypertrophique du pylore (nourrisson de 3 à 6 semaines, garçon premier-né)", k:"Alcalose métabolique hypochlorémique ; diagnostic à l'échographie, traitement chirurgical (pylorotomie) après correction."},
+{id:"dig-plummer", sys:"dig", sn:false, n:"Triade de Plummer-Vinson (Kelly-Paterson)", t:["Dysphagie haute", "Anémie ferriprive", "Membranes (anneaux) œsophagiennes"], m:"Syndrome de Plummer-Vinson (femme d'âge moyen)", k:"Lésion précancéreuse : risque de cancer de l'hypopharynx et de l'œsophage."},
+{id:"dig-pancreatite-chronique", sys:"dig", sn:false, n:"Triade de la pancréatite chronique", t:["Calcifications pancréatiques", "Diabète", "Stéatorrhée (insuffisance pancréatique exocrine)"], m:"Pancréatite chronique évoluée (alcoolique ; forme tropicale en Afrique)", k:"La pancréatite chronique calcifiante tropicale touche l'adolescent et l'adulte jeune non alcoolique."},
+{id:"dig-zollinger", sys:"dig", sn:false, n:"Triade de Zollinger-Ellison", t:["Ulcères peptiques sévères, multiples ou atypiques", "Hypersécrétion acide gastrique", "Gastrinome (tumeur pancréatique ou duodénale)"], m:"Syndrome de Zollinger-Ellison", k:"Diarrhée associée fréquente ; chercher une néoplasie endocrinienne multiple de type 1."},
+{id:"dig-hemochromatose", sys:"dig", sn:false, n:"Triade de l'hémochromatose", t:["Cirrhose (hépatomégalie)", "Diabète", "Mélanodermie (peau bronzée)"], m:"Hémochromatose génétique évoluée (« diabète bronzé »)", k:"Diagnostic précoce par le coefficient de saturation de la transferrine et la ferritine ; traitement par saignées."},
+{id:"dig-budd-chiari", sys:"dig", sn:false, n:"Triade de Budd-Chiari", t:["Douleur abdominale (hypochondre droit)", "Ascite", "Hépatomégalie"], m:"Obstruction des veines sus-hépatiques (syndrome de Budd-Chiari)", k:"Chercher un état prothrombotique (syndrome myéloprolifératif, contraception, grossesse)."},
+{id:"dig-carcinoide", sys:"dig", sn:false, n:"Triade du syndrome carcinoïde", t:["Flush (bouffées vasomotrices)", "Diarrhée", "Atteinte valvulaire cardiaque droite"], m:"Tumeur neuroendocrine sécrétant de la sérotonine (métastases hépatiques)", k:"Dosage du 5-HIAA urinaire."},
+{id:"dig-courvoisier", sys:"dig", sn:false, n:"Triade de Courvoisier-Terrier", t:["Ictère cholestatique progressif, sans fièvre", "Grosse vésicule palpable", "Absence de douleur"], m:"Obstacle tumoral de la voie biliaire principale (cancer de la tête du pancréas, ampullome)", k:"La lithiase donne au contraire une vésicule scléro-atrophique, non palpable."},
+{id:"dig-dieulafoy", sys:"dig", sn:false, n:"Triade de Dieulafoy", t:["Hyperesthésie cutanée de la fosse iliaque droite", "Défense de la fosse iliaque droite", "Douleur au point de McBurney"], m:"Appendicite aiguë", k:"Formes trompeuses chez l'enfant, le sujet âgé et la femme enceinte."},
+{id:"hemato-insuff-medullaire", sys:"hemato", sn:true, n:"Triade de l'insuffisance médullaire", t:["Syndrome anémique (pâleur, dyspnée, asthénie)", "Syndrome infectieux (infections par neutropénie)", "Syndrome hémorragique (purpura par thrombopénie)"], m:"Insuffisance médullaire : leucémie aiguë, aplasie médullaire, envahissement de la moelle", k:"Faire un hémogramme et un myélogramme ; fièvre + neutropénie = antibiotiques en urgence."},
+{id:"hemato-drepano", sys:"hemato", sn:true, n:"Les trois grandes manifestations de la drépanocytose", t:["Anémie hémolytique chronique", "Crises vaso-occlusives douloureuses", "Infections graves (asplénie fonctionnelle : pneumocoque, salmonelles)"], m:"Drépanocytose (syndrome drépanocytaire majeur), très fréquente au Sénégal", k:"Pénicilline préventive, vaccins, acide folique, hydratation ; toute fièvre est une urgence."},
+{id:"hemato-shu", sys:"hemato", sn:true, n:"Triade du syndrome hémolytique et urémique", t:["Anémie hémolytique mécanique (schizocytes)", "Thrombopénie", "Insuffisance rénale aiguë"], m:"Microangiopathie thrombotique, surtout chez l'enfant après une diarrhée (E. coli producteur de shigatoxine, Shigella)", k:"Ne pas donner d'antibiotique ni d'antidiarrhéique dans les diarrhées sanglantes à E. coli entérohémorragique de l'enfant (risque de SHU)."},
+{id:"hemato-hodgkin", sys:"hemato", sn:false, n:"Les signes B (triade)", t:["Fièvre inexpliquée (> 38 °C)", "Sueurs nocturnes profuses", "Amaigrissement (> 10 % en 6 mois)"], m:"Lymphomes (Hodgkin et non hodgkiniens) : signes de mauvais pronostic", k:"Les mêmes signes évoquent aussi une tuberculose : biopsie ganglionnaire."},
+{id:"hemato-wiskott", sys:"hemato", sn:false, n:"Triade de Wiskott-Aldrich", t:["Eczéma", "Thrombopénie (petites plaquettes)", "Infections récidivantes (déficit immunitaire)"], m:"Syndrome de Wiskott-Aldrich (garçon, lié à l'X)", k:"Risque de lymphome ; la greffe de moelle est le traitement curateur."},
+{id:"hemato-felty", sys:"hemato", sn:false, n:"Triade de Felty", t:["Polyarthrite rhumatoïde", "Splénomégalie", "Neutropénie"], m:"Syndrome de Felty (polyarthrite rhumatoïde ancienne)", k:"Risque d'infections graves liées à la neutropénie."},
+{id:"nephro-nephritique", sys:"nephro", sn:true, n:"Triade du syndrome néphritique aigu", t:["Hématurie (urines « coca-cola »)", "Hypertension artérielle", "Œdèmes"], m:"Glomérulonéphrite aiguë post-infectieuse (après une angine ou une infection cutanée à streptocoque), fréquente chez l'enfant africain", k:"Oligurie et insuffisance rénale possibles ; complément C3 abaissé de façon transitoire."},
+{id:"nephro-cancer-rein", sys:"nephro", sn:false, n:"Triade du cancer du rein", t:["Hématurie", "Douleur lombaire", "Masse du flanc palpable"], m:"Cancer du rein (adénocarcinome à cellules claires), triade tardive et rare", k:"Aujourd'hui découvert surtout par hasard à l'échographie. Chez l'enfant, une masse du flanc évoque un néphroblastome."},
+{id:"nephro-pna", sys:"nephro", sn:true, n:"Triade de la pyélonéphrite aiguë", t:["Fièvre (frissons)", "Douleur lombaire", "Signes urinaires (brûlures, pollakiurie)"], m:"Pyélonéphrite aiguë", k:"ECBU avant les antibiotiques ; échographie pour chercher un obstacle (pyélonéphrite obstructive = drainage urgent)."},
+{id:"nephro-alport", sys:"nephro", sn:false, n:"Triade d'Alport", t:["Néphropathie hématurique évoluant vers l'insuffisance rénale", "Surdité de perception", "Anomalies oculaires (lenticône)"], m:"Syndrome d'Alport (anomalie du collagène IV, souvent lié à l'X)", k:"Enquête familiale ; contre-indication des médicaments ototoxiques."},
+{id:"nephro-prune-belly", sys:"nephro", sn:false, n:"Triade du prune-belly", t:["Absence de la musculature abdominale", "Cryptorchidie bilatérale", "Anomalies de l'appareil urinaire (dilatations)"], m:"Syndrome de prune-belly (garçon)", k:"Risque d'infections urinaires et d'insuffisance rénale."},
+{id:"endoc-diabete", sys:"endoc", sn:true, n:"Syndrome cardinal du diabète", t:["Polyurie", "Polydipsie", "Polyphagie (avec amaigrissement)"], m:"Diabète déséquilibré (hyperglycémie importante)", k:"Avec amaigrissement rapide chez un sujet jeune : diabète de type 1, risque d'acidocétose."},
+{id:"endoc-pheo", sys:"endoc", sn:false, n:"Triade de Ménard", t:["Céphalées", "Sueurs", "Palpitations"], m:"Phéochromocytome (surtout lors de poussées d'HTA)", k:"Dosage des métanéphrines ; jamais de bêtabloquant seul avant un alphabloquant."},
+{id:"endoc-basedow", sys:"endoc", sn:false, n:"Triade de Basedow", t:["Goitre diffus vasculaire", "Exophtalmie", "Thyrotoxicose"], m:"Maladie de Basedow (auto-immune, anticorps anti-récepteurs de la TSH)", k:"L'exophtalmie et le myxœdème prétibial sont propres au Basedow. Arrêter le tabac (aggrave l'œil)."},
+{id:"endoc-conn", sys:"endoc", sn:false, n:"Triade de Conn", t:["Hypertension artérielle", "Hypokaliémie", "Alcalose métabolique"], m:"Hyperaldostéronisme primaire (adénome de Conn)", k:"Rapport aldostérone/rénine élevé ; scanner des surrénales."},
+{id:"endoc-athlete", sys:"endoc", sn:false, n:"Triade de la femme athlète", t:["Déficit énergétique (troubles alimentaires)", "Aménorrhée", "Ostéoporose (fractures de fatigue)"], m:"Sportive de haut niveau, danseuse", k:"Corriger l'apport énergétique avant tout."},
+{id:"gyneco-preeclampsie", sys:"gyneco", sn:true, n:"Triade de la pré-éclampsie", t:["Hypertension artérielle", "Protéinurie", "Œdèmes"], m:"Pré-éclampsie (après 20 semaines d'aménorrhée)", k:"Les œdèmes ne font plus partie de la définition, mais leur apparition brutale doit alerter. Risques : éclampsie, HELLP, hématome rétroplacentaire."},
+{id:"gyneco-hellp", sys:"gyneco", sn:true, n:"Triade du HELLP syndrome", t:["Hémolyse (Hemolysis)", "Cytolyse hépatique (Elevated Liver enzymes)", "Thrombopénie (Low Platelets)"], m:"Complication de la pré-éclampsie", k:"Douleur épigastrique en barre au 3e trimestre : doser plaquettes et transaminases."},
+{id:"gyneco-geu", sys:"gyneco", sn:true, n:"Triade de la grossesse extra-utérine", t:["Retard de règles (aménorrhée)", "Douleurs pelviennes", "Métrorragies (peu abondantes, noirâtres)"], m:"Grossesse extra-utérine", k:"βhCG + échographie pelvienne ; un choc chez une femme jeune fait penser à une GEU rompue."},
+{id:"gyneco-hrp", sys:"gyneco", sn:true, n:"Triade de l'hématome rétroplacentaire", t:["Douleur abdominale brutale, permanente (« coup de poignard »)", "Métrorragies noirâtres peu abondantes", "Contracture utérine (« utérus de bois »)"], m:"Hématome rétroplacentaire (souvent sur pré-éclampsie)", k:"Urgence : extraction fœtale et surveillance de la coagulation (CIVD)."},
+{id:"gyneco-praevia", sys:"gyneco", sn:true, n:"Triade du placenta prævia", t:["Hémorragie de sang rouge", "Indolore", "Utérus souple (relâché entre les contractions)"], m:"Placenta prævia (insertion basse du placenta), au 3e trimestre", k:"Toucher vaginal interdit avant l'échographie (risque d'hémorragie massive)."},
+{id:"gyneco-bandl", sys:"gyneco", sn:true, n:"Triade de pré-rupture utérine", t:["Contractions violentes et subintrantes", "Anneau de Bandl (utérus en sablier)", "Signe de Frommel (ligaments ronds tendus en cordes)"], m:"Syndrome de pré-rupture utérine au cours d'un travail dystocique", k:"Césarienne en urgence ; arrêter les ocytociques."},
+{id:"gyneco-chorioamniotite", sys:"gyneco", sn:false, n:"Triade de la chorioamniotite", t:["Fièvre maternelle", "Tachycardie fœtale", "Liquide amniotique fétide ou utérus douloureux"], m:"Infection intra-amniotique (rupture prolongée des membranes)", k:"Antibiotiques et accouchement ; risque d'infection néonatale."},
+{id:"gyneco-mole", sys:"gyneco", sn:false, n:"Triade de la môle hydatiforme", t:["Métrorragies du 1er trimestre", "Utérus trop gros pour l'âge de la grossesse", "βhCG très élevées"], m:"Môle hydatiforme (maladie trophoblastique)", k:"Signes sympathiques exagérés (vomissements, pré-éclampsie précoce, hyperthyroïdie). Surveillance des βhCG après aspiration (risque de choriocarcinome)."},
+{id:"gyneco-meigs", sys:"gyneco", sn:false, n:"Triade de Demons-Meigs", t:["Tumeur bénigne de l'ovaire (fibrome)", "Ascite", "Épanchement pleural"], m:"Syndrome de Demons-Meigs", k:"Ascite et épanchement disparaissent après l'ablation de la tumeur."},
+{id:"gyneco-sopk", sys:"gyneco", sn:false, n:"Triade de Stein-Leventhal", t:["Troubles des règles (spanioménorrhée, aménorrhée)", "Hirsutisme (hyperandrogénie)", "Obésité"], m:"Syndrome des ovaires polykystiques", k:"Cause fréquente d'infertilité ; associé à l'insulinorésistance et au syndrome métabolique."},
+{id:"gyneco-endometriose", sys:"gyneco", sn:false, n:"Triade de l'endométriose", t:["Dysménorrhée (règles douloureuses)", "Dyspareunie profonde", "Infertilité"], m:"Endométriose", k:"Dysménorrhée secondaire et invalidante chez une femme jeune : y penser."},
+{id:"ped-bebe-secoue", sys:"ped", sn:true, n:"Triade du bébé secoué", t:["Hématome sous-dural", "Hémorragies rétiniennes", "Encéphalopathie (troubles de conscience, convulsions)"], m:"Syndrome du bébé secoué (maltraitance)", k:"Signalement obligatoire ; fond d'œil et imagerie cérébrale chez le nourrisson avec convulsions inexpliquées."},
+{id:"ped-pierre-robin", sys:"ped", sn:false, n:"Triade de Pierre Robin", t:["Micrognathie (rétrognathie)", "Glossoptose (langue qui tombe en arrière)", "Fente palatine"], m:"Séquence de Pierre Robin (nouveau-né)", k:"Risque d'obstruction respiratoire et de difficultés d'alimentation : coucher sur le ventre."},
+{id:"ped-kwashiorkor", sys:"ped", sn:true, n:"Triade du kwashiorkor", t:["Œdèmes bilatéraux prenant le godet", "Lésions cutanées et des cheveux (dépigmentation, desquamation)", "Apathie et anorexie"], m:"Malnutrition aiguë sévère œdémateuse (après le sevrage)", k:"Prise en charge selon le protocole OMS (F-75, F-100, ATPE) et recherche d'infections."},
+{id:"ped-atopie", sys:"ped", sn:false, n:"Triade atopique", t:["Dermatite atopique (eczéma)", "Asthme", "Rhinite allergique (rhino-conjonctivite)"], m:"Terrain atopique (« marche atopique » de l'enfant)", k:"L'eczéma du nourrisson précède souvent l'asthme puis la rhinite."},
+{id:"rhumato-odonoghue", sys:"rhumato", sn:false, n:"Triade malheureuse de O'Donoghue", t:["Rupture du ligament croisé antérieur", "Lésion du ligament collatéral médial", "Lésion du ménisque médial"], m:"Entorse grave du genou (valgus-flexion-rotation externe, football)", k:"Le tiroir antérieur et le test de Lachman évaluent le ligament croisé antérieur ; IRM."},
+{id:"rhumato-coude", sys:"rhumato", sn:false, n:"Triade terrible du coude", t:["Luxation du coude", "Fracture de la tête radiale", "Fracture de la coronoïde"], m:"Traumatisme grave du coude (chute sur la main)", k:"Lésion instable, de traitement chirurgical."},
+{id:"rhumato-sjogren", sys:"rhumato", sn:false, n:"Triade de Gougerot-Sjögren", t:["Sécheresse oculaire (kératoconjonctivite sèche)", "Sécheresse buccale (xérostomie)", "Polyarthrite (ou autre connectivite)"], m:"Syndrome de Gougerot-Sjögren", k:"Test de Schirmer, biopsie des glandes salivaires accessoires ; risque de lymphome."},
+{id:"rhumato-behcet", sys:"rhumato", sn:false, n:"Triade de Behçet", t:["Aphtose buccale récidivante", "Aphtose génitale", "Uvéite"], m:"Maladie de Behçet (vascularite)", k:"Test pathergique, atteintes neurologiques et vasculaires (thromboses) à rechercher."},
+{id:"orl-meniere", sys:"orl", sn:false, n:"Triade de Ménière", t:["Vertiges rotatoires en crises", "Acouphènes (et plénitude de l'oreille)", "Hypoacousie (surdité de perception fluctuante)"], m:"Maladie de Ménière (hydrops endolymphatique)", k:"Crises de quelques heures ; la surdité s'aggrave avec le temps."},
+{id:"orl-gradenigo", sys:"orl", sn:false, n:"Triade de Gradenigo", t:["Otite moyenne suppurée", "Paralysie du VI (diplopie)", "Douleur rétro-orbitaire (névralgie du V)"], m:"Pétrosite (infection de la pointe du rocher)", k:"Complication grave d'une otite négligée : scanner et antibiotiques IV."},
+{id:"orl-trotter", sys:"orl", sn:false, n:"Triade de Trotter", t:["Surdité de transmission (otite séreuse unilatérale)", "Névralgie mandibulaire (V3)", "Immobilité du voile du palais"], m:"Cancer du rhinopharynx (cavum)", k:"Une otite séreuse unilatérale chez l'adulte impose l'examen du cavum."},
+{id:"orl-jacod", sys:"orl", sn:false, n:"Triade de Jacod", t:["Ophtalmoplégie (atteinte des nerfs oculomoteurs)", "Amaurose (cécité)", "Névralgie du trijumeau"], m:"Extension d'un cancer du rhinopharynx vers la base du crâne (syndrome du carrefour pétro-sphénoïdal)", k:"Signe d'envahissement de la base du crâne."},
+{id:"orl-glaucome", sys:"orl", sn:false, n:"Triade du glaucome aigu", t:["Œil rouge très douloureux", "Baisse brutale de la vision (halos colorés)", "Mydriase aréactive (œil dur)"], m:"Glaucome aigu par fermeture de l'angle", k:"Urgence : nausées et vomissements peuvent égarer vers une cause digestive. Ne jamais dilater la pupille."},
+{id:"tox-opiaces", sys:"tox", sn:false, n:"Triade de l'intoxication aux opiacés", t:["Coma (troubles de la conscience)", "Myosis serré (en tête d'épingle)", "Dépression respiratoire (bradypnée)"], m:"Intoxication aux opioïdes (héroïne, morphine, tramadol)", k:"Naloxone IV en titration ; surveiller la récidive (durée d'action courte)."},
+{id:"tox-organophosphores", sys:"tox", sn:true, n:"Triade du syndrome cholinergique", t:["Signes muscariniques (myosis, hypersécrétions, bradycardie, diarrhée)", "Signes nicotiniques (fasciculations, paralysies)", "Signes centraux (confusion, convulsions, coma)"], m:"Intoxication aux insecticides organophosphorés ou carbamates (fréquente en milieu agricole)", k:"Atropine à fortes doses répétées et pralidoxime ; décontamination cutanée des soignants aussi."},
+{id:"tox-serotonine", sys:"tox", sn:false, n:"Triade du syndrome sérotoninergique", t:["Troubles mentaux (agitation, confusion)", "Dysautonomie (sueurs, tachycardie, hyperthermie)", "Anomalies neuromusculaires (myoclonies, clonus, hyperréflexie)"], m:"Excès de sérotonine (association d'antidépresseurs, tramadol)", k:"Arrêter les médicaments en cause ; benzodiazépines."},
+{id:"tox-smn", sys:"tox", sn:false, n:"Triade du syndrome malin des neuroleptiques", t:["Hyperthermie", "Rigidité musculaire", "Troubles de la conscience (avec dysautonomie)"], m:"Syndrome malin des neuroleptiques", k:"CPK très élevées ; arrêter le neuroleptique et réanimer."},
+{id:"psy-beck", sys:"psy", sn:false, n:"Triade cognitive de Beck", t:["Vision négative de soi", "Vision négative du monde", "Vision négative de l'avenir"], m:"Dépression (modèle cognitif)", k:"Base de la thérapie cognitive de la dépression ; le désespoir sur l'avenir est un signe de risque suicidaire."},
+{id:"psy-macdonald", sys:"psy", sn:false, n:"Triade de Macdonald", t:["Énurésie tardive", "Pyromanie", "Cruauté envers les animaux"], m:"Signes de l'enfance associés aux comportements violents futurs (valeur prédictive discutée)", k:"Ces signes témoignent surtout de maltraitances ou de carences dans l'enfance."}
+];
+const TRI_BY = {}; TRIADES.forEach(x=>{ TRI_BY[x.id]=x; });
+UI.tri={view:'fiches', sys:'all', sn:false, q:''};
+function triMatch(x){ const u=UI.tri; if(u.sys!=='all' && x.sys!==u.sys) return false; if(u.sn && !x.sn) return false; const q=fold(u.q.trim()); if(!q) return true;
+  return fold(x.n+' '+x.t.join(' ')+' '+x.m+' '+x.k).includes(q); }
+function triHas(id){ return Object.values(S.cards).some(c=>c.tri===id); }
+function triAdd(id){
+  const x=TRI_BY[id]; if(!x||triHas(id)) return 0;
+  [ {front:'**'+x.n+'**\nQuels sont ses 3 éléments ?', back:x.t.map(s=>'- '+s).join('\n')+'\n\n**Évoque :** '+x.m, hint:''},
+    {front:'Quelle triade associe :\n'+x.t.map(s=>'- '+s).join('\n'), back:'**'+x.n+'**\n\n'+x.m, hint:x.k}
+  ].forEach(f=>saveCard(newCard({...f, type:'qa', tri:id})));
+  return 2;
+}
+function triFiche(x){
+  const has=triHas(x.id);
+  return `<details class="syn" data-tri="${x.id}" ${UI.triOpen===x.id?'open':''}><summary><span>${esc(x.n)}${x.sn?' <span class="badge sn">Sénégal</span>':''}</span>${I.chev}</summary><div class="syn-body">
+    <ol class="tri-ol">${x.t.map(s=>'<li>'+esc(s)+'</li>').join('')}</ol>
+    <p><strong>Évoque :</strong> ${esc(x.m)}</p>
+    <p class="syn-key"><strong>À retenir.</strong> ${esc(x.k)}</p>
+    ${has?`<div class="row"><span class="badge">Dans tes révisions</span><button class="btn btn-ghost" data-act="start" data-mode="cram" data-scope="tri" data-tri="${x.id}">Me tester sur cette triade</button></div>`
+        :`<button class="btn btn-soft" data-act="tri-add" data-id="${x.id}">${I.plus} Ajouter à mes révisions (2 cartes)</button>`}
+  </div></details>`;
+}
+function triList(){
+  const u=UI.tri; const ord=Object.keys(TRI_SYS); const list=TRIADES.filter(triMatch).sort((a,b)=>ord.indexOf(a.sys)-ord.indexOf(b.sys));
+  if(!list.length) return '<p class="muted">Aucune triade ne correspond à cette recherche.</p>';
+  if(u.view==='table'){
+    let rows=''; let cur='';
+    for(const x of list){ if(x.sys!==cur){ cur=x.sys; rows+=`<tr class="sysrow"><td colspan="3">${esc(TRI_SYS[cur])}</td></tr>`; }
+      rows+=`<tr><td>${esc(x.n)}${x.sn?' <span class="badge sn">Sénégal</span>':''}</td><td>${x.t.map((s,i)=>(i+1)+'. '+esc(s)).join('<br>')}</td><td>${esc(x.m)}</td></tr>`; }
+    return `<p class="small muted">Fais glisser le tableau vers la gauche pour voir toutes les colonnes.</p><div class="tbl-wrap" tabindex="0"><table><thead><tr><th>Triade</th><th>Les 3 éléments</th><th>Évoque</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  let html=''; let cur='';
+  for(const x of list){ if(x.sys!==cur){ cur=x.sys; const n=list.filter(y=>y.sys===cur).length; html+=`<h3 class="syn-sys">${esc(TRI_SYS[cur])} <span class="small muted">· ${n}</span></h3>`; } html+=triFiche(x); }
+  return html;
+}
+function triSheet(){
+  const u=UI.tri; const mine=new Set(Object.values(S.cards).filter(c=>c.tri).map(c=>c.tri)).size;
+  const nTest=liveCards('tri').length; const nSn=TRIADES.filter(x=>x.sn).length;
+  const missing=TRIADES.filter(x=>triMatch(x)&&!triHas(x.id)).length;
+  return sheetTop('Triades')+`
+   <p>${TRIADES.length} triades de médecine, dont ${nSn} fréquentes au Sénégal et en Afrique (marquées « Sénégal »). Chaque triade donne ses 3 éléments, ce qu'elle évoque et le point à retenir.</p>
+   <div class="syn-tools">
+    <div class="seg" role="group" aria-label="Présentation"><button data-act="tri-view" data-v="fiches" aria-pressed="${u.view==='fiches'}">Fiches</button><button data-act="tri-view" data-v="table" aria-pressed="${u.view==='table'}">Tableau</button></div>
+    <div class="seg" role="group" aria-label="Lesquelles"><button data-act="tri-sn" data-v="0" aria-pressed="${!u.sn}">Toutes</button><button data-act="tri-sn" data-v="1" aria-pressed="${u.sn}">Fréquentes au Sénégal (${nSn})</button></div>
+    <label class="field">Appareil<select id="triSys" data-input="tri-sys"><option value="all" ${u.sys==='all'?'selected':''}>Tous les appareils</option>${Object.entries(TRI_SYS).map(([k,l])=>`<option value="${k}" ${u.sys===k?'selected':''}>${esc(l)} (${TRIADES.filter(x=>x.sys===k).length})</option>`).join('')}</select></label>
+    <div class="search">${I.search}<input type="search" id="triSearch" placeholder="Chercher une triade ou un signe" value="${esc(u.q)}" data-input="tri-q" aria-label="Chercher une triade ou un signe"></div>
+    <div class="stack">${nTest?`<button class="btn btn-primary" data-act="start" data-mode="cram" data-scope="tri">Me tester (${nTest} cartes)</button>`:''}
+      ${missing?`<button class="btn btn-soft" data-act="tri-add-all">Tout ajouter à mes révisions (${missing})</button>`:''}</div>
+    <p class="small muted">${mine} triade${mine>1?'s':''} dans tes révisions. En cas de différence, c'est le cours de ton professeur qui fait foi.</p>
+   </div>
+   <div id="triList" class="stack">${triList()}</div>`;
 }
 
 // ---------- Démarrage ----------
