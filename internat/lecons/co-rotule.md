@@ -9,6 +9,7 @@ V- CONCLUSION
 ## I- INTRODUCTION
 - ==Fracture de la rotule== (patella) : fracture ==articulaire== d'un os sésamoïde inclus dans l'==appareil extenseur du genou== (tendon quadricipital, rotule, tendon rotulien).
 - Adulte ; mécanisme ==direct== (chute sur le genou, tableau de bord) ou ==indirect== (contraction brutale du quadriceps genou fléchi).
+- Rappel : la rotule augmente le ==bras de levier== du ==quadriceps== ; les ==ailerons rotuliens== (rétinaculums) transmettent aussi une partie de la force d'extension, ce qui explique qu'une extension active puisse persister quand ils sont intacts.
 - Enjeux : ==restaurer l'appareil extenseur== (extension active du genou) et la ==congruence articulaire== (prévenir l'==arthrose fémoro-patellaire==).
 
 ## II- SIGNES
