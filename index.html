@@ -1408,7 +1408,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 36; // à changer avec VERSION dans sw.js
+const APP_VER = 37; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -4100,7 +4100,7 @@ function modSheet(){
   return h;
 }
 // ---------- Cartes prêtes : faites à partir des objectifs des cours de la promo ----------
-const READY=/*READY*/{"cardio-1":23,"cardio-10":16,"cardio-11":13,"cardio-12":15,"cardio-2":26,"cardio-3":19,"cardio-4":20,"cardio-5":19,"cardio-6":13,"cardio-7":20,"cardio-8":13,"cardio-9":16,"dig-1":22,"dig-2":26,"dig-3":21,"dig-4":19,"dig-5":14,"dig-6":14,"dig-7":27,"endoc-1":18,"endoc-2":16,"endoc-3":24,"endoc-4":17,"endoc-6":27,"gen-1":23,"gen-2":17,"gen-3":14,"gen-5":18,"gen-6":13,"hemato-1":4,"hemato-11":22,"hemato-12":16,"hemato-13":13,"hemato-15":17,"hemato-17":22,"hemato-2":16,"hemato-3":15,"hemato-4":22,"hemato-6":13,"hemato-7":13,"hemato-9":18,"hemsemio-1":18,"hemsemio-2":23,"hemsemio-3":14,"nephro-1":23,"nephro-2":14,"nephro-3":14,"nephro-4":20,"nephro-5":19,"nephro-6":17,"nephro-7":13,"nephro-8":15,"nephro-9":15,"neuro-1":17,"neuro-2":16,"neuro-3":23,"neuro-4":14,"neuro-5":22,"neuro-6":16,"neuro-7":19,"neuro-9":18,"rhumato-2":20,"rhumato-3":17}/*/READY*/;
+const READY=/*READY*/{"biochim-1":18,"biochim-2":12,"biochim-3":18,"biochim-4":15,"biochim-5":11,"biochim-7":16,"cardio-1":23,"cardio-10":16,"cardio-11":13,"cardio-12":15,"cardio-2":26,"cardio-3":19,"cardio-4":20,"cardio-5":19,"cardio-6":13,"cardio-7":20,"cardio-8":13,"cardio-9":16,"dig-1":22,"dig-2":26,"dig-3":21,"dig-4":19,"dig-5":14,"dig-6":14,"dig-7":27,"endoc-1":18,"endoc-2":16,"endoc-3":24,"endoc-4":17,"endoc-6":27,"gen-1":23,"gen-2":17,"gen-3":14,"gen-5":18,"gen-6":13,"hemato-1":4,"hemato-11":22,"hemato-12":16,"hemato-13":13,"hemato-15":17,"hemato-17":22,"hemato-2":16,"hemato-3":15,"hemato-4":22,"hemato-6":13,"hemato-7":13,"hemato-9":18,"hemsemio-1":18,"hemsemio-2":23,"hemsemio-3":14,"immuno-1":30,"immuno-2":18,"immuno-3":14,"immuno-4":13,"immuno-5":15,"immuno-6":15,"nephro-1":23,"nephro-2":14,"nephro-3":14,"nephro-4":20,"nephro-5":19,"nephro-6":17,"nephro-7":13,"nephro-8":15,"nephro-9":15,"neuro-1":17,"neuro-2":16,"neuro-3":23,"neuro-4":14,"neuro-5":22,"neuro-6":16,"neuro-7":19,"neuro-9":18,"rhumato-2":20,"rhumato-3":17}/*/READY*/;
 const READY_DATA={};
 async function readyLoad(chap){ if(READY_DATA[chap]) return READY_DATA[chap]; const r=await fetch('cours/cartes/'+chap+'.json'); if(!r.ok) throw new Error('http'); return READY_DATA[chap]=await r.json(); }
 const readyHas = chap => Object.values(S.cards).some(c=>c.ready===chap);
