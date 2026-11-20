@@ -150,6 +150,7 @@ input::placeholder,textarea::placeholder{color:var(--muted);opacity:.75}
 .today .eyebrow{color:inherit;opacity:.75}
 .plan{display:flex;flex-direction:column;gap:6px}
 .plan-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 10px;align-items:center;text-align:left;width:100%;padding:9px 12px;border-radius:var(--r-sm);border:1px solid color-mix(in srgb,currentColor 22%,transparent);background:color-mix(in srgb,currentColor 7%,transparent);color:inherit;font:inherit;cursor:pointer}
+.gs-mini{font-size:.8125rem;opacity:.85;min-height:36px}.gs-mini.warn{opacity:1;font-weight:700}
 .plan-row:disabled{cursor:default;opacity:.8}
 .plan-row .pr-name{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .plan-row .pr-n{font-family:var(--font-display);font-weight:700;font-size:1.3rem;grid-row:span 2;font-variant-numeric:tabular-nums}
@@ -1630,6 +1631,7 @@ function homeSection(k){
       ${intRereadHTML()}
       ${n?`<button class="btn btn-line" data-act="aud-start" data-scope="all">${I.ear} Écouter mes cartes (mains libres)</button>`:''}
       <button class="btn btn-ghost" data-act="gs-open">${I.search} Chercher dans tout XamXam</button>
+      ${gsMini()}
       ${w?`<button class="btn btn-ghost today-weak" data-act="start" data-mode="hard" data-scope="s:${w.id}">Point faible : ${esc(w.name)} (${plural(w.n,'carte')} à retravailler)</button>`:''}
     </section>`;
   }
@@ -2160,6 +2162,7 @@ function grade(g){
   updateDueDot(); nextCard();
 }
 function sessionDone(){
+  if(typeof gsSchedule==='function' && GS.token && GS.gist){ clearTimeout(GS.timer); GS.timer=setTimeout(()=>gsSync(false), 800); }
   const s=SESS; const mins=Math.max(1,Math.round((now()-s.start)/MIN));
   const pct=s.done?Math.round(s.ok/s.done*100):0;
   const missed=[...new Set(s.missed)].filter(id=>S.cards[id]); UI.lastMissed=missed;
@@ -2823,8 +2826,9 @@ function examToCards(e, only){
 // Les fichiers (PDF, photos…) ne sont pas synchronisés : seulement le texte (cartes, notes, examens, résultats).
 const GS={ token:lsGet('xamxam.gh')||'', gist:lsGet('xamxam.gist')||'', login:lsGet('xamxam.ghlogin')||'', last:+(lsGet('xamxam.synced')||0), busy:false, err:'', timer:null, applying:false };
 const GS_FILE='xamxam-sync.json';
+async function gfetch(url, opt){ const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(), 30000); try{ return await fetch(url, {...opt, signal:ctl.signal}); } finally{ clearTimeout(to); } }
 async function gh(method, path, body){
-  const r=await fetch('https://api.github.com'+path, {method, headers:{Authorization:'Bearer '+GS.token, Accept:'application/vnd.github+json', ...(body?{'Content-Type':'application/json'}:{})}, body:body?JSON.stringify(body):undefined, cache:'no-store'});
+  const r=await gfetch('https://api.github.com'+path, {method, headers:{Authorization:'Bearer '+GS.token, Accept:'application/vnd.github+json', ...(body?{'Content-Type':'application/json'}:{})}, body:body?JSON.stringify(body):undefined, cache:'no-store'});
   if(r.status===401) throw Object.assign(new Error('auth'),{code:'auth'});
   if(r.status===404) throw Object.assign(new Error('404'),{code:'missing'});
   if(!r.ok) throw Object.assign(new Error('http'),{code:'http', status:r.status});
@@ -2853,11 +2857,11 @@ async function gsSync(manual){
   GS.busy=true; GS.err=''; gsPaint();
   try{
     const g=await gh('GET','/gists/'+GS.gist); const f=g.files&&g.files[GS_FILE];
-    let text=f?(f.truncated?await (await fetch(f.raw_url,{cache:'no-store'})).text():f.content):'';
+    let text=f?(f.truncated?await (await gfetch(f.raw_url,{cache:'no-store'})).text():f.content):''; GS.ver=(g.history&&g.history[0]&&g.history[0].version)||GS.ver;
     let changed=false;
     if(text){ const d=JSON.parse(text); if(d&&d.app==='xamxam'){ GS.applying=true; changed=applyRemote(d); writeLocal(); GS.applying=false; } }
     const mine=JSON.stringify(syncSnapshot());
-    if(mine!==text) await gh('PATCH','/gists/'+GS.gist,{files:{[GS_FILE]:{content:mine}}});
+    if(mine!==text){ const res=await gh('PATCH','/gists/'+GS.gist,{files:{[GS_FILE]:{content:mine}}}); GS.ver=(res.history&&res.history[0]&&res.history[0].version)||GS.ver; clearTimeout(GS.verify); GS.verify=setTimeout(gsCheck, 4000); }
     GS.last=now(); lsSet('xamxam.synced', String(GS.last));
     if(changed){ onDataChanged(true); if(manual) toast('Données des autres appareils récupérées'); }
     else if(manual) toast('Tout est à jour');
@@ -2869,7 +2873,12 @@ async function gsSync(manual){
   }
   GS.busy=false; gsPaint();
 }
-function gsSchedule(){ if(!GS.token||!GS.gist||GS.applying) return; clearTimeout(GS.timer); GS.timer=setTimeout(()=>gsSync(false), 15000); }
+function gsSchedule(){ if(!GS.token||!GS.gist||GS.applying) return; clearTimeout(GS.timer); const wait=Math.max(4000, 10000-(now()-GS.last)); GS.timer=setTimeout(()=>gsSync(false), wait); }
+// Vérification légère : y a-t-il une version plus récente envoyée par un autre appareil ?
+async function gsCheck(){
+  if(!GS.token||!GS.gist||GS.busy||!navigator.onLine||document.visibilityState==='hidden') return;
+  try{ const c=await gh('GET','/gists/'+GS.gist+'/commits?per_page=1'); const v=c&&c[0]&&c[0].version; if(v && v!==GS.ver) gsSync(false); }catch{}
+}
 async function gsConnect(token){
   GS.token=token.trim(); GS.err=''; GS.busy=true; gsPaint();
   try{
@@ -2907,7 +2916,11 @@ function gsPanel(){
    ${GS.err?`<div class="notice warn">${esc(GS.err)}</div>`:''}
   </section>`;
 }
-function gsPaint(){ const el=$('#gsPanel'); if(el) el.outerHTML=gsPanel(); }
+function gsMini(){ if(!PWA) return '';
+  if(!GS.token||!GS.gist) return `<button class="btn btn-ghost gs-mini" id="gsMini" data-act="tab" data-tab="me">Relier ton téléphone et ton ordinateur (Moi → Synchroniser)</button>`;
+  if(GS.err) return `<button class="btn btn-ghost gs-mini warn" id="gsMini" data-act="gs-now">Synchronisation en échec · toucher pour réessayer</button>`;
+  return `<button class="btn btn-ghost gs-mini" id="gsMini" data-act="gs-now">${GS.busy?'Synchronisation…':GS.last?'Synchronisé '+ago(GS.last)+' · toucher pour synchroniser':'Synchroniser maintenant'}</button>`; }
+function gsPaint(){ const el=$('#gsPanel'); if(el) el.outerHTML=gsPanel(); const m=$('#gsMini'); if(m) m.outerHTML=gsMini(); }
 
 // ---------- Partager des questions ----------
 function shareCardData(c){ return {type:c.type, front:c.front, back:c.back, hint:c.hint||'', choices:c.choices||[], answer:c.answer||[], img:c.img||'', imgSide:c.imgSide||'front', exam:c.exam||'', chap:c.chap||'', syn:c.syn||'', tri:c.tri||''}; }
@@ -3940,7 +3953,7 @@ function intPickSheet(){
    <p class="small muted">Le tirage préfère les questions dont tu connais déjà le plan.</p>`;
 }
 function mergeInternat(inc){ if(!inc) return false; let ch=false; const T=S.internat;
-  for(const k of ['prog','fiches']) for(const [id,v] of Object.entries(inc[k]||{})){ const l=T[k][id]; if(v && (!l||(v.t||0)>(l.t||0))){ T[k][id]=v; ch=true; } }
+  for(const k of ['prog','fiches','rev']) for(const [id,v] of Object.entries(inc[k]||{})){ T[k]=T[k]||{}; const l=T[k][id]; if(v && (!l||(v.t||0)>(l.t||0))){ T[k][id]=v; ch=true; } }
   for(const [id,arr] of Object.entries(inc.tries||{})){ const seen=new Set((T.tries[id]||[]).map(a=>a.t)); for(const a of arr||[]) if(a && !seen.has(a.t)){ (T.tries[id]=T.tries[id]||[]).push(a); seen.add(a.t); ch=true; } if(T.tries[id]) T.tries[id].sort((a,b)=>a.t-b.t); }
   const cm={}; for(const c of T.custom) cm[c.id]=c; for(const c of inc.custom||[]){ const l=cm[c.id]; if(c && c.id && (!l||(c.t||0)>(l.t||0))){ cm[c.id]=c; ch=true; } } T.custom=Object.values(cm);
   return ch;
@@ -5458,7 +5471,8 @@ function triSheet(){
 loadLocal(); exrLoad(); buildIndex(); itrLoad(); applyTheme(); updateDueDot(); render();
 cloudInit(); aiInit();
 if(PWA){ handleSharedLaunch(); setTimeout(()=>gsSync(false), 1500); window.addEventListener('online', ()=>gsSync(false));
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && now()-GS.last>2*MIN) gsSync(false); else if(document.visibilityState==='hidden'){ clearTimeout(GS.timer); gsSync(false); } }); }
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ if(now()-GS.last>2*MIN) gsSync(false); else gsCheck(); } else if(document.visibilityState==='hidden'){ clearTimeout(GS.timer); gsSync(false); } });
+  setInterval(gsCheck, 60000); window.addEventListener('focus', ()=>gsCheck()); }
 if(PWA){
   window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); installEvt=e; if(UI.tab==='me') rerender(); });
   window.addEventListener('appinstalled', ()=>{ installEvt=null; toast('XamXam est installée'); });
