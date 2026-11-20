@@ -1144,7 +1144,7 @@ function mergeData(inc){
     for(const k of Object.keys(S.stats.days)) if(!days[k]) toInc.docs.add('stats');
   } else if(Object.keys(S.stats.days).length) toInc.docs.add('stats');
   // préférences
-  if(inc.prefs){ if((inc.prefs.t||0)>(S.prefs.t||0)){ S.prefs={...clone(DEFAULT_PREFS), ...inc.prefs}; fromInc.docs.add('prefs'); } else if((S.prefs.t||0)>(inc.prefs.t||0)) toInc.docs.add('prefs'); }
+  if(inc.prefs){ if((inc.prefs.t||0)>(S.prefs.t||0) || (!S.prefs.t && Object.keys(inc.prefs).length)){ S.prefs={...clone(DEFAULT_PREFS), ...inc.prefs}; fromInc.docs.add('prefs'); } else if((S.prefs.t||0)>(inc.prefs.t||0)) toInc.docs.add('prefs'); }
   else if(S.prefs.t) toInc.docs.add('prefs');
   migratePrefs();
   return {fromInc, toInc};
@@ -1408,6 +1408,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
+const APP_VER = 33; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -2824,6 +2825,7 @@ function examToCards(e, only){
 // Chaque appareil garde ses données ; elles sont fusionnées dans un fichier « xamxam-sync.json »
 // rangé dans un gist secret du compte GitHub de l'étudiant. La clé (jeton « gist ») reste sur l'appareil.
 // Les fichiers (PDF, photos…) ne sont pas synchronisés : seulement le texte (cartes, notes, examens, résultats).
+let SWREG=null; function swUpdate(){ try{ if(SWREG) SWREG.update().catch(()=>{}); }catch{} }
 const GS={ token:lsGet('xamxam.gh')||'', gist:lsGet('xamxam.gist')||'', login:lsGet('xamxam.ghlogin')||'', last:+(lsGet('xamxam.synced')||0), busy:false, err:'', timer:null, applying:false };
 const GS_FILE='xamxam-sync.json';
 async function gfetch(url, opt){ const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(), 30000); try{ return await fetch(url, {...opt, signal:ctl.signal}); } finally{ clearTimeout(to); } }
@@ -2834,7 +2836,7 @@ async function gh(method, path, body){
   if(!r.ok) throw Object.assign(new Error('http'),{code:'http', status:r.status});
   return r.json();
 }
-function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams, internat:S.internat, drive:DRV}; }
+function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, appv:APP_VER, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams, internat:S.internat, drive:DRV}; }
 function applyRemote(d){
   const before=JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
   const notes=Object.entries(d.notes||{}).map(([id,n])=>({...n, id}));
@@ -2859,7 +2861,7 @@ async function gsSync(manual){
     const g=await gh('GET','/gists/'+GS.gist); const f=g.files&&g.files[GS_FILE];
     let text=f?(f.truncated?await (await gfetch(f.raw_url,{cache:'no-store'})).text():f.content):''; GS.ver=(g.history&&g.history[0]&&g.history[0].version)||GS.ver;
     let changed=false;
-    if(text){ const d=JSON.parse(text); if(d&&d.app==='xamxam'){ GS.applying=true; changed=applyRemote(d); writeLocal(); GS.applying=false; } }
+    if(text){ const d=JSON.parse(text); if(d&&d.app==='xamxam'){ GS.otherVer=+d.appv||0; if(GS.otherVer>APP_VER) swUpdate(); GS.applying=true; changed=applyRemote(d); writeLocal(); GS.applying=false; } }
     const mine=JSON.stringify(syncSnapshot());
     if(mine!==text){ const res=await gh('PATCH','/gists/'+GS.gist,{files:{[GS_FILE]:{content:mine}}}); GS.ver=(res.history&&res.history[0]&&res.history[0].version)||GS.ver; clearTimeout(GS.verify); GS.verify=setTimeout(gsCheck, 4000); }
     GS.last=now(); lsSet('xamxam.synced', String(GS.last));
@@ -2900,6 +2902,7 @@ function ago(t){ const m=Math.round((now()-t)/MIN); if(m<1) return "à l'instant
 function gsPanel(){
   const on=GS.token&&GS.gist;
   return `<section class="panel stack" id="gsPanel"><h3>Synchroniser mes appareils</h3>
+   <p class="small muted">Version de XamXam sur cet appareil : <strong>v${APP_VER}</strong>. Elle se met à jour toute seule.</p>
    ${on?`<p class="small">Relié au compte GitHub <strong>${esc(GS.login||'?')}</strong>. ${GS.busy?'Synchronisation…':GS.last?'Dernière synchronisation : '+ago(GS.last)+'.':''}</p>
      <p class="small muted">Tes cartes, notes, examens et résultats sont mis en commun avec tes autres appareils dès qu'il y a internet. Les fichiers (PDF, photos) restent sur chaque appareil.</p>
      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="gs-now" ${GS.busy?'disabled':''}>Synchroniser maintenant</button><button class="btn" style="flex:1" data-act="gs-off">Déconnecter</button></div>`
@@ -2919,7 +2922,8 @@ function gsPanel(){
 function gsMini(){ if(!PWA) return '';
   if(!GS.token||!GS.gist) return `<button class="btn btn-ghost gs-mini" id="gsMini" data-act="tab" data-tab="me">Relier ton téléphone et ton ordinateur (Moi → Synchroniser)</button>`;
   if(GS.err) return `<button class="btn btn-ghost gs-mini warn" id="gsMini" data-act="gs-now">Synchronisation en échec · toucher pour réessayer</button>`;
-  return `<button class="btn btn-ghost gs-mini" id="gsMini" data-act="gs-now">${GS.busy?'Synchronisation…':GS.last?'Synchronisé '+ago(GS.last)+' · toucher pour synchroniser':'Synchroniser maintenant'}</button>`; }
+  const old=GS.otherVer&&GS.otherVer<APP_VER?` · un autre appareil a encore la v${GS.otherVer}`:'';
+  return `<button class="btn btn-ghost gs-mini" id="gsMini" data-act="gs-now">v${APP_VER} · ${GS.busy?'Synchronisation…':GS.last?'Synchronisé '+ago(GS.last):'Synchroniser maintenant'}${old}</button>`; }
 function gsPaint(){ const el=$('#gsPanel'); if(el) el.outerHTML=gsPanel(); const m=$('#gsMini'); if(m) m.outerHTML=gsMini(); }
 
 // ---------- Partager des questions ----------
@@ -5476,7 +5480,19 @@ if(PWA){ handleSharedLaunch(); setTimeout(()=>gsSync(false), 1500); window.addEv
 if(PWA){
   window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); installEvt=e; if(UI.tab==='me') rerender(); });
   window.addEventListener('appinstalled', ()=>{ installEvt=null; toast('XamXam est installée'); });
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if('serviceWorker' in navigator){
+    const hadCtrl=!!navigator.serviceWorker.controller; let reloaded=false;
+    navigator.serviceWorker.register('sw.js').then(reg=>{ SWREG=reg; setInterval(swUpdate, 15*MIN); }).catch(()=>{});
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      if(!hadCtrl||reloaded) return;
+      const busy=()=>!!SESS || UI.sheetStack.length>0 || (typeof EXR!=='undefined'&&EXR&&!EXR.done) || (typeof ITR!=='undefined'&&!!ITR);
+      const go=()=>{ if(reloaded) return; reloaded=true; location.reload(); };
+      if(!busy()) go(); else { toast('Nouvelle version de XamXam : elle s\'installe dès que tu reviens à l\'accueil.', 4500); const iv=setInterval(()=>{ if(!busy()){ clearInterval(iv); go(); } }, 3000); }
+    });
+    document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') swUpdate(); });
+  }
+  // L'accueil se rafraîchit tout seul (nouveau jour, cartes qui deviennent à revoir)
+  setInterval(()=>{ if(document.visibilityState!=='visible' || SESS || UI.sheetStack.length) return; if(UI.tab==='home') render(); }, 3*MIN);
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch{}
 }
 </script>
