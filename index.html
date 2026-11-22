@@ -1202,6 +1202,9 @@ function nextSrs(srs, g, fuzz=true){
   s.reps=(s.reps||0)+1; s.last=t; s.lastGrade=g; return s;
 }
 const isLearning = c => c.srs.state==='learning'||c.srs.state==='relearning';
+// Cartes prêtes : elles restent en attente tant que la leçon n'est pas marquée « Appris »
+const isHeld = c => !!c.ready && statusOf(c.chap)<2;
+const isLive = c => !c.suspended && !isHeld(c);
 
 // ---------- Portée & files ----------
 function inScope(c, scope){
@@ -1231,7 +1234,7 @@ function scopeLabel(scope){
   if(k==='c') return CH[v]?CH[v].title:'Chapitre';
   return '';
 }
-function liveCards(scope){ return Object.values(S.cards).filter(c=>!c.suspended && inScope(c,scope)); }
+function liveCards(scope){ return Object.values(S.cards).filter(c=>isLive(c) && inScope(c,scope)); }
 function counts(scope){
   const t=now(), end=dayStart(t)+DAY, today=S.stats.days[dayKey()]||{n:0,r:0};
   let rev=0, lrn=0, nw=0, late=0; const dk=dayKey();
@@ -1408,7 +1411,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 40; // à changer avec VERSION dans sw.js
+const APP_VER = 41; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1617,7 +1620,7 @@ function homeSection(k){
     const c=counts('all'); const total=Object.keys(S.cards).length;
     if(!total) return `<section class="today"><p class="eyebrow">Pour commencer</p><h2>Ouvre tes cours</h2>
       <p>Tes matières, tes chapitres et l'espace Internat sont dans l'onglet Cours.</p>
-      <button class="btn btn-primary btn-lg" data-act="tab" data-tab="prog">Voir mes cours</button></section>`;
+      <button class="btn btn-primary btn-lg" data-act="tab" data-tab="prog">Voir mes cours</button>${readyProposeHTML()}</section>`;
     const n=c.rev+c.lrn+c.nw; const mins=Math.max(1,Math.round(n*avgSec()/60));
     const q=S.prefs.quick||10; const w=weakSpot(); const recent=recentCards('all').length;
     return `<section class="today"><p class="eyebrow">Révisions du jour</p>
@@ -1629,6 +1632,7 @@ function homeSection(k){
       :`<p>Tout est à jour pour aujourd'hui. Les cartes reviendront toutes seules le jour prévu.</p>${upcomingHTML(3, 3)}
         ${recent?`<button class="btn btn-line" data-act="start" data-mode="recent" data-scope="all">Consolider les cartes de la semaine (${recent})</button>`:''}
         <button class="btn btn-ghost" data-act="tab" data-tab="rev">Bachoter un module</button>`}
+      ${readyProposeHTML()}
       ${intRereadHTML()}
       ${n?`<button class="btn btn-line" data-act="aud-start" data-scope="all">${I.ear} Écouter mes cartes (mains libres)</button>`:''}
       <button class="btn btn-ghost" data-act="gs-open">${I.search} Chercher dans tout XamXam</button>
@@ -1716,7 +1720,7 @@ function homeSection(k){
     const from=daysUntil(semStart())>0?semStart():new Date();
     const days=Math.max(1, Math.round((midnight(revStart)-midnight(from))/DAY));
     const perWeek=Math.ceil(remaining/days*7);
-    const tomorrow=Object.values(S.cards).filter(c=>!c.suspended&&c.srs.state!=='new'&&c.srs.due>=dayStart()+DAY&&c.srs.due<dayStart()+2*DAY).length;
+    const tomorrow=Object.values(S.cards).filter(c=>isLive(c)&&c.srs.state!=='new'&&c.srs.due>=dayStart()+DAY&&c.srs.due<dayStart()+2*DAY).length;
     return `<section class="panel"><div class="section-title"><h3>Rythme conseillé</h3></div>
       <p>Il te reste <strong>${plural(remaining,'chapitre')}</strong> à apprendre et <strong>${plural(days,'jour')}</strong> avant la période de révision${ex.set?'':' (date estimée)'}.</p>
       <p style="margin-top:6px">Objectif : <strong>${perWeek} chapitres par semaine</strong>, soit environ ${Math.max(1,Math.round(perWeek/6))} par jour de cours. Marque un chapitre « Appris » quand tu le maîtrises.</p>
@@ -1767,6 +1771,7 @@ function chapterSheet(id){
 function cardRow(c){
   const s=c.srs; let when;
   if(c.suspended) when='Suspendue';
+  else if(isHeld(c)) when='En attente : leçon pas encore apprise';
   else if(s.state==='new') when='Nouvelle';
   else if(isLearning(c)) when='En apprentissage';
   else when='Revient le '+fmtShort(new Date(s.due));
@@ -1899,10 +1904,10 @@ function importPanel(){
 // ---------- Vue : Moi ----------
 function viewMe(){
   const p=S.prefs; const all=Object.values(S.cards);
-  const st={new:0,lrn:0,young:0,mature:0,susp:0};
-  all.forEach(c=>{ if(c.suspended) st.susp++; else if(c.srs.state==='new') st.new++; else if(isLearning(c)) st.lrn++; else if(c.srs.ivl>=21) st.mature++; else st.young++; });
+  const st={new:0,lrn:0,young:0,mature:0,susp:0,wait:0};
+  all.forEach(c=>{ if(c.suspended) st.susp++; else if(isHeld(c)) st.wait++; else if(c.srs.state==='new') st.new++; else if(isLearning(c)) st.lrn++; else if(c.srs.ivl>=21) st.mature++; else st.young++; });
   let r30=0, ok30=0, ms=0; for(const [k,v] of Object.entries(S.stats.days)){ ms+=v.ms||0; if(k>dayKey(now()-30*DAY)){ r30+=v.r||0; ok30+=v.ok||0; } }
-  const fc=[]; for(let i=1;i<=7;i++){ const a=dayStart()+i*DAY, b=a+DAY; fc.push(all.filter(c=>!c.suspended&&c.srs.state==='review'&&c.srs.due>=a&&c.srs.due<b).length); }
+  const fc=[]; for(let i=1;i<=7;i++){ const a=dayStart()+i*DAY, b=a+DAY; fc.push(all.filter(c=>isLive(c)&&c.srs.state==='review'&&c.srs.due>=a&&c.srs.due<b).length); }
   const fmax=Math.max(1,...fc);
   const ex=examDate();
   const hasEx=all.some(c=>c.example);
@@ -1910,7 +1915,7 @@ function viewMe(){
   <section class="panel"><h3>Statistiques</h3>
    <div class="kv"><span>Série actuelle</span><b>${plural(streak(),'jour')}</b><span>Réussite sur 30 jours</span><b>${r30?Math.round(ok30/r30*100)+' %':'–'}</b>
    <span>Cartes revues sur 30 jours</span><b>${r30}</b><span>Temps total de révision</span><b>${Math.floor(ms/HOUR)} h ${pad(Math.round(ms%HOUR/MIN))}</b>
-   <span>Nouvelles</span><b>${st.new}</b><span>En apprentissage</span><b>${st.lrn}</b><span>Jeunes (moins de 21 j)</span><b>${st.young}</b><span>Mûres (21 j et plus)</span><b>${st.mature}</b>${st.susp?`<span>Suspendues</span><b>${st.susp}</b>`:''}</div>
+   <span>Nouvelles</span><b>${st.new}</b><span>En apprentissage</span><b>${st.lrn}</b><span>Jeunes (moins de 21 j)</span><b>${st.young}</b><span>Mûres (21 j et plus)</span><b>${st.mature}</b>${st.susp?`<span>Suspendues</span><b>${st.susp}</b>`:''}${st.wait?`<span>En attente (leçon pas encore apprise)</span><b>${st.wait}</b>`:''}</div>
    <h3 style="margin-top:16px;font-size:0.9375rem">Cartes à revoir les 7 prochains jours</h3>
    <div class="fbars" style="margin-top:8px">${fc.map((n,i)=>{ const d=new Date(dayStart()+(i+1)*DAY); return `<span class="muted">${esc(fmtD(d,{weekday:'short',day:'numeric'}))}</span><span class="track"><i style="width:${n/fmax*100}%"></i></span><b class="mono">${n}</b>`; }).join('')}</div>
   </section>
@@ -2169,7 +2174,7 @@ function sessionDone(){
   const pct=s.done?Math.round(s.ok/s.done*100):0;
   const missed=[...new Set(s.missed)].filter(id=>S.cards[id]); UI.lastMissed=missed;
   const c=counts(s.scope); const left=s.mode==='srs'?c.rev+c.lrn+c.nw:0;
-  const a=dayStart()+DAY, tomorrow=Object.values(S.cards).filter(x=>!x.suspended&&x.srs.state!=='new'&&x.srs.due>=a&&x.srs.due<a+DAY).length;
+  const a=dayStart()+DAY, tomorrow=Object.values(S.cards).filter(x=>isLive(x)&&x.srs.state!=='new'&&x.srs.due>=a&&x.srs.due<a+DAY).length;
   const more=s.timeUp&&left>0;
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Fermer">${I.x}</button><div class="sess-bar"><i style="width:100%"></i></div></div>
    <div class="done"><svg viewBox="0 0 24 24" style="width:56px;height:56px;align-self:center;color:var(--good)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>
@@ -4035,7 +4040,7 @@ function stBar(p){ const w=i=>p.n?p.st[i]/p.n*100:0; return `<span class="bar" r
 function myScopeMods(){ const set=new Set(modsOf(myLvl(),0).map(m=>m.id)); for(const c of Object.values(S.cards)){ const ch=CH[c.chap]; if(ch) set.add(ch.mod); } return ALLMODS.filter(m=>set.has(m.id)); }
 function chapMetaMaps(){ const cc={}, dc={}; for(const c of Object.values(S.cards)) cc[c.chap]=(cc[c.chap]||0)+1; for(const d of Object.values(S.docs)) dc[d.chap]=(dc[d.chap]||0)+1; return {cc, dc}; }
 function chapRow(c, K, path){ const st=statusOf(c.id), n=K.cc[c.id]||0;
-  const meta=[path?esc(MODS[c.mod].short+' › '+SUBS[c.sub].name):'', n?plural(n,'carte'):'', S.notes[c.id]&&S.notes[c.id].text?'notes':'', K.dc[c.id]?plural(K.dc[c.id],'document'):'', L3INT[c.id]?'internat':'', READY[c.id]&&!readyHas(c.id)?'cartes prêtes':''].filter(Boolean).join(' · ');
+  const meta=[path?esc(MODS[c.mod].short+' › '+SUBS[c.sub].name):'', n?plural(n,'carte'):'', S.notes[c.id]&&S.notes[c.id].text?'notes':'', K.dc[c.id]?plural(K.dc[c.id],'document'):'', L3INT[c.id]?'internat':'', READY[c.id]?(!readyHas(c.id)?'cartes prêtes':st<2?'cartes en attente':''):''].filter(Boolean).join(' · ');
   return `<button class="chap" data-act="chap" data-id="${c.id}"><span class="chap-n">${pad(c.n)}</span><span class="chap-t">${esc(c.title)}${meta?`<span class="chap-meta">${meta}</span>`:''}</span><span class="pill s${st}">${STATUS[st]}</span></button>`; }
 function cahierCard(m, preview){ const p=progOf(modChaps(m)), ns=m.allSubs.length; const tag=preview?'div':'button';
   return `<${tag} class="cahier" ${preview?'':`data-act="mod-open" data-id="${m.id}"`} style="${cov(m.color)}">
@@ -4108,13 +4113,31 @@ async function readyAdd(chap){ const d=await readyLoad(chap); let n=0;
   d.cards.forEach((c,i)=>{ const id='P.'+chap+'.'+i; if(S.cards[id]) return; saveCard(newCard({id, chap, ready:chap, type:c[0]==='c'?'cloze':'qa', front:c[1], back:c[2]||'', hint:''})); n++; });
   updateDueDot(); return n; }
 function readyRemove(chap){ let n=0; for(const c of Object.values(S.cards)) if(c.ready===chap){ deleteCard(c.id); n++; } updateDueDot(); return n; }
-function readyPanel(chap){ const n=READY[chap]; if(!n) return ''; const has=readyHas(chap);
+// Règle : les cartes d'une leçon n'entrent dans les révisions qu'une fois la leçon marquée « Appris ».
+function readyPanel(chap){ const n=READY[chap]; if(!n) return ''; const has=readyHas(chap), st=statusOf(chap);
+  let body;
+  if(st>=2 && has) body=`<div class="row"><span class="badge">Dans tes révisions</span><button class="btn btn-ghost" data-act="ready-del" data-id="${chap}">Retirer</button></div>`;
+  else if(st>=2) body=`<p class="small">Tu as appris cette leçon : ses cartes peuvent entrer dans tes révisions.</p><button class="btn btn-primary" data-act="ready-add" data-id="${chap}">${I.plus} Ajouter les ${n} cartes à mes révisions</button>`;
+  else if(has) body=`<p class="small"><strong>En attente.</strong> Ces cartes ne viendront pas dans tes révisions tant que la leçon n'est pas marquée « Appris ».</p><div class="row"><button class="btn btn-soft" style="flex:1" data-act="ready-learned" data-id="${chap}">J'ai appris cette leçon</button><button class="btn btn-ghost" data-act="ready-del" data-id="${chap}">Retirer</button></div>`;
+  else body=`<p class="small">${st===1?'Tu as vu cette leçon en cours.':'Leçon pas encore vue.'} Ses cartes te seront proposées quand tu l'auras apprise.</p><button class="btn btn-soft" data-act="ready-learned" data-id="${chap}">J'ai appris cette leçon : ajouter ses ${n} cartes</button>`;
   return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Cartes prêtes</h3><span class="small muted">${n} cartes</span></div>
-    <p class="small muted">Faites à partir des objectifs de ton cours, avec ses définitions. Rien n'entre dans tes révisions sans ton accord.</p>
-    ${has?`<div class="row"><span class="badge">Dans tes révisions</span><button class="btn btn-ghost" data-act="ready-del" data-id="${chap}">Retirer</button></div>`:`<button class="btn btn-soft" data-act="ready-add" data-id="${chap}">${I.plus} Ajouter les ${n} cartes à mes révisions</button>`}</section>`; }
-function readySubPanel(s){ const chs=s.all.filter(c=>READY[c.id]); if(!chs.length) return ''; const todo=chs.filter(c=>!readyHas(c.id)); const n=todo.reduce((a,c)=>a+READY[c.id],0);
-  return todo.length?`<button class="btn btn-soft" data-act="ready-add-many" data-ids="${todo.map(c=>c.id).join(' ')}">${I.plus} Ajouter les cartes prêtes de ${plural(todo.length,'cours','cours')} (${n} cartes)</button>`
-    :`<div class="row"><span class="badge">Cartes prêtes dans tes révisions</span><button class="btn btn-ghost" data-act="ready-del-many" data-ids="${chs.map(c=>c.id).join(' ')}">Tout retirer</button></div>`; }
+    <p class="small muted">Faites à partir des objectifs de ton cours, avec ses définitions. Elles n'entrent dans tes révisions qu'une fois la leçon apprise.</p>${body}
+    <button class="btn btn-ghost" data-act="ready-read" data-id="${chap}">Lire les cartes sans les réviser</button><div id="readyRead" class="stack" style="gap:10px" hidden></div></section>`; }
+function readySubPanel(s){ const chs=s.all.filter(c=>READY[c.id]); if(!chs.length) return '';
+  const learned=chs.filter(c=>statusOf(c.id)>=2), todo=learned.filter(c=>!readyHas(c.id)), wait=chs.length-learned.length, added=chs.filter(c=>readyHas(c.id));
+  const n=todo.reduce((a,c)=>a+READY[c.id],0); const out=[];
+  if(todo.length) out.push(`<button class="btn btn-soft" data-act="ready-add-many" data-ids="${todo.map(c=>c.id).join(' ')}">${I.plus} Ajouter les cartes de ${plural(todo.length,'leçon apprise','leçons apprises')} (${n} cartes)</button>`);
+  if(wait) out.push(`<p class="small muted">${plural(wait,'leçon')} pas encore ${wait>1?'marquées':'marquée'} « Appris » : leurs cartes te seront proposées à ce moment-là.</p>`);
+  if(added.length) out.push(`<div class="row"><span class="badge">Cartes prêtes ajoutées : ${plural(added.length,'leçon')}</span><button class="btn btn-ghost" data-act="ready-del-many" data-ids="${added.map(c=>c.id).join(' ')}">Tout retirer</button></div>`);
+  return out.join(''); }
+// Accueil : propose les cartes des leçons apprises qui ne sont pas encore dans les révisions
+function readyProposeHTML(){ const ids=Object.keys(READY).filter(id=>CH[id]&&statusOf(id)>=2&&!readyHas(id)); if(!ids.length) return '';
+  const n=ids.reduce((a,id)=>a+READY[id],0);
+  return `<div class="stack" style="gap:6px"><p class="today-line" style="margin:0"><strong>${plural(ids.length,'leçon apprise','leçons apprises')}</strong> avec des cartes prêtes : ${ids.slice(0,3).map(id=>esc(CH[id].title)).join(' · ')}${ids.length>3?' …':''}</p>
+    <button class="btn btn-soft" data-act="ready-add-many" data-ids="${ids.join(' ')}">${I.plus} Ajouter leurs ${n} cartes à mes révisions</button></div>`; }
+function readyReadHTML(d){ return d.cards.map(c=>c[0]==='c'
+    ? `<div class="panel" style="padding:12px">${md(c[1].replace(/\{\{(.+?)\}\}/g,'**$1**'))}</div>`
+    : `<div class="panel" style="padding:12px"><p style="margin:0 0 6px"><strong>${esc(c[1])}</strong></p>${md(c[2]||'')}</div>`).join(''); }
 function subSheet(){
   const s=SUBS[UI.subId]; if(!s) return sheetTop('Sous-matière')+'<p>Cette sous-matière n\'existe plus.</p>';
   const m=MODS[s.mod], p=progOf(s.all), K=chapMetaMaps();
@@ -4223,7 +4246,12 @@ document.addEventListener('click', async e=>{
       S.custom.push({id:uid('x'), sub:UI.addSub, title:t.trim(), created:now(), t:now()}); saveLocal(); cloudPut('progress'); buildIndex(); closeSheet(); toast('Chapitre ajouté'); break; }
     case 'del-chap': armConfirm(a,'Confirmer la suppression',()=>{ const c=S.custom.find(x=>x.id===d.id); if(c){ c.del=true; c.t=now(); }
       Object.values(S.cards).filter(x=>x.chap===d.id).forEach(x=>{ x.chap=''; saveCard(x); }); saveLocal(); cloudPut('progress'); buildIndex(); closeSheet(); toast('Chapitre supprimé (ses cartes sont gardées sans chapitre)'); }); break;
-    case 'set-status': setStatus(d.id, +d.s); paintSheet(true); break;
+    case 'set-status': { const old=statusOf(d.id), s=+d.s; setStatus(d.id, s);
+      if(READY[d.id]){ const has=readyHas(d.id);
+        if(s>=2 && !has) toast(READY[d.id]+' cartes prêtes pour cette leçon : tu peux les ajouter à tes révisions plus bas.', 4200);
+        else if(s>=2 && old<2 && has) toast('Ses cartes entrent dans tes révisions.', 3200);
+        else if(s<2 && old>=2 && has) toast('Ses cartes sont mises en attente jusqu\'à ce que tu la marques « Appris ».', 4200); }
+      updateDueDot(); paintSheet(true); rerender(); break; }
     case 'note-edit': { const v=$('#noteView'), ta=$('#noteEdit'); if(ta.hidden){ ta.hidden=false; v.hidden=true; a.textContent='Terminé'; ta.focus(); } else { ta.hidden=true; v.hidden=false; v.innerHTML=ta.value?md(ta.value):'<p class="muted small">Pas de notes.</p>'; a.textContent=ta.value?'Modifier':'Écrire'; } break; }
     case 'lesson': {
       const id=d.id; const out=$('#lessonOut'); const prompt=buildLessonPrompt(id);
@@ -4238,9 +4266,13 @@ document.addEventListener('click', async e=>{
     case 'gen-for': UI.gen.chap=d.id; UI.gen.results=null; UI.gen.err=''; UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render(); break;
     case 'edit-card': openEditor(d.id||null, d.chap||(UI.tab==='rev'&&UI.rev.scope.startsWith('c:')?UI.rev.scope.slice(2):''), d.type); break;
     case 'sheet-back': audStop(); closeSheet(); break;
-    case 'ready-add': try{ const n=await readyAdd(d.id); toast(n?n+' cartes ajoutées. Elles arrivent peu à peu dans tes révisions du jour.':'Déjà dans tes révisions', 4000); }catch{ toast('Pas de connexion : réessaie avec internet.'); } paintSheet(true); break;
-    case 'ready-del': { const n=readyRemove(d.id); toast(n+' cartes retirées de tes révisions'); paintSheet(true); break; }
-    case 'ready-add-many': { let n=0; try{ for(const id of (d.ids||'').split(' ').filter(Boolean)) n+=await readyAdd(id); }catch{ toast('Pas de connexion : une partie seulement a été ajoutée.'); } if(n) toast(n+' cartes ajoutées. Elles arrivent peu à peu dans tes révisions du jour.', 4000); paintSheet(true); break; }
+    case 'ready-add': try{ const n=await readyAdd(d.id); toast(n?n+' cartes ajoutées. Elles arrivent peu à peu dans tes révisions du jour.':'Déjà dans tes révisions', 4000); }catch{ toast('Pas de connexion : réessaie avec internet.'); } paintSheet(true); rerender(); break;
+    case 'ready-learned': { if(statusOf(d.id)<2) setStatus(d.id,2); let n=0; try{ n=await readyAdd(d.id); }catch{ toast('Leçon marquée « Appris ». Pas de connexion : ajoute ses cartes plus tard.', 4000); updateDueDot(); paintSheet(true); rerender(); break; }
+      updateDueDot(); toast('Leçon marquée « Appris »'+(n?' : '+n+' cartes ajoutées, elles arrivent peu à peu dans tes révisions.':' : ses cartes entrent dans tes révisions.'), 4200); paintSheet(true); rerender(); break; }
+    case 'ready-read': { const box=$('#readyRead'); if(!box) break; if(!box.hidden){ box.hidden=true; a.textContent='Lire les cartes sans les réviser'; break; }
+      try{ box.innerHTML=readyReadHTML(await readyLoad(d.id)); box.hidden=false; a.textContent='Masquer les cartes'; }catch{ toast('Pas de connexion : réessaie avec internet.'); } break; }
+    case 'ready-del': { const n=readyRemove(d.id); toast(n+' cartes retirées de tes révisions'); paintSheet(true); rerender(); break; }
+    case 'ready-add-many': { let n=0; const ids=(d.ids||'').split(' ').filter(id=>id&&statusOf(id)>=2); try{ for(const id of ids) n+=await readyAdd(id); }catch{ toast('Pas de connexion : une partie seulement a été ajoutée.'); } if(n) toast(n+' cartes ajoutées. Elles arrivent peu à peu dans tes révisions du jour.', 4000); paintSheet(true); rerender(); break; }
     case 'ready-del-many': { if(!confirm('Retirer toutes les cartes prêtes de cette matière de tes révisions ? Leur progression sera effacée.')) break; let n=0; for(const id of (d.ids||'').split(' ').filter(Boolean)) n+=readyRemove(id); toast(n+' cartes retirées'); paintSheet(true); break; }
     case 'aud-start': audStart(d.scope||'all'); break;
     case 'aud-toggle': if(AUD.on){ audStop(); paintSheet(true); } else { AUD.on=true; audWake(true); audStep(); } break;
