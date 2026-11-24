@@ -985,7 +985,7 @@ function buildIndex(){
 const allChapters = () => Object.values(CH);
 
 // ---------- État ----------
-const S = { cards:{}, progress:{}, notes:{}, custom:[], stats:{days:{}}, prefs:clone(DEFAULT_PREFS), trash:{}, docs:{}, exams:{}, internat:{prog:{}, fiches:{}, tries:{}, custom:[]} };
+const S = { cards:{}, progress:{}, notes:{}, custom:[], stats:{days:{}}, prefs:clone(DEFAULT_PREFS), trash:{}, docs:{}, exams:{}, internat:{prog:{}, fiches:{}, tries:{}, custom:[]}, fsync:{gist:'', up:{}} };
 const LS_KEY='xamxam.v1';
 function loadLocal(){
   const raw=lsGet(LS_KEY); if(!raw){ migratePrefs(); return; }
@@ -993,6 +993,7 @@ function loadLocal(){
     S.cards=d.cards||{}; S.progress=d.progress||{}; S.notes=d.notes||{}; S.custom=d.custom||[];
     S.stats=d.stats||{days:{}}; S.prefs={...clone(DEFAULT_PREFS), ...(d.prefs||{})}; S.trash=d.trash||{}; S.docs=d.docs||{}; S.exams=d.exams||{};
     S.internat={prog:{}, fiches:{}, tries:{}, custom:[], ...(d.internat||{})};
+    S.fsync={gist:'', up:{}, ...(d.fsync||{})};
   }catch{}
   migratePrefs();
 }
@@ -1002,7 +1003,7 @@ function migratePrefs(){ const p=S.prefs; if(!p.level && (Object.keys(S.progress
 let localTimer;
 function saveLocal(){ clearTimeout(localTimer); localTimer=setTimeout(writeLocal, 250); }
 function writeLocal(){
-  const d={cards:S.cards, progress:S.progress, notes:S.notes, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams, internat:S.internat};
+  const d={cards:S.cards, progress:S.progress, notes:S.notes, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams, internat:S.internat, fsync:S.fsync};
   if(!lsSet(LS_KEY, JSON.stringify(d))){ // trop lourd (images) : on garde le texte sur le téléphone, les images restent dans la sauvegarde en ligne
     const light={...d, cards:Object.fromEntries(Object.entries(S.cards).map(([k,c])=>[k, c.img?{...c, img:'', imgCloud:true}:c]))};
     lsSet(LS_KEY, JSON.stringify(light));
@@ -1411,7 +1412,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 41; // à changer avec VERSION dans sw.js
+const APP_VER = 42; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -2610,8 +2611,8 @@ function chapDocs(id){ return Object.values(S.docs).filter(d=>d.chap===id).sort(
 function docsSection(id){
   const list=chapDocs(id);
   return `<section class="panel"><div class="section-title"><h3>Mes documents de cours</h3><button class="btn btn-ghost" data-act="doc-add" data-id="${id}">${I.plus} Ajouter</button></div>
-   ${list.length?`<div class="clist">${list.map(d=>`<button class="citem" data-act="doc-open" data-id="${d.id}"><span style="min-width:0"><span class="q">${esc(d.name)}</span><span class="meta"><span class="badge">${fileIcon(fileKind(d.name,d.type))}</span><span>${fmtSize(d.size)} · ${fmtShort(new Date(d.created))}</span></span></span>${I.chev}</button>`).join('')}</div>`
-     :'<p class="muted small">Ajoute ton cours : PDF, Word, PowerPoint, photos ou tout autre fichier. Il reste sur ton téléphone, même sans internet.</p>'}
+   ${list.length?`<div class="clist">${list.map(d=>`<button class="citem" data-act="doc-open" data-id="${d.id}"><span style="min-width:0"><span class="q">${esc(d.name)}</span><span class="meta"><span class="badge">${fileIcon(fileKind(d.name,d.type))}</span><span>${fmtSize(d.size)} · ${fmtShort(new Date(d.created))}${d.big?' · trop lourd pour la synchro (plus de 5 Mo)':''}</span></span></span>${I.chev}</button>`).join('')}</div>`
+     :'<p class="muted small">Ajoute ton cours : PDF, Word, PowerPoint, photos ou tout autre fichier. Il s\'ouvre même sans internet, et passe sur tes autres appareils reliés.</p>'}
    ${drv('chap',id).length?`<h4 class="drv-h">Sur le Drive de la promo</h4>${driveList(drv('chap',id))}`:''}
   </section>`;
 }
@@ -2638,7 +2639,11 @@ function docViewSheet(){
 }
 async function openDoc(meta, chap){
   const blob=await fget(meta.id).catch(()=>null);
-  UI.docView={meta, chap, blob, url:null, text:null, err:blob?'':'Fichier introuvable sur ce téléphone (ajouté depuis un autre appareil ?).'};
+  const why=meta.big?"Ce fichier fait plus de 5 Mo : il est resté sur l'appareil où tu l'as ajouté."
+    :(GS.token&&GS.gist)?"Ce fichier n'est pas encore arrivé sur cet appareil. Il se télécharge dès qu'il y a internet : réessaie dans un instant."
+    :"Fichier introuvable sur cet appareil. Relie tes appareils (Moi → Synchroniser) pour retrouver tes documents partout.";
+  UI.docView={meta, chap, blob, url:null, text:null, err:blob?'':why};
+  if(!blob && !meta.big && GS.token && GS.gist) gsSync(false);
   const k=fileKind(meta.name, meta.type);
   if(blob && k==='img') UI.docView.url=URL.createObjectURL(blob);
   openSheet(docViewSheet);
@@ -2842,7 +2847,7 @@ async function gh(method, path, body){
   if(!r.ok) throw Object.assign(new Error('http'),{code:'http', status:r.status});
   return r.json();
 }
-function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, appv:APP_VER, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams, internat:S.internat, drive:DRV}; }
+function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, appv:APP_VER, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams, internat:S.internat, drive:DRV, docs:S.docs, fsync:S.fsync}; }
 function applyRemote(d){
   const before=JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
   const notes=Object.entries(d.notes||{}).map(([id,n])=>({...n, id}));
@@ -2857,10 +2862,48 @@ function applyRemote(d){
   for(const id of Object.keys(S.exams)){ if(S.trash[id] && S.trash[id]>=(S.exams[id].t||0)) delete S.exams[id]; }
   if(mergeInternat(d.internat)) ex++;
   if(mergeDrive(d.drive)) ex++;
+  // Documents des leçons : la fiche arrive ici, le fichier lui-même passe par gsFiles()
+  for(const x of Object.values(d.docs||{})){ if(!x||!x.id||S.trash[x.id]) continue; const l=S.docs[x.id];
+    if(!l){ S.docs[x.id]={...x}; ex++; } else if((x.t||0)>(l.t||0)){ S.docs[x.id]={...l, ...x}; ex++; } }
+  for(const id of Object.keys(S.docs)) if(S.trash[id]){ delete S.docs[id]; fdel(id).catch(()=>{}); FHAVE.delete(id); ex++; }
+  if(d.fsync){ if(d.fsync.gist && !S.fsync.gist) S.fsync.gist=d.fsync.gist; for(const id of Object.keys(d.fsync.up||{})) if(!S.trash[id] && !S.fsync.up[id]){ S.fsync.up[id]=1; ex++; } }
   return r.fromInc.cards.length || r.fromInc.notes.length || r.fromInc.docs.size || ex || before!==JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
 }
+// ---------- Documents : fichiers et photos, dans un second gist (lu seulement quand il manque un fichier) ----------
+const GS_DOCS='xamxam-docs.json', DOC_MAX=5*1048576, FHAVE=new Set();
+const docFile = id => 'xd-'+id+'.txt';
+function fileMetas(){ const m={}; for(const d of Object.values(S.docs)) if(d&&d.id) m[d.id]=d; for(const e of Object.values(S.exams)) for(const f of (e&&e.files)||[]) if(f&&f.id) m[f.id]=f; return m; }
+function blobToDataURL(b){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(r.error); r.readAsDataURL(b); }); }
+async function hasFile(id){ if(FHAVE.has(id)) return true; const b=await fget(id).catch(()=>null); if(b) FHAVE.add(id); return !!b; }
+async function shrinkImage(b){ // les grosses photos sont réduites pour le voyage (l'original reste sur cet appareil)
+  if(!/^image\/(jpeg|png|webp)$/.test(b.type||'') || b.size<1.2*1048576) return b;
+  try{ const bmp=await createImageBitmap(b); const k=Math.min(1, 2000/Math.max(bmp.width,bmp.height)); const c=document.createElement('canvas'); c.width=Math.round(bmp.width*k); c.height=Math.round(bmp.height*k);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height); const out=await new Promise(r=>c.toBlob(r,'image/jpeg',0.82)); return out&&out.size<b.size?out:b; }catch{ return b; } }
+async function gsDocsGist(){ if(S.fsync.gist) return S.fsync.gist;
+  for(let page=1; page<=5; page++){ const list=await gh('GET','/gists?per_page=100&page='+page); const f=list.find(x=>x.files&&x.files[GS_DOCS]); if(f) return S.fsync.gist=f.id; if(list.length<100) break; }
+  const g=await gh('POST','/gists',{description:'XamXam · documents de mes cours (ne pas supprimer)', public:false, files:{[GS_DOCS]:{content:'{"app":"xamxam-docs"}'}}});
+  return S.fsync.gist=g.id; }
+async function gsFiles(){
+  const metas=fileMetas(), up=S.fsync.up; let got=0, dirty=false;
+  // 1. Récupérer les fichiers ajoutés sur un autre appareil
+  const missing=[]; for(const id of Object.keys(metas)) if(up[id] && !(await hasFile(id))) missing.push(id);
+  if(missing.length && S.fsync.gist){ const g=await gh('GET','/gists/'+S.fsync.gist);
+    for(const id of missing){ const f=g.files&&g.files[docFile(id)]; if(!f) continue;
+      try{ const txt=f.truncated?await (await gfetch(f.raw_url,{cache:'no-store'})).text():f.content; const blob=await (await fetch(txt)).blob(); await fput(id, blob); FHAVE.add(id); got++; }catch{} } }
+  // 2. Envoyer les fichiers ajoutés sur cet appareil
+  for(const [id,m] of Object.entries(metas)){ if(up[id]||m.big) continue; const b=await fget(id).catch(()=>null); if(!b) continue; FHAVE.add(id);
+    const s=await shrinkImage(b); if(s.size>DOC_MAX){ m.big=true; m.t=now(); dirty=true; continue; }
+    const gist=await gsDocsGist();
+    try{ await gh('PATCH','/gists/'+gist,{files:{[docFile(id)]:{content:await blobToDataURL(s)}}}); up[id]=1; dirty=true; }
+    catch(e){ if(e&&e.code==='http'&&(e.status===413||e.status===422)){ m.big=true; m.t=now(); dirty=true; } else throw e; } }
+  // 3. Effacer du gist les fichiers supprimés
+  if(S.fsync.gist){ const gone=Object.keys(up).filter(id=>!metas[id] && S.trash[id]);
+    if(gone.length){ try{ await gh('PATCH','/gists/'+S.fsync.gist,{files:Object.fromEntries(gone.map(id=>[docFile(id),null]))}); }catch{} gone.forEach(id=>delete up[id]); dirty=true; } }
+  if(dirty||got) saveLocal(); return got;
+}
 async function gsSync(manual){
-  if(!GS.token||!GS.gist||GS.busy) return;
+  if(!GS.token||!GS.gist) return;
+  if(GS.busy){ GS.again=true; return; }
   if(!navigator.onLine){ if(manual){ GS.err='Pas de connexion internet.'; gsPaint(); } return; }
   GS.busy=true; GS.err=''; gsPaint();
   try{
@@ -2868,6 +2911,7 @@ async function gsSync(manual){
     let text=f?(f.truncated?await (await gfetch(f.raw_url,{cache:'no-store'})).text():f.content):''; GS.ver=(g.history&&g.history[0]&&g.history[0].version)||GS.ver;
     let changed=false;
     if(text){ const d=JSON.parse(text); if(d&&d.app==='xamxam'){ GS.otherVer=+d.appv||0; if(GS.otherVer>APP_VER) swUpdate(); GS.applying=true; changed=applyRemote(d); writeLocal(); GS.applying=false; } }
+    try{ if(await gsFiles()) changed=true; }catch{}
     const mine=JSON.stringify(syncSnapshot());
     if(mine!==text){ const res=await gh('PATCH','/gists/'+GS.gist,{files:{[GS_FILE]:{content:mine}}}); GS.ver=(res.history&&res.history[0]&&res.history[0].version)||GS.ver; clearTimeout(GS.verify); GS.verify=setTimeout(gsCheck, 4000); }
     GS.last=now(); lsSet('xamxam.synced', String(GS.last));
@@ -2880,6 +2924,7 @@ async function gsSync(manual){
       :'Synchronisation impossible pour le moment. Elle reprendra toute seule.';
   }
   GS.busy=false; gsPaint();
+  if(GS.again){ GS.again=false; gsSchedule(); }
 }
 function gsSchedule(){ if(!GS.token||!GS.gist||GS.applying) return; clearTimeout(GS.timer); const wait=Math.max(4000, 10000-(now()-GS.last)); GS.timer=setTimeout(()=>gsSync(false), wait); }
 // Vérification légère : y a-t-il une version plus récente envoyée par un autre appareil ?
@@ -2910,7 +2955,7 @@ function gsPanel(){
   return `<section class="panel stack" id="gsPanel"><h3>Synchroniser mes appareils</h3>
    <p class="small muted">Version de XamXam sur cet appareil : <strong>v${APP_VER}</strong>. Elle se met à jour toute seule.</p>
    ${on?`<p class="small">Relié au compte GitHub <strong>${esc(GS.login||'?')}</strong>. ${GS.busy?'Synchronisation…':GS.last?'Dernière synchronisation : '+ago(GS.last)+'.':''}</p>
-     <p class="small muted">Tes cartes, notes, examens et résultats sont mis en commun avec tes autres appareils dès qu'il y a internet. Les fichiers (PDF, photos) restent sur chaque appareil.</p>
+     <p class="small muted">Tes cartes, le statut de tes leçons, tes notes, tes documents (PDF, photos, fichiers), tes examens et tes réglages sont mis en commun avec tes autres appareils dès qu'il y a internet. Les documents de plus de 5 Mo restent sur l'appareil où tu les as ajoutés.</p>
      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="gs-now" ${GS.busy?'disabled':''}>Synchroniser maintenant</button><button class="btn" style="flex:1" data-act="gs-off">Déconnecter</button></div>`
    :`<p class="small">Pour retrouver les mêmes cartes, notes et examens sur ton téléphone et ton ordinateur. Ça passe par ton compte GitHub, une seule fois par appareil :</p>
      <ol class="small" style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">
@@ -4348,7 +4393,7 @@ document.addEventListener('click', async e=>{
     case 'exam-edit': startExamImport(S.exams[UI.examId].mod, S.exams[UI.examId]); break;
     case 'exam-cards': examToCards(S.exams[UI.examId]); break;
     case 'exam-file': { const f=(S.exams[UI.examId].files||[]).find(x=>x.id===d.id); if(f) openDoc(f, null); break; }
-    case 'exam-del': armConfirm(a,"Confirmer : supprimer l'examen",()=>{ const e=S.exams[UI.examId]; (e.files||[]).forEach(f=>fdel(f.id).catch(()=>{})); delete S.exams[UI.examId]; S.trash[UI.examId]=now(); if(EXR&&EXR.examId===UI.examId){ EXR=null; exrSave(); } saveExams(); toast('Examen supprimé'); closeSheet(); }); break;
+    case 'exam-del': armConfirm(a,"Confirmer : supprimer l'examen",()=>{ const e=S.exams[UI.examId]; (e.files||[]).forEach(f=>{ S.trash[f.id]=now(); FHAVE.delete(f.id); fdel(f.id).catch(()=>{}); }); delete S.exams[UI.examId]; S.trash[UI.examId]=now(); if(EXR&&EXR.examId===UI.examId){ EXR=null; exrSave(); } saveExams(); toast('Examen supprimé'); closeSheet(); }); break;
     case 'exr-start': { if(d.id) UI.examId=d.id; if(UI.sheetStack[UI.sheetStack.length-1]===examResultSheet) UI.sheetStack.pop(); exrStart(UI.examId); break; }
     case 'exr-resume': { if(d.id) UI.examId=d.id; else if(EXR) UI.examId=EXR.examId;
       if(exrLive(UI.examId)) exrOpen(); else { EXR=null; exrSave(); toast("Cet examen a changé depuis : recommence-le."); if(UI.sheetStack.length) paintSheet(true); else rerender(); } break; }
@@ -4370,7 +4415,7 @@ document.addEventListener('click', async e=>{
         else { const old=(S.notes[v.chap]||{}).text||''; saveNote(v.chap, (old?old.trim()+'\n\n':'')+'## '+v.meta.name.replace(/\.[a-z0-9]+$/i,'')+'\n\n'+t.slice(0,IMP_MAX)); toast('Texte ajouté à tes notes'); } }
       catch{ toast('Impossible de lire ce document.'); }
       a.disabled=false; a.textContent='Texte → mes notes'; break; }
-    case 'doc-del': armConfirm(a,'Confirmer la suppression',()=>{ const id=UI.docView.meta.id; delete S.docs[id]; fdel(id).catch(()=>{}); saveLocal(); toast('Document supprimé'); closeSheet(); }); break;
+    case 'doc-del': armConfirm(a,'Confirmer la suppression',()=>{ const id=UI.docView.meta.id; delete S.docs[id]; S.trash[id]=now(); FHAVE.delete(id); fdel(id).catch(()=>{}); saveLocal(); toast('Document supprimé'); closeSheet(); }); break;
     case 'export-json': exportJSON(); break;
     case 'export-anki': exportAnki(); break;
     case 'copy-export': copyText($('#exportText').value, $('#exportText')); break;
