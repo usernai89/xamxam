@@ -1698,7 +1698,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 49; // à changer avec VERSION dans sw.js
+const APP_VER = 50; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1746,34 +1746,32 @@ function buildCardPrompt(o){
   const typesTxt={qa:'question / réponse', cloze:'texte à trous', qcm:'QCM à réponses multiples (style examen)'};
   const types=o.types.map(t=>typesTxt[t]).join(', ');
   const lv=(()=>{ try{ const l=LEVELS.find(x=>x.id===myLvl()); return l?l.name+' ('+l.an+')':'L3'; }catch{ return 'L3'; } })();
-  let src='';
-  if(o.source==='text' && o.text.trim()) src='\nVoici la leçon (le cours de l\'étudiant) :\n"""\n'+o.text.trim().slice(0,14000)+'\n"""\n';
-  if(o.source==='photo') src='\nLa leçon (le cours de l\'étudiant) est sur la ou les photos jointes.\n';
-  const hasCourse=!!src;
-  const nCours=Math.max(1,Math.round(o.n*0.9)), nPlus=Math.max(0,o.n-nCours);
   return `${AI_GO}
 
-Tu es un enseignant de médecine qui prépare des flashcards pour un étudiant en ${lv} de la Faculté de médecine de l'UCAD à Dakar (Sénégal). Les cartes doivent l'aider à réussir ses examens et à préparer le concours de l'internat.
+Tu es un enseignant de médecine qui prépare des flashcards pour un étudiant en ${lv} de la Faculté de médecine de l'UCAD à Dakar (Sénégal). Les cartes se font UNIQUEMENT à partir de son cours, donné ci-dessous.
 
 Module : ${ctx.mod}${ctx.sub?' › '+ctx.sub:''}
 ${ctx.title?'Leçon : '+ctx.title:''}
-${o.focus.trim()?'Notion à travailler : '+o.focus.trim():''}
-${src}
-Écris ${o.n} cartes, ${o.level==='internat'?"niveau concours de l'internat (détails, diagnostics différentiels, pièges)":"niveau examen (l'essentiel, solide et précis)"}. Types à utiliser, en les mélangeant : ${types}.
+
+Voici la leçon (le cours de l'étudiant) :
+"""
+${String(o.text||'').trim().slice(0,14000)}
+"""
+
+Écris jusqu'à ${o.n} cartes, ${o.level==='internat'?"niveau concours de l'internat (les détails, les diagnostics différentiels et les pièges que contient la leçon)":"niveau examen (l'essentiel de la leçon, solide et précis)"}. Types à utiliser, en les mélangeant : ${types}.
 
 Méthode, dans cet ordre :
-1. ${hasCourse?"Lis la leçon et relève ses objectifs de cours : ceux qui sont écrits (« Objectifs », « À la fin de ce cours, l'étudiant doit… ») ou, s'il n'y en a pas, ceux qui découlent de ses titres et de ses parties.":"Établis la liste des objectifs de cours habituels de cette leçon dans une faculté de médecine francophone (définir, décrire, expliquer, citer, diagnostiquer, traiter…)."}
-2. Environ 90 % des cartes (${nCours} cartes) répondent à ces objectifs, en les couvrant TOUS avant d'ajouter quoi que ce soit d'autre. ${hasCourse?"Base-toi exactement sur la leçon : reprends ses définitions, ses classifications, ses chiffres et ses formulations mot pour mot, ou de très près si une reformulation est nécessaire. Ne contredis jamais la leçon et n'en change pas les valeurs.":"Utilise les définitions classiques des cours et des référentiels, formulées de façon simple et exacte."}
-3. Les ${nPlus} dernières cartes (environ 10 %) ajoutent ce qui est utile et sûr mais ${hasCourse?"absent de la leçon":"souvent oublié"} : notions des référentiels et des recommandations récentes, pièges d'examen ou d'internat, données du contexte sénégalais. Commence leur "back" par « Hors cours : ».
+1. Lis la leçon et relève ses objectifs de cours : ceux qui sont écrits (« Objectifs », « À la fin de ce cours, l'étudiant doit… ») ou, s'il n'y en a pas, ceux qui découlent de ses titres et de ses parties.
+2. Les cartes répondent à ces objectifs, en les couvrant tous. Reprends les définitions, les classifications, les chiffres et les formulations de la leçon mot pour mot, ou de très près si une reformulation est nécessaire. Ne contredis jamais la leçon et n'en change pas les valeurs.
+3. Utilise SEULEMENT ce qui est écrit dans la leçon : aucune notion, aucun chiffre, aucun nom, aucun exemple ni aucune recommandation qui n'y figure pas, même si tu le sais exact. Chaque réponse doit pouvoir se retrouver dans la leçon. Si la leçon ne permet pas d'écrire ${o.n} bonnes cartes, écris-en moins.
 
 Règles :
 - Une seule idée par carte, formulée précisément ; pas de question à réponse oui/non.
 - Réponses courtes (1 à 4 lignes) en français médical correct ; listes avec des tirets "- ".
-- Vise ce qui tombe à l'examen : définitions, signes cliniques, mécanismes (le pourquoi), valeurs normales, étiologies, diagnostics différentiels, conduite à tenir, pièges classiques.
-- N'invente jamais un chiffre, un seuil ou un nom : si tu n'es pas sûr, n'écris pas la carte.
-- Texte à trous : dans "front", entoure 1 ou 2 mots-clés avec {{ et }} ; "back" donne une courte explication.
-- QCM : 4 ou 5 propositions dans "choices", une ou plusieurs justes ; "answer" = liste des indices (à partir de 0) de TOUTES les bonnes propositions ; "back" explique pourquoi.
-- ${o.hint?'"hint" : une astuce pour retenir (moyen mnémotechnique, analogie ou mini-histoire de 1 à 2 phrases, en tutoyant ; exemples du quotidien sénégalais bienvenus).':'"hint" : chaîne vide.'}
+- Choisis dans la leçon ce qui tombe à l'examen : définitions, signes cliniques, mécanismes (le pourquoi), valeurs normales, étiologies, diagnostics différentiels, conduite à tenir.
+- Texte à trous : dans "front", entoure 1 ou 2 mots-clés avec {{ et }} ; "back" donne une courte explication tirée de la leçon.
+- QCM : 4 ou 5 propositions dans "choices", une ou plusieurs justes ; "answer" = liste des indices (à partir de 0) de TOUTES les bonnes propositions ; "back" explique pourquoi, avec ce que dit la leçon.
+- ${o.hint?'"hint" : une astuce pour retenir ce que dit la leçon (moyen mnémotechnique, analogie ou mini-histoire de 1 à 2 phrases, en tutoyant ; exemples du quotidien sénégalais bienvenus), sans ajouter de connaissance médicale absente de la leçon.':'"hint" : chaîne vide.'}
 
 Réponds uniquement avec un tableau JSON, sans texte autour ni balises de code, de cette forme. ${AI_JSON}
 [{"type":"qa","front":"…","back":"…","hint":"…"},{"type":"cloze","front":"… {{mot-clé}} …","back":"…","hint":"…"},{"type":"qcm","front":"…","choices":["…","…","…","…"],"answer":[0,2],"back":"…","hint":"…"}]`;
@@ -1877,7 +1875,7 @@ function parseLoose(text){
 // ---------- UI état ----------
 const UI = { tab:(lsGet('xamxam.tab')||'home'), progFilter:'all', progQuery:'', open:new Set(['semio']),
   rev:{mode:'srs', scope:'all', q:''},
-  gen:{chap:'', source:'focus', focus:'', text:'', photos:[], n:10, types:['qa','cloze','qcm'], level:'l3', hint:true, busy:false, err:'', stream:'', results:null, paste:''},
+  gen:{chap:'', source:'text', focus:'', text:'', photos:[], n:10, types:['qa','cloze','qcm'], level:'l3', hint:true, busy:false, err:'', stream:'', results:null, paste:''},
   imp:{target:'', mod:'', blobs:[], editId:null, title:'', date:'', kind:'lesson', chap:'', year:'', text:'', file:'', msg:'', err:'', busy:false, items:null, scanned:null, paste:'', aiOpen:false, aiBusy:false},
   newTab:'hand', sheetStack:[] };
 if(!['home','prog','rev','new','me'].includes(UI.tab)) UI.tab='home';
@@ -2173,18 +2171,11 @@ function handPanel(){
 }
 function aiPanel(){
   const g=UI.gen; const hasNotes=g.chap&&S.notes[g.chap]&&S.notes[g.chap].text;
-  const srcs=[['focus','Une notion'],['text','Mon cours'],['photo','Photo']];
+  const canLoad=g.chap&&READY[g.chap];
   let html=`<section class="panel stack">
    <label class="field">Chapitre<select id="genChap" data-input="gen-chap">${scopeOptions(g.chap,true)}</select></label>
-   <div class="field"><span>Source</span><div class="seg" role="group" aria-label="Source">${srcs.map(([k,l])=>`<button data-act="gen-src" data-s="${k}" aria-pressed="${g.source===k}">${l}</button>`).join('')}</div></div>`;
-  if(g.source==='focus') html+=`<label class="field">Notion précise <span class="field-hint">Laisse vide pour couvrir tout le chapitre.</span><input type="text" id="genFocus" data-input="gen-focus" value="${esc(g.focus)}" placeholder="Ex. signe de Babinski, cycle du Plasmodium…"></label>`;
-  if(g.source==='text') html+=`<label class="field">Colle ton cours <span class="field-hint">Un passage de ton polycopié ou de tes notes. Les cartes suivront ton prof.</span><textarea id="genText" data-input="gen-text" placeholder="Colle ici le texte du cours…">${esc(g.text)}</textarea></label>${hasNotes?`<button class="btn btn-ghost" data-act="gen-use-notes">Utiliser mes notes de ce chapitre</button>`:''}`;
-  if(g.source==='photo'){
-    if(AI.sample && !AI.images) html+=`<div class="notice">L'envoi de photos n'est pas possible ici. Colle plutôt le texte du cours (onglet « Mon cours »).</div>`;
-    else html+=`<div class="field"><span>Photos du cours <span class="field-hint">${AI.images?'Jusqu\'à '+AI.images.maxCount+' photos, bien nettes et à plat.':'Bien nettes et à plat.'}</span></span>
-      <div class="thumbs">${g.photos.map((p,i)=>`<img src="${p.url}" alt="Photo ${i+1}">`).join('')}</div>
-      <div class="row"><button class="btn btn-soft" data-act="gen-photo">${I.img} Ajouter une photo</button>${g.photos.length?'<button class="btn btn-ghost" data-act="gen-photo-clear">Retirer</button>':''}</div></div>`;
-  }
+   <label class="field">Ton cours <span class="field-hint">Les cartes viennent uniquement de ce texte. Colle un passage de ton polycopié ou de tes notes${canLoad||hasNotes?', ou reprends ce que XamXam a déjà pour ce chapitre':''}.</span><textarea id="genText" data-input="gen-text" placeholder="Colle ici le texte de ton cours…">${esc(g.text)}</textarea></label>
+   ${canLoad||hasNotes?`<div class="row">${canLoad?'<button class="btn btn-soft" data-act="gen-load-chap">Charger la leçon de ce chapitre</button>':''}${hasNotes?'<button class="btn btn-ghost" data-act="gen-use-notes">Utiliser mes notes de ce chapitre</button>':''}</div>`:''}`;
   html+=`<div class="field"><span>Nombre de cartes</span><div class="seg" role="group" aria-label="Nombre">${[5,10,15,20].map(n=>`<button data-act="gen-n" data-n="${n}" aria-pressed="${g.n===n}">${n}</button>`).join('')}</div></div>
    <div class="field"><span>Types</span><div class="chips">${[['qa','Question / réponse'],['cloze','Texte à trous'],['qcm','QCM']].map(([k,l])=>`<button class="chip" data-act="gen-type" data-t="${k}" aria-pressed="${g.types.includes(k)}">${l}</button>`).join('')}</div></div>
    <div class="field"><span>Niveau</span><div class="seg" role="group" aria-label="Niveau"><button data-act="gen-level" data-l="l3" aria-pressed="${g.level==='l3'}">Examen L3</button><button data-act="gen-level" data-l="internat" aria-pressed="${g.level==='internat'}">Internat</button></div></div>
@@ -2544,18 +2535,15 @@ function explainSheet(){ return sheetTop('Explication')+`<div class="panel"><p c
 async function generate(){
   const g=UI.gen; if(g.busy) return;
   if(!g.types.length){ toast('Choisis au moins un type de carte.'); return; }
-  if(!g.chap && !g.focus.trim() && g.source==='focus'){ toast('Choisis un chapitre ou écris une notion.'); return; }
-  if(g.source==='text' && !g.text.trim()){ toast('Colle d\'abord le texte du cours.'); return; }
-  if(g.source==='photo' && !g.photos.length){ toast('Ajoute au moins une photo.'); return; }
+  if(!g.text.trim()){ toast('Colle d\'abord le texte de ton cours, ou charge la leçon du chapitre.'); return; }
   const prompt=buildCardPrompt(g);
   g.busy=true; g.err=''; g.results=null; rerender();
   aiCtl=new AbortController();
   try{
     const opts={signal:aiCtl.signal, modelTier:'default', onText:({text})=>{ const n=(text.match(/"front"\s*:/g)||[]).length; const el=$('#genCount'); if(el) el.textContent=n?n+'/'+g.n:''; }};
-    if(g.source==='photo') opts.images=g.photos.map(p=>p.blob);
     const data=await AI.sample.json(prompt, opts);
     const res=normalizeGenerated(data);
-    if(!res.length) g.err='Aucune carte exploitable. Précise la notion ou ajoute ton cours, puis réessaie.';
+    if(!res.length) g.err='Aucune carte exploitable. Vérifie le texte de ton cours (assez long et lisible), puis réessaie.';
     else g.results=res;
   }catch(e){ if(e&&e.code==='invalid_json'&&e.text){ const res=parseLoose(e.text); if(res.length) g.results=res; else g.err=aiErr(e); } else g.err=aiErr(e); }
   g.busy=false; rerender();
@@ -4751,7 +4739,8 @@ document.addEventListener('click', async e=>{
     case 'gen-photo-clear': UI.gen.photos.forEach(p=>URL.revokeObjectURL(p.url)); UI.gen.photos=[]; rerender(); break;
     case 'gen-go': generate(); break;
     case 'gen-stop': if(aiCtl) aiCtl.abort(); break;
-    case 'gen-copy': await copyText(buildCardPrompt(UI.gen)); break;
+    case 'gen-copy': if(!UI.gen.text.trim()){ toast('Colle d\'abord le texte de ton cours, ou charge la leçon du chapitre.'); break; } await copyText(buildCardPrompt(UI.gen)); break;
+    case 'gen-load-chap': { const id=UI.gen.chap; if(!id) break; const txt=await chapCourseText(id); if(!txt){ toast('Impossible de charger cette leçon. Vérifie ta connexion.'); break; } UI.gen.text=txt; rerender(); toast('Leçon chargée : relis le texte, puis lance la création.'); break; }
     case 'gen-parse': { const res=parseLoose(UI.gen.paste); if(!res.length){ UI.gen.err="Je n'ai trouvé aucune carte dans ce texte. Colle toute la réponse de l'IA."; } else { UI.gen.err=''; UI.gen.results=res; } rerender(); break; }
     case 'gen-clear': UI.gen.results=null; rerender(); break;
     case 'gen-save': saveGenerated(); break;
@@ -6811,13 +6800,15 @@ function trainChapPanel(id){ const cs=CASES.filter(x=>x.ch.includes(id));
    ${cs.map(x=>`<button class="btn btn-soft" data-act="cas-start" data-id="${x.id}" style="justify-content:space-between;width:100%"><span>Cas clinique · ${esc(x.n)}</span>${I.chev}</button>`).join('')}
    <button class="btn btn-soft" data-act="gen-qcm" data-id="${id}" style="justify-content:space-between;width:100%"><span>QCM sur cette leçon, préparés par Claude</span>${I.chev}</button>
    <p class="small muted">${AI.sample?'Claude prépare les QCM à partir du contenu de la leçon ; tu gardes ceux que tu veux.':'Ici, XamXam prépare un texte à copier dans Claude ; tu colles ensuite sa réponse pour créer les QCM.'}</p></section>`; }
-async function genQcmFor(id){
+async function chapCourseText(id){ // ce que XamXam a du cours de ce chapitre : notes de l'étudiant et leçon tirée de son polycopié
   let txt=''; try{ if(READY[id]){ const r=await readyLoad(id);
     txt=(r.obj||[]).map(o=>'Objectif : '+o).join('\n')+'\n\n'+(r.cards||[]).map(([t,f,b])=>t==='c'?String(f).replace(/\{\{(.+?)\}\}/g,'$1'):'Q : '+f+'\nR : '+b).join('\n\n'); } }catch{}
-  const note=(S.notes[id]||{}).text||''; if(note) txt=note+'\n\n'+txt; txt=txt.trim();
-  Object.assign(UI.gen, {chap:id, source:txt?'text':'focus', text:txt, focus:'', types:['qcm'], n:10, results:null, err:''});
+  const note=(S.notes[id]||{}).text||''; if(note) txt=note+'\n\n'+txt; return txt.trim(); }
+async function genQcmFor(id){
+  const txt=await chapCourseText(id);
+  Object.assign(UI.gen, {chap:id, source:'text', text:txt, focus:'', types:['qcm'], n:10, results:null, err:''});
   UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render();
-  toast(txt?'Le contenu de la leçon est prêt : lance la création des QCM en bas de la page.':'Pas de contenu pour cette leçon : précise la notion, puis lance la création.', 3800);
+  toast(txt?'Le contenu de la leçon est prêt : lance la création des QCM en bas de la page.':'Pas encore de contenu pour cette leçon : colle le texte de ton cours, puis lance la création.', 3800);
 }
 
 // ---------- Exercices de calcul : valeurs tirées au hasard, correction pas à pas ----------
