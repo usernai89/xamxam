@@ -317,6 +317,27 @@ mark.filled{background:var(--hl)!important;color:var(--hl-ink)!important;font-we
 .verdict.ko{background:var(--bad-soft);color:var(--bad)}
 .verdict.todo{background:var(--hard-soft);color:var(--hard)}
 
+.pl-week{padding-top:4px;padding-bottom:4px}
+.pl-day{display:grid;grid-template-columns:98px minmax(0,1fr);gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.pl-week .pl-day:first-child{border-top:0}
+.pl-date b{display:block;font-size:.9375rem;line-height:1.3}
+.pl-date span{font-size:.8125rem;color:var(--muted)}
+.pl-day.pl-now .pl-date b{text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:3px}
+.pl-day.rest .pl-date b{color:var(--muted)}
+.pl-items{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+.pl-chip{display:inline-block;max-width:100%;min-height:32px;padding:5px 10px;border-radius:var(--r-sm);border:1px solid var(--line2);background:var(--surface);color:var(--fg);font:inherit;font-size:.875rem;line-height:1.3;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.pl-chip.done{background:var(--good-soft);border-color:transparent;color:var(--good)}
+.pl-chip.focus{background:var(--accent2-soft);border-color:transparent;color:var(--accent2);font-weight:700}
+.pl-chip.blanc{background:var(--hl-soft);border-color:var(--hl);color:var(--fg);font-weight:700}
+.pl-chip.weak{background:var(--hard-soft);border-color:transparent;color:var(--hard)}
+.pl-note{font-size:.8125rem;color:var(--muted)}
+.pl-wk>summary{cursor:pointer;list-style:none}
+.pl-wk>summary::-webkit-details-marker{display:none}
+.pl-wk>summary::before{content:'\25B8  ';color:var(--muted)}
+.pl-wk[open]>summary::before{content:'\25BE  '}
+.pl-wk[open]>summary{margin-bottom:8px}
+.plan-row.pl-ok{opacity:.75}
+.plan-row.pl-ok .pr-n{color:var(--good)}
 /* Internat */
 .plan{display:flex;flex-direction:column}
 .pl{padding:3px 0;line-height:1.4}
@@ -573,6 +594,35 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 .tbl-wrap th{position:sticky;top:0;background:var(--surface2);font-size:0.8125rem;color:var(--muted)}
 .tbl-wrap td:first-child{font-weight:700;min-width:150px}
 .tbl-wrap tr.sysrow td{background:var(--fg);color:var(--surface);font-family:var(--font-display);font-weight:700}
+/* Ordinateur : menu sur le côté */
+.side-foot{display:none}
+@media (min-width:1100px){
+  body{padding-left:272px;padding-right:32px}
+  .tabbar{top:0;right:auto;width:240px;border-top:0;border-right:1px solid var(--line2);padding:28px 14px 20px;display:flex;flex-direction:column;overflow-y:auto}
+  .tabbar-in{max-width:none;margin:0;display:flex;flex-direction:column;gap:4px}
+  .tabbar-in::before{content:"XamXam";align-self:flex-start;margin:0 0 20px 12px;padding-bottom:2px;border-bottom:4px solid var(--hl);font-family:var(--font-display);font-weight:700;font-size:1.625rem;line-height:1.1;letter-spacing:-0.01em;color:var(--fg)}
+  .tab{flex-direction:row;justify-content:flex-start;gap:12px;padding:10px 12px;border-radius:var(--r-sm);font-size:0.9375rem}
+  .tab svg{width:22px;height:22px;flex:none}
+  .tab:hover{background:color-mix(in srgb,var(--fg) 6%,transparent);color:var(--fg)}
+  .tab[aria-current=page]{background:var(--surface2)}
+  .tab[aria-current=page]::before{top:8px;bottom:8px;left:0;width:4px;height:auto;margin-left:0;border-radius:0 3px 3px 0}
+  .tab .dot{position:static;margin:0 0 0 auto;box-shadow:none}
+  .side-foot{display:flex;flex-direction:column;gap:8px;margin-top:auto;padding-top:20px}
+  .side-card{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:var(--r-sm);padding:10px 12px;color:var(--fg)}
+  .side-card b{font-family:var(--font-display);font-size:1.5rem;line-height:1.1}
+  .side-card svg{width:18px;height:18px}
+  .side-card:hover{border-color:var(--line2)}
+  #app{max-width:820px;padding-block:calc(32px*var(--sp)) 64px}
+  #sheet{left:240px}
+  .layer-in{max-width:760px}
+  #toast{bottom:32px;left:calc(50% + 120px)}
+}
+@media (min-width:1400px){
+  body[data-tab=home] #app{max-width:1180px}
+  body[data-tab=home] #view{display:block;column-count:2;column-gap:28px}
+  body[data-tab=home] #view>*{break-inside:avoid;margin:0 0 calc(20px*var(--sp))}
+  body[data-tab=home] #view>.home-head{column-span:all}
+}
 </style>
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
@@ -588,6 +638,7 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
     <button class="tab" data-act="tab" data-tab="new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M12 8v8M8 12h8"/></svg>Créer</button>
     <button class="tab" data-act="tab" data-tab="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.6-3.9 3.6-6 7.5-6s6.9 2.1 7.5 6"/></svg>Moi</button>
   </div>
+  <div class="side-foot" id="sideFoot"></div>
 </nav>
 
 <div id="session" class="layer" hidden><div class="layer-in" id="sessIn"></div></div>
@@ -936,7 +987,7 @@ const FONTS = {
  serif:{name:'Livre', css:"'Source Serif 4',Georgia,'Times New Roman',serif"},
  system:{name:'Système', css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"}
 };
-const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', cas:'Cas cliniques', img:"Analyse d'images", countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
+const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', cas:'Cas cliniques', img:"Analyse d'images", countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Programme du jour'};
 const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'nunito', heads:'expressive', size:17, radius:'soft', density:'normal', anim:'flip', buttons:4,
   semStart:'2026-11-19', examDate:'', newPerDay:25, maxRev:300, capExam:true, quick:10, lastExport:0,
   home:[['today',1],['exams',1],['internat',1],['syn',1],['tri',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
@@ -1434,6 +1485,7 @@ function weakSpot(){
 function ensureHome(){
   const h=Array.isArray(S.prefs.home)?S.prefs.home:[];
   for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='eng'?Math.max(i,h.findIndex(r=>r[0]==='exa'))+1:k==='cas'?Math.max(i,h.findIndex(r=>r[0]==='eng'))+1:k==='img'?Math.max(i,h.findIndex(r=>r[0]==='cas'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
+  if(!S.prefs.planV){ const j=h.findIndex(r=>r[0]==='plan'); if(j>=0){ const [row]=h.splice(j,1); h.splice(h.findIndex(r=>r[0]==='today')+1,0,row); } S.prefs.planV=1; }
   S.prefs.home=h.filter(r=>HOME_SECTIONS[r[0]]);
 }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -1489,7 +1541,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 45; // à changer avec VERSION dans sw.js
+const APP_VER = 46; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1678,9 +1730,13 @@ function render(){
   const fn={home:viewHome, prog:viewProg, rev:viewRev, new:viewNew, me:viewMe}[UI.tab]||viewHome;
   const y=window.scrollY; v.innerHTML=fn(); if(UI.keepScroll){ window.scrollTo(0,y); UI.keepScroll=false; }
   $$('.tab').forEach(b=>b.setAttribute('aria-current', b.dataset.tab===UI.tab?'page':'false'));
+  document.body.dataset.tab=UI.tab; const sf=$('#sideFoot'); if(sf) sf.innerHTML=sideFootHTML();
   afterRender();
 }
 function rerender(){ UI.keepScroll=true; render(); }
+function sideFootHTML(){ const ex=examDate(), n=daysUntil(ex.date);
+  return `<button class="side-card" data-act="plan-open"><span class="eyebrow">Examens${ex.set?'':' · date estimée'}</span><b>${n>0?'J-'+n:n===0?"Aujourd'hui":'Passés'}</b><span class="small muted">${esc(fmtShort(ex.date))} · mon programme</span></button>
+   <button class="side-card" data-act="tab" data-tab="me"><span class="row" style="gap:6px;flex-wrap:nowrap;align-items:center">${I.flame}<b class="mono" style="font-size:1.25rem">${streak()}</b><span class="small muted">jour${streak()>1?'s':''} de suite</span></span></button>`; }
 function updateDueDot(){ const c=counts('all'); const n=c.rev+c.lrn+c.nw; const d=$('#dueDot'); if(!d) return; d.hidden=!n; d.textContent=n>99?'99+':n; }
 
 // ---------- Vue : Accueil ----------
@@ -1816,18 +1872,7 @@ function homeSection(k){
       <div class="heat-wrap"><div class="heat">${cells}</div></div>
       <div class="legend" style="margin-top:10px"><span>Moins</span><span><i style="background:var(--surface2)"></i><i style="background:var(--a28)"></i><i style="background:var(--a55)"></i><i style="background:var(--a78)"></i><i style="background:var(--accent)"></i></span><span>Plus</span></div></section>`;
   }
-  if(k==='plan'){
-    const chs=modsOf(myLvl(),mySem()).flatMap(modChaps); const remaining=chs.filter(c=>statusOf(c.id)<2).length;
-    const ex=examDate(); const revStart=new Date(ex.date); revStart.setDate(revStart.getDate()-10);
-    const from=daysUntil(semStart())>0?semStart():new Date();
-    const days=Math.max(1, Math.round((midnight(revStart)-midnight(from))/DAY));
-    const perWeek=Math.ceil(remaining/days*7);
-    const tomorrow=Object.values(S.cards).filter(c=>isLive(c)&&c.srs.state!=='new'&&c.srs.due>=dayStart()+DAY&&c.srs.due<dayStart()+2*DAY).length;
-    return `<section class="panel"><div class="section-title"><h3>Rythme conseillé</h3></div>
-      <p>Il te reste <strong>${plural(remaining,'chapitre')}</strong> à apprendre et <strong>${plural(days,'jour')}</strong> avant la période de révision${ex.set?'':' (date estimée)'}.</p>
-      <p style="margin-top:6px">Objectif : <strong>${perWeek} chapitres par semaine</strong>, soit environ ${Math.max(1,Math.round(perWeek/6))} par jour de cours. Marque un chapitre « Appris » quand tu le maîtrises.</p>
-      <p class="small muted" style="margin-top:8px">${plural(tomorrow,'carte')} à revoir demain.</p></section>`;
-  }
+  if(k==='plan') return planHomeHTML();
   return '';
 }
 function weekSheet(){
@@ -1922,7 +1967,7 @@ function viewRev(){
     <button class="btn btn-primary btn-lg" data-act="start" data-mode="${r.mode}" data-scope="${esc(r.scope)}" ${n?'':'disabled'}>${n?'Commencer':'Rien à réviser ici'}</button>
     ${r.mode==='srs'&&n>8?`<button class="btn" data-act="start" data-mode="srs" data-scope="${esc(r.scope)}" data-min="${q}">Séance express · ${q} min</button>`:''}
     ${pool.length?`<button class="btn btn-line" data-act="aud-start" data-scope="${esc(r.scope)}">${I.ear} Écouter ces cartes (mains libres)</button>`:''}
-    <button class="btn btn-line" data-act="bl-open">${I.exam} Examen blanc</button>
+    <div class="row" style="flex-wrap:nowrap"><button class="btn btn-line" style="flex:1" data-act="bl-open">${I.exam} Examen blanc</button><button class="btn btn-line" style="flex:1" data-act="plan-open">${I.clock} Mon programme</button></div>
     <div class="stack" style="gap:6px"><span class="small muted">Pour les questions et les cartes à trous, je réponds :</span>${ansModesHTML()}</div>
    </section>
    ${r.mode==='srs'?forecastHTML():''}
@@ -2035,6 +2080,7 @@ function viewMe(){
    <label class="field">Ton prénom <span class="field-hint">Pour l'accueil, facultatif.</span><input type="text" id="pName" data-input="pref" data-k="name" value="${esc(p.name)}" autocomplete="given-name"></label>
    <label class="field">Début des cours<input type="date" id="pSem" data-input="pref" data-k="semStart" value="${esc(p.semStart)}"></label>
    <label class="field">Début des examens <span class="field-hint">${ex.set?'':'Pas encore connue : estimation au '+esc(fmtShort(ex.date))+'. Mets la vraie date dès qu\'elle tombe.'}</span><input type="date" id="pExam" data-input="pref" data-k="examDate" value="${esc(p.examDate)}"></label>
+   <button class="btn btn-line" data-act="plan-open">${I.clock} Mon programme de révision</button>
    <div class="count-grid"><label class="field">Nouvelles cartes / jour<input type="number" id="pNew" min="0" max="500" data-input="pref" data-k="newPerDay" value="${p.newPerDay}"></label>
    <label class="field">Révisions max / jour<input type="number" id="pMax" min="10" max="5000" data-input="pref" data-k="maxRev" value="${p.maxRev}"></label></div>
    <label class="field">Durée de la séance express (minutes)<input type="number" id="pQuick" min="3" max="60" data-input="pref" data-k="quick" value="${p.quick||10}"></label>
@@ -4389,6 +4435,8 @@ document.addEventListener('click', async e=>{
       if(ok){ cur.rec=true; paintSession(); } else toast('La dictée ne démarre pas sur ce téléphone : utilise le micro du clavier.'); break; }
     case 'say': if(!sayText(d.t, d.l)) toast("La lecture à voix haute n'est pas disponible ici."); break;
     case 'bl-open': openSheet(blSheet); break;
+    case 'plan-open': openSheet(planSheet); break;
+    case 'plan-blanc': UI.bl.scope='all'; UI.bl.n=+d.n||20; UI.bl.dur=UI.bl.n>=40?60:30; openSheet(blSheet); break;
     case 'bl-go': blStart(); break;
     case 'bl-resume': if(exrLive(d.id)) exrOpen(); break;
     case 'eng-open': openSheet(engSheet); break;
@@ -4444,7 +4492,7 @@ document.addEventListener('click', async e=>{
       await copyLink(url); break; }
     case 'copy-app': await copyLink(appUrl()); break;
     case 'pwa-install': if(installEvt){ installEvt.prompt(); try{ await installEvt.userChoice; }catch{} installEvt=null; rerender(); } break;
-    case 'tab': UI.tab=d.tab; lsSet('xamxam.tab',d.tab); window.scrollTo(0,0); render(); break;
+    case 'tab': if(UI.sheetStack.length){ audStop(); UI.sheetStack=[]; paintSheet(); } UI.tab=d.tab; lsSet('xamxam.tab',d.tab); window.scrollTo(0,0); render(); break;
     case 'week': openSheet(weekSheet); break;
     case 'heat': toast(fmtShort(parseDate(d.k))+' : '+plural(+d.r,'carte')); break;
     case 'goto-mod': goMod(d.mod); break;
@@ -4675,6 +4723,7 @@ document.addEventListener('change', async e=>{
     case 'ed-ans': { const i=+d.i; ED.answer=ED.answer.filter(x=>x!==i); if(el.checked) ED.answer.push(i); break; }
     case 'pref-bool': S.prefs[d.k]=el.checked; savePrefs(); break;
     case 'pref': if(d.k==='semStart'||d.k==='examDate') rerender(); break;
+    case 'plan-pref': { S.prefs[d.k]=d.k==='examDate'?el.value:+el.value; savePrefs(); paintSheet(true); rerender(); break; }
     case 'home-toggle': { const row=S.prefs.home.find(r=>r[0]===d.k); if(row) row[1]=el.checked?1:0; savePrefs(); break; }
   }
 });
@@ -6586,6 +6635,131 @@ async function genQcmFor(id){
   Object.assign(UI.gen, {chap:id, source:txt?'text':'focus', text:txt, focus:'', types:['qcm'], n:10, results:null, err:''});
   UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render();
   toast(txt?'Le contenu de la leçon est prêt : lance la création des QCM en bas de la page.':'Pas de contenu pour cette leçon : précise la notion, puis lance la création.', 3800);
+}
+
+// ---------- Programme de révision jusqu'à l'examen ----------
+// Recalculé chaque jour à partir de l'état réel : leçons pas encore « Appris », cartes prévues, examens blancs.
+const PLAN_REV=10; // période de révision générale avant l'examen (comme le compte à rebours)
+const PLAN_MINS=[[30,'30 min'],[45,'45 min'],[60,'1 h'],[90,'1 h 30'],[120,'2 h'],[180,'3 h'],[240,'4 h']];
+const PLAN_CHAPS=[[30,'30 min'],[45,'45 min'],[60,'1 h'],[90,'1 h 30'],[120,'2 h']];
+const WDS=['Dim.','Lun.','Mar.','Mer.','Jeu.','Ven.','Sam.'], WDL=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const planMin = () => +S.prefs.planMin||120;
+const planChapMin = () => +S.prefs.planChap||60;
+const planRest = () => { const v=S.prefs.planRest; return v===undefined||v===null||v===''?-1:+v; };
+const fmtMin = m => m<60?m+' min':Math.floor(m/60)+' h'+(m%60?' '+pad(m%60):'');
+function planChaps(){ // leçons de l'année à apprendre : ordre des cours, matières entremêlées au prorata
+  const t0=dayStart();
+  const todo=m=>modChaps(m).filter(c=>{ const p=S.progress[c.id]; return !p||!(p.s>=2)||(p.t||0)>=t0; }); // apprise aujourd'hui : reste dans le programme du jour
+  const mods=modsOf(myLvl(),mySem()).map(m=>({m, L:todo(m), k:0})).filter(x=>x.L.length);
+  const out=[]; let left=mods.reduce((a,x)=>a+x.L.length,0);
+  while(left-->0){ let best=null; for(const x of mods){ if(x.k>=x.L.length) continue; const f=(x.k+0.5)/x.L.length; if(!best||f<best.f) best={x,f}; } out.push(best.x.L[best.x.k++]); }
+  return out;
+}
+function planWeak(){ // chapitres à retravailler : examens blancs sous 70 %, ou cartes souvent ratées
+  const g={}; for(const e of Object.values(S.exams)) if(e.kind==='blanc') for(const a of (e.attempts||[])) for(const [ch,[p,n]] of Object.entries(a.byChap||{})){ if(!g[ch]) g[ch]=[0,0]; g[ch][0]+=p; g[ch][1]+=n; }
+  const w={}; for(const [ch,[p,n]] of Object.entries(g)) if(CH[ch]&&n>=2&&p/n<0.7) w[ch]={ch, why:[Math.round(p/n*100)+' % en examen blanc'], s:1-p/n};
+  const hard={}; for(const c of liveCards('all')) if(CH[c.chap]&&isHard(c)) hard[c.chap]=(hard[c.chap]||0)+1;
+  for(const [ch,n] of Object.entries(hard)) if(n>=3){ const x=w[ch]||(w[ch]={ch, why:[], s:0}); x.why.push(plural(n,'carte')+' souvent ratée'+(n>1?'s':'')); x.s+=n/10; }
+  return Object.values(w).sort((a,b)=>b.s-a.s).slice(0,8);
+}
+function planLoad(n){ // cartes déjà prévues pour chacun des n prochains jours
+  const t0=dayStart(), b=new Array(n).fill(0); const c0=counts('all'); b[0]=c0.rev+c0.lrn+c0.nw;
+  for(const c of liveCards('all')){ if(c.srs.state==='new') continue; const i=Math.floor((c.srs.due-t0)/DAY); if(i>=1&&i<n) b[i]++; }
+  return b;
+}
+function planBuild(){
+  const ex=examDate(), d0=midnight(new Date(now()-CUT)), N=Math.round((midnight(ex.date)-d0)/DAY);
+  if(N<=0) return {ex, N, over:true};
+  const rest=planRest(), revFrom=Math.max(0, N-PLAN_REV), days=[];
+  for(let i=0;i<N;i++){ const d=new Date(d0); d.setDate(d0.getDate()+i); days.push({i, d, wd:d.getDay(), rev:i>=revFrom, rest:false, ch:[], blanc:false, focus:null, weak:[], eve:false}); }
+  let learn=days.filter(x=>!x.rev&&x.wd!==rest), catchup=false;
+  if(!learn.length && days.some(x=>!x.rev)) learn=days.filter(x=>!x.rev);
+  days.forEach(x=>{ if(!x.rev&&!learn.includes(x)) x.rest=true; });
+  const L=planChaps(), K=L.length;
+  if(!learn.length && K){ learn=days.length>1?days.slice(0,-1):days; catchup=true; } // déjà en période de révision : rattrapage
+  const rate=learn.length?K/learn.length:0, cut=j=>Math.min(K, Math.ceil(j*rate-1e-9));
+  learn.forEach((x,j)=>{ x.ch=L.slice(cut(j), cut(j+1)); });
+  const bday=rest>=0?(rest+6)%7:6; // examen blanc de la semaine : la veille du jour de repos, sinon le samedi
+  days.forEach(x=>{ if(!x.rev&&!x.rest&&x.wd===bday) x.blanc=true; });
+  const rv=days.filter(x=>x.rev), mods=modsOf(myLvl(),mySem()).filter(m=>modChaps(m).length), weak=planWeak();
+  if(rv.length>1) rv[rv.length-1].eve=true;
+  const work=rv.filter(x=>!x.eve);
+  work.forEach((x,r)=>{ x.focus=mods.length?mods[r%mods.length]:null; x.blanc=r%2===1||work.length===1; });
+  weak.forEach((w,k)=>{ if(work.length) work[k%work.length].weak.push(w); });
+  const load=planLoad(Math.min(N,14)), cards7=load.slice(0,7), avgCards=cards7.reduce((a,b)=>a+b,0)/Math.max(1,cards7.length);
+  const revMin=Math.round(avgCards*avgSec()/60), perDay=learn.length?K/learn.length:0;
+  const need=Math.round(perDay*planChapMin()+revMin), budget=planMin();
+  let finish=null;
+  if(K && need>budget*1.05){ const cap=(budget-revMin)/planChapMin();
+    if(cap>0.05){ let left=K, d=new Date(d0); for(let i=0;i<400&&left>0;i++){ if(d.getDay()!==rest||rest<0) left-=cap; if(left>0) d.setDate(d.getDate()+1); } finish=d; } }
+  const learnSpan=days.filter(x=>!x.rev).length;
+  return {ex, N, days, K, learn:learn.length, catchup, revFrom, load, revMin, need, budget, finish, weak, perWeek:learnSpan?K*7/learnSpan:K, rest};
+}
+function planDone(c){ return statusOf(c.id)>=2; }
+const planDateTxt = d => fmtD(d, d.getFullYear()===new Date().getFullYear()?{day:'numeric',month:'short'}:{day:'numeric',month:'short',year:'numeric'});
+function planDayLabel(x){ return x.i===0?"Aujourd'hui":x.i===1?'Demain':WDS[x.wd]+' '+x.d.getDate(); }
+function planChipsHTML(x, P){ // contenu d'un jour, en petites étiquettes (écran Programme)
+  const out=[];
+  for(const c of x.ch){ const ok=planDone(c); out.push(`<button class="pl-chip ${ok?'done':''}" data-act="chap" data-id="${c.id}" title="${esc(MODS[c.mod]?MODS[c.mod].short:'')}">${ok?'✓ ':''}${esc(c.title)}</button>`); }
+  if(x.rest) out.push(`<span class="pl-note">Repos${x.i<7&&P.load[x.i]?' · '+plural(P.load[x.i],'carte'):''}</span>`);
+  if(x.focus) out.push(`<button class="pl-chip focus" data-act="start" data-mode="cram" data-scope="m:${x.focus.id}">Revoir ${esc(x.focus.short)}</button>`);
+  for(const w of x.weak) out.push(`<button class="pl-chip weak" data-act="chap" data-id="${w.ch}">À retravailler : ${esc(CH[w.ch].title)}</button>`);
+  if(x.blanc) out.push(`<button class="pl-chip blanc" data-act="plan-blanc" data-n="${x.rev?40:20}">Examen blanc</button>`);
+  if(x.eve) out.push(`<button class="pl-chip focus" data-act="start" data-mode="hard" data-scope="all">Veille : cartes difficiles, puis repos</button>`);
+  if(!x.rest&&x.i<7&&P.load[x.i]) out.push(`<span class="pl-note">${plural(P.load[x.i],'carte')}</span>`);
+  if(!out.length) out.push(`<span class="pl-note">Tes cartes du jour${x.i<7&&P.load[x.i]?' ('+P.load[x.i]+')':''}</span>`);
+  return out.join('');
+}
+function planWeekLabel(mon, d0){ const w=Math.round((midnight(mon)-midnight(d0))/DAY);
+  return w<=0?'Cette semaine':w<=7?'Semaine prochaine':'Semaine du '+fmtShort(mon); }
+function planSheet(){
+  const P=planBuild(), p=S.prefs, ex=examDate();
+  const set=`<section class="panel stack">
+    <label class="field">Date de l'examen <span class="field-hint">${ex.set?'':'Pas encore fixée : estimation au '+esc(fmtShort(ex.date))+'.'}</span><input type="date" data-input="plan-pref" data-k="examDate" value="${esc(p.examDate||'')}"></label>
+    <div class="count-grid">
+     <label class="field">Temps par jour<select data-input="plan-pref" data-k="planMin">${PLAN_MINS.map(([v,l])=>`<option value="${v}" ${planMin()===v?'selected':''}>${l}</option>`).join('')}</select></label>
+     <label class="field">Pour une leçon<select data-input="plan-pref" data-k="planChap">${PLAN_CHAPS.map(([v,l])=>`<option value="${v}" ${planChapMin()===v?'selected':''}>${l}</option>`).join('')}</select></label>
+    </div>
+    <label class="field">Jour de repos<select data-input="plan-pref" data-k="planRest"><option value="-1">Aucun</option>${[1,2,3,4,5,6,0].map(i=>`<option value="${i}" ${planRest()===i?'selected':''}>${WDL[i]}</option>`).join('')}</select></label>
+   </section>`;
+  const top=sheetTop('Programme de révision')+`<p class="small muted">Calculé jusqu'à ton examen avec les leçons de ton année (${esc(LV[myLvl()].id)} · S${semNo(myLvl(),mySem())}) pas encore « Appris ». Il se recalcule chaque jour : si tu prends de l'avance ou du retard, la suite s'ajuste.</p>`;
+  if(P.over) return top+`<div class="notice">Cette date d'examen est passée. Indique la date de ton prochain examen pour recalculer le programme.</div>`+set;
+  const revDate=P.days[P.revFrom]?P.days[P.revFrom].d:null;
+  const sum=`<section class="panel stack">
+    <div class="stat-grid"><div><b>J-${P.N}</b><span>${esc(fmtShort(P.ex.date))}</span></div><div><b>${P.K}</b><span>${P.K>1?'leçons':'leçon'} à apprendre</span></div><div><b>${P.K?(P.perWeek<1?'< 1':Math.round(P.perWeek)):'–'}</b><span>par semaine</span></div></div>
+    ${P.K?`<p style="margin:0">${P.catchup?`<strong>Période de révision commencée</strong> : les ${plural(P.K,'leçon')} pas encore apprises sont réparties sur les jours qui restent.`:`Pour finir avant la révision générale${revDate?' du '+esc(fmtShort(revDate)):''}, prévois environ <strong>${fmtMin(P.need)} par jour</strong>${P.revMin?' (leçons + '+fmtMin(P.revMin)+' de cartes)':''}.`}</p>`
+      :`<p style="margin:0">Toutes les leçons de ton année sont marquées « Appris ». Le programme passe en révision : cartes, modules à revoir et examens blancs.</p>`}
+    ${P.K&&!P.catchup?(P.need<=P.budget*1.05?`<p class="small" style="margin:0;color:var(--good)"><strong>Ça rentre dans tes ${fmtMin(P.budget)} par jour.</strong></p>`
+      :`<p class="small" style="margin:0;color:var(--hard)"><strong>Il manque environ ${fmtMin(P.need-P.budget)} par jour.</strong> ${P.finish?'Avec '+fmtMin(P.budget)+' par jour, tu finirais vers le '+esc(planDateTxt(P.finish))+', après le début des révisions.':'Tes cartes du jour prennent déjà presque tout ton temps.'} Augmente ton temps, enlève le jour de repos, ou masque dans Cours une matière que tu ne passes pas.</p>`):''}
+   </section>`;
+  const weak=P.weak.length?`<section class="panel stack"><h3 style="margin:0">À retravailler</h3><div class="menu">${P.weak.map(w=>`<button data-act="chap" data-id="${w.ch}">${I.book}<span><span class="t">${esc(CH[w.ch].title)}</span><span class="d">${esc(w.why.join(' · '))}</span></span>${I.chev}</button>`).join('')}</div><p class="small muted" style="margin:0">Ces chapitres sont placés pendant la révision générale.</p></section>`:'';
+  // jours regroupés par semaine (lundi → dimanche)
+  const weeks=[]; for(const x of P.days){ const mon=new Date(x.d); mon.setDate(x.d.getDate()-((x.wd+6)%7)); const k=dayKey(mon.getTime()+CUT); let w=weeks[weeks.length-1]; if(!w||w.k!==k) weeks.push(w={k, mon, days:[]}); w.days.push(x); }
+  const d0=P.days[0].d;
+  const wk=weeks.map((w,j)=>{ const n=w.days.reduce((a,x)=>a+x.ch.length,0), rv=w.days.some(x=>x.rev);
+    const body=w.days.map(x=>`<div class="pl-day ${x.i===0?'pl-now':''} ${x.rest?'rest':''} ${x.rev?'rev':''}"><div class="pl-date"><b>${planDayLabel(x)}</b><span>J-${P.N-x.i}</span></div><div class="pl-items">${planChipsHTML(x,P)}</div></div>`).join('');
+    const head=`${planWeekLabel(w.mon,d0)} <span class="small muted">· ${n?plural(n,'leçon'):''}${n&&rv?' · ':''}${rv?'révision générale':''}</span>`;
+    return j<2?`<h3 class="syn-sys">${head}</h3><section class="panel pl-week">${body}</section>`:`<details class="pl-wk"><summary class="syn-sys">${head}</summary><section class="panel pl-week">${body}</section></details>`; }).join('');
+  return top+sum+set+weak+wk+`<p class="small muted">Chaque jour : tes cartes prévues d'abord, puis les leçons du jour. Ouvre une leçon pour l'apprendre et marque-la « Appris » : ses cartes entrent alors dans tes révisions.</p>`;
+}
+function planHomeHTML(){
+  const P=planBuild();
+  const sec=b=>`<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Programme du jour</h3><button class="btn btn-ghost" data-act="plan-open">Tout voir</button></div>${b}</section>`;
+  if(P.over) return sec(`<p style="margin:0">Ta date d'examen est passée. Indique la prochaine pour recalculer ton programme.</p><button class="btn btn-soft" data-act="plan-open">Fixer la date</button>`);
+  const x=P.days[0], ex=P.ex; const out=[];
+  out.push(`<p class="small muted" style="margin:0">J-${P.N} · ${x.rev?'révision générale':plural(P.K,'leçon')+' à apprendre avant la révision'}${ex.set?'':' · date estimée'}</p>`);
+  if(x.rest) out.push(`<p style="margin:0"><strong>Jour de repos.</strong> Fais seulement tes cartes du jour${P.load[0]?' ('+P.load[0]+')':''}.</p>`);
+  if(x.ch.length){ const done=x.ch.filter(planDone).length;
+    const more=x.ch.length-5;
+    out.push(`<div class="plan">${x.ch.slice(0,5).map(c=>{ const ok=planDone(c), m=MODS[c.mod]; return `<button class="plan-row ${ok?'pl-ok':''}" data-act="chap" data-id="${c.id}"><span class="pr-name">${esc(c.title)}</span><span class="pr-n">${ok?'✓':''}</span><span class="pr-sub">${m?esc(m.short)+' · ':''}${ok?'apprise':STATUS[statusOf(c.id)].toLowerCase()}</span></button>`; }).join('')}${more>0?`<button class="btn btn-line" data-act="plan-open">Voir les ${x.ch.length} leçons du jour</button>`:''}</div>`);
+    out.push(`<p class="small muted" style="margin:0">${done===x.ch.length?"Leçons du jour faites. Bravo !":done?done+' sur '+x.ch.length+' faite'+(done>1?'s':'')+'.':'Ouvre chaque leçon, apprends-la, puis marque-la « Appris ».'}</p>`); }
+  else if(!x.rest&&!x.rev&&P.K) out.push(`<p style="margin:0">Pas de nouvelle leçon aujourd'hui : consolide avec tes cartes du jour.</p>`);
+  if(x.focus) out.push(`<button class="btn btn-soft" data-act="start" data-mode="cram" data-scope="m:${x.focus.id}">Revoir toute la matière : ${esc(x.focus.short)}</button>`);
+  for(const w of x.weak) out.push(`<button class="btn btn-line" data-act="chap" data-id="${w.ch}">À retravailler : ${esc(CH[w.ch].title)}</button>`);
+  if(x.blanc) out.push(`<button class="btn btn-line" data-act="plan-blanc" data-n="${x.rev?40:20}">${x.rev?'Examen blanc':'Examen blanc de la semaine'}</button>`);
+  if(x.eve) out.push(`<p style="margin:0"><strong>Veille d'examen.</strong> Revois seulement tes cartes difficiles, puis repose-toi.</p><button class="btn btn-soft" data-act="start" data-mode="hard" data-scope="all">Mes cartes difficiles</button>`);
+  if(P.K&&!P.catchup&&P.need>P.budget*1.05) out.push(`<p class="small" style="margin:0;color:var(--hard)">Rythme serré : il faudrait environ ${fmtMin(P.need)} par jour. <button class="btn-ghost" style="padding:0;min-height:0;border:0;background:none;font-weight:700;color:inherit;text-decoration:underline" data-act="plan-open">Ajuster</button></p>`);
+  return sec(out.join(''));
 }
 
 // ---------- Démarrage ----------
