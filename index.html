@@ -431,6 +431,34 @@ button.kpi:disabled{opacity:1;cursor:default}
   .dh-art{display:block}
   .dh-big{font-size:2.125rem}
 }
+/* Séance comme dans les maquettes */
+.sess-where{margin:-6px 0 0;font-size:.875rem;color:var(--muted)}
+.sess-grid{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
+.sess-main{flex:1 1 auto;display:flex;flex-direction:column;gap:16px;min-width:0}
+.sess-aside{display:none}
+.sess-bar i{background:var(--link)}
+.flash{border-radius:24px;border-color:var(--line);box-shadow:none;padding:calc(20px*var(--sp)) calc(18px*var(--sp));min-height:50vh}
+.flash>.spread:first-child{padding-bottom:0;border-bottom:0;gap:8px;flex-wrap:wrap}
+.flash>.spread:first-child .eyebrow{flex:1 1 auto;min-width:0;font-size:.8125rem}
+.fl-kind{font-size:.8125rem;color:var(--muted);white-space:nowrap}
+.fl-back{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:18px;background:var(--hl-soft)}
+.fl-lab{margin:0;font-size:.8125rem;font-weight:700;color:var(--muted)}
+.fl-back .hintbox{background:var(--surface)}
+.qcm-ans{padding:12px 14px;border-radius:14px;background:var(--easy-soft);color:var(--fg);font-size:.9375rem}
+.qcm button{grid-template-columns:30px 1fr auto;border-width:2px;border-color:var(--line);border-radius:14px}
+.qcm button .k{width:30px;height:30px;border-radius:9px}
+.qk-lab{align-self:start;padding-top:5px;font-size:.75rem;font-weight:700;white-space:nowrap}
+.qcm button.ok .qk-lab,.qcm button.miss .qk-lab{color:var(--good)}
+.qcm button.ko .qk-lab{color:var(--bad)}
+.grade{border:0;border-radius:14px;min-height:58px}
+.pk{display:flex;justify-content:space-between;gap:10px;font-size:.9375rem}
+.pk b{font-variant-numeric:tabular-nums}
+@media (min-width:1100px){
+  #session .layer-in{max-width:1040px}
+  .sess-grid{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:24px;align-items:start}
+  .sess-aside{display:flex;flex-direction:column;gap:12px;position:sticky;top:72px}
+  .flash .front{font-size:1.4375rem}
+}
 /* Internat */
 .plan{display:flex;flex-direction:column}
 .pl{padding:3px 0;line-height:1.4}
@@ -1670,7 +1698,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 48; // à changer avec VERSION dans sw.js
+const APP_VER = 49; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -2415,23 +2443,30 @@ function paintSession(anim){
   if(c.type==='cloze'){ front=`<div class="front rt">${cur.revealed?clozeBack(c.front):clozeFront(c.front)}</div>`; }
   else front=`<div class="front rt">${md(c.front)}</div>`;
   if(c.type==='qcm'){
-    front+=`<div class="qcm">${c.choices.map((x,i)=>{ let cls=''; if(cur.revealed){ const good=c.answer.includes(i), p=cur.picked.has(i); cls=good&&p?'ok':(!good&&p?'ko':(good?'ok miss':'')); }
-      return `<button class="${cls}" data-act="qcm-pick" data-i="${i}" aria-pressed="${cur.picked.has(i)}" ${cur.revealed?'disabled':''}><span class="k">${String.fromCharCode(65+i)}</span><span>${esc(x)}</span></button>`; }).join('')}</div>`;
+    front+=`<div class="qcm">${c.choices.map((x,i)=>{ let cls='', lab=''; if(cur.revealed){ const good=c.answer.includes(i), p=cur.picked.has(i); cls=good&&p?'ok':(!good&&p?'ko':(good?'ok miss':'')); lab=good&&p?'Bonne réponse':good?'À cocher':p?'Erreur':''; }
+      return `<button class="${cls}" data-act="qcm-pick" data-i="${i}" aria-pressed="${cur.picked.has(i)}" ${cur.revealed?'disabled':''}><span class="k">${String.fromCharCode(65+i)}</span><span>${esc(x)}</span>${lab?`<span class="qk-lab">${lab}</span>`:''}</button>`; }).join('')}</div>`;
   }
   if(am && !cur.revealed) front+=ansBoxHTML(c, cur, am);
   if(cur.revealed){
-    back=`<div class="divider"></div>${cur.res?ansResHTML(c,cur):''}${img('back')}${c.back?`<div class="rt">${md(c.back)}</div>`:''}${c.say?`<button class="btn btn-ghost" style="align-self:flex-start" data-act="say" data-l="en-US" data-t="${esc(c.say)}">${I.ear} Écouter en anglais</button>`:''}${c.hint?`<div class="hintbox"><p class="eyebrow">Pour retenir</p><div class="rt">${md(c.hint)}</div></div>`:''}`;
+    const qa=c.type==='qcm'&&(c.answer||[]).length?`<div class="qcm-ans"><strong>Réponse attendue : ${joinFr(c.answer.slice().sort((a,b)=>a-b).map(i=>String.fromCharCode(65+i)))}</strong></div>`:'';
+    const inner=`${cur.res?ansResHTML(c,cur):''}${img('back')}${c.back?`<div class="rt">${md(c.back)}</div>`:''}${c.say?`<button class="btn btn-ghost" style="align-self:flex-start" data-act="say" data-l="en-US" data-t="${esc(c.say)}">${I.ear} Écouter en anglais</button>`:''}${c.hint?`<div class="hintbox"><p class="eyebrow">Pour retenir</p><div class="rt">${md(c.hint)}</div></div>`:''}`;
+    back=qa+(inner?`<div class="fl-back"><p class="fl-lab">${c.type==='qcm'?'Explication':'Réponse'}</p>${inner}</div>`:'');
   }
   const actions = cur.disc ? discButtons(c) : !cur.revealed
     ? (c.type==='qcm'?`<button class="btn btn-primary btn-lg" data-act="reveal">Valider mes réponses</button>`:`<button class="btn btn-primary btn-lg" data-act="reveal">${am?'Voir la correction':'Afficher la réponse'}</button>`)
     : ansSugg(gradeButtons(c), cur);
+  const tot=Math.max(s.done+1, s.done+(s.mode==='srs'?r.nw+r.lrn+r.rev:r.n));
+  const where=[{srs:'Révisions du jour', recent:'Cartes de la semaine', cram:'Bachotage', hard:'Cartes difficiles', list:'Révision ciblée'}[s.mode]||'Révision', s.scope&&s.scope!=='all'?scopeLabel(s.scope):'', 'carte '+(s.done+1)+' sur '+tot].filter(Boolean).join(' · ');
+  const kind=c.type==='qcm'?'QCM':c.type==='cloze'?'Texte à trous':c.img?'Image à identifier':am?'Question à rédiger':'Question';
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}${s.undo?'<button class="icon-btn" data-act="sess-undo" aria-label="Annuler la dernière note" title="Annuler la dernière note" style="font-size:1.25rem">↶</button>':''}</div>
-   <article class="flash ${anim&&S.prefs.anim!=='none'?'anim-'+S.prefs.anim:''}" id="flash">
-     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):c.exa&&EXA_BY[c.exa]?'Examen clinique · '+esc(EXA_SYS[EXA_BY[c.exa].sys]):c.eng&&ENG_BY[c.eng]?'Anglais médical · '+esc(ENG_BY[c.eng].n):c.sch&&SCH_BY[c.sch]?"Analyse d'images · "+esc(SCH_BY[c.sch].n):'Sans chapitre')}</p>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
+   <p class="sess-where">${esc(where)}</p>
+   <div class="sess-grid"><div class="sess-main">
+   <article class="flash ${cur.revealed?'rev':''} ${anim&&S.prefs.anim!=='none'?'anim-'+S.prefs.anim:''}" id="flash">
+     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):c.exa&&EXA_BY[c.exa]?'Examen clinique · '+esc(EXA_SYS[EXA_BY[c.exa].sys]):c.eng&&ENG_BY[c.eng]?'Anglais médical · '+esc(ENG_BY[c.eng].n):c.sch&&SCH_BY[c.sch]?"Analyse d'images · "+esc(SCH_BY[c.sch].n):'Sans chapitre')}</p><span class="fl-kind">${kind}</span>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
      ${img('front')}${front}${back}
    </article>
    ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button>${c.srs.state==='new'&&s.mode==='srs'?'<button class="btn btn-ghost" data-act="sess-later">Pas aujourd\'hui</button>':''}<button class="btn btn-ghost" data-act="sess-suspend">Retirer de mes révisions</button></div>`:''}
-   ${(!cur.revealed&&!cur.disc&&(c.type==='qa'||c.type==='cloze'))?ansModesHTML():''}<div class="sess-actions">${actions}</div>`;
+   ${(!cur.revealed&&!cur.disc&&(c.type==='qa'||c.type==='cloze'))?ansModesHTML():''}<div class="sess-actions">${actions}</div></div>${sessAsideHTML(r)}</div>`;
   $('#session').scrollTop=0;
   if(am==='voice' && !cur.revealed && !cur.spoke){ cur.spoke=true; sayText(ansQuestion(c), 'fr-FR'); }
 }
@@ -7243,6 +7278,16 @@ function viewExam(){
    <section class="panel stack"><h3 style="margin:0">S'entraîner autrement</h3>${trainTiles(['cas','exo','sch','exa'])}</section></div>`;
 }
 
+// ---------- Séance : panneau « Ce paquet » (ordinateur) ----------
+const joinFr = a => a.length<2 ? a.join('') : a.slice(0,-1).join(', ')+' et '+a[a.length-1];
+function sessAsideHTML(r){
+  const s=SESS; if(!s) return ''; const left=s.mode==='srs'?r.nw+r.lrn+r.rev:r.n;
+  const tm=upcoming(1)[0]; const hard=liveCards(s.scope||'all').filter(isHard).length;
+  const row=(t,v)=>`<div class="pk"><span>${t}</span><b>${v}</b></div>`;
+  return `<aside class="sess-aside"><section class="panel stack"><h3 style="margin:0">Ce paquet</h3>
+    ${row('Encore à voir', left)}${row('Déjà faites', s.done)}${row('Réussite', s.done?Math.round(100*s.ok/s.done)+' %':'–')}${row('Difficiles', hard)}${row('Demain', plural(tm?tm.n:0,'carte'))}</section>
+    <section class="panel stack"><h3 style="margin:0">Au clavier</h3><p class="small muted" style="margin:0"><b>Espace</b> : voir la réponse, puis « Bien ».<br><b>1 à 4</b> : À revoir, Difficile, Bien, Facile.<br><b>Échap</b> : quitter.</p></section></aside>`;
+}
 // ---------- Démarrage ----------
 loadLocal(); exrLoad(); buildIndex(); itrLoad(); applyTheme(); updateDueDot(); render();
 cloudInit(); aiInit();
