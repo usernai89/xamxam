@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Courbe d'une fonction et sa tangente">
+<rect width="240" height="180" rx="18" fill="#FBF6EA"/>
+<g stroke="#E6DCC6" stroke-width="1"><path d="M40 20V160M70 20V160M100 20V160M130 20V160M160 20V160M190 20V160M220 20V160M20 40H230M20 70H230M20 100H230M20 130H230"/></g>
+<path d="M24 140H226M216 134L226 140L216 146M40 166V18M34 28L40 18L46 28" stroke="#1E1C18" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M58 30Q120 210 182 30" stroke="#2742A0" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<path d="M128.3 130.4L173.7 64.6" stroke="#D4563F" stroke-width="3" stroke-linecap="round"/>
+<circle cx="151" cy="97.5" r="5" fill="#FFD84D" stroke="#1E1C18" stroke-width="2"/>
+<text x="64" y="26" font-family="Georgia, serif" font-style="italic" font-size="15" fill="#2742A0">y = x²</text>
+<text x="180" y="60" font-family="Georgia, serif" font-style="italic" font-size="14" fill="#D4563F">tangente</text>
+</svg>

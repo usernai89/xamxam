@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Balance de la justice">
+<rect width="240" height="180" rx="18" fill="#FBF6EA"/>
+<rect x="116" y="44" width="8" height="106" fill="#1E1C18"/>
+<path d="M84 160H156L146 148H94Z" fill="#1E1C18"/>
+<rect x="52" y="46" width="136" height="6" rx="3" fill="#1E1C18"/>
+<path d="M60 52L42 102M60 52L78 102M180 52L162 102M180 52L198 102" stroke="#1E1C18" stroke-width="2"/>
+<path d="M36 102H84A24 13 0 0 1 36 102Z" fill="#FFD84D" stroke="#1E1C18" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M156 102H204A24 13 0 0 1 156 102Z" fill="#FFD84D" stroke="#1E1C18" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="120" cy="42" r="8" fill="#FFD84D" stroke="#1E1C18" stroke-width="2.5"/>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Coupe d'une dent">
+<rect width="240" height="180" rx="18" fill="#FBF6EA"/>
+<path d="M18 112C50 106 70 114 88 108L152 108C170 114 190 106 222 112V162H18Z" fill="#EAE3D4" stroke="#1E1C18" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M18 98C46 92 70 100 86 96L154 96C170 100 194 92 222 98V114C196 108 172 116 154 110L86 110C68 116 44 108 18 114Z" fill="#F2A08E" stroke="#1E1C18" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M86 64C82 40 96 24 120 24C144 24 158 40 154 64L150 92C150 112 147 132 141 150C139 160 131 162 129 152L122 114H118L111 152C109 162 101 160 99 150C93 132 90 112 90 92Z" fill="#FFF3C4" stroke="#1E1C18" stroke-width="3" stroke-linejoin="round"/>
+<path d="M86 64C82 40 96 24 120 24C144 24 158 40 154 64L151 84C138 78 102 78 89 84Z" fill="#FFFFFF" stroke="#1E1C18" stroke-width="3" stroke-linejoin="round"/>
+<path d="M108 60C108 52 113 48 120 48C127 48 132 52 132 60L131 94L127 140L123 108H117L113 140L109 94Z" fill="#D4563F" stroke="#1E1C18" stroke-width="2" stroke-linejoin="round"/>
+<g font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1E1C18">
+<path d="M146 40H176M140 70H176M128 118H176" stroke="#1E1C18" stroke-width="1.2" fill="none"/>
+<text x="180" y="44">Émail</text><text x="180" y="74">Dentine</text><text x="180" y="122">Pulpe</text>
+<text x="12" y="86">Gencive</text><text x="12" y="150">Os alvéolaire</text>
+<path d="M40 88L52 98" stroke="#1E1C18" stroke-width="1.2"/>
+</g>
+</svg>

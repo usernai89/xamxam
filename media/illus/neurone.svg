@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Neurone">
+<rect width="240" height="180" rx="18" fill="#FBF6EA"/>
+<g stroke="#1E1C18" stroke-width="3" stroke-linecap="round" fill="none">
+<path d="M46 76L30 58L18 54M30 58L26 42M44 104L28 120L16 122M28 120L26 136M60 68L56 44L46 34M56 44L66 30M62 112L60 138L50 150M60 138L72 150"/>
+<path d="M82 92C110 92 120 98 150 94C170 91 186 92 204 92"/>
+<path d="M204 92L218 78M204 92L222 92M204 92L218 106"/>
+</g>
+<circle cx="60" cy="90" r="23" fill="#CDE8EB" stroke="#1E1C18" stroke-width="3"/>
+<circle cx="60" cy="90" r="8" fill="#0F6E7A"/>
+<g fill="#FFD84D" stroke="#1E1C18" stroke-width="2.5"><rect x="94" y="87" width="24" height="12" rx="6"/><rect x="126" y="89" width="24" height="12" rx="6"/><rect x="158" y="86" width="24" height="12" rx="6"/></g>
+<g fill="#0F6E7A" stroke="#1E1C18" stroke-width="2"><circle cx="220" cy="76" r="5"/><circle cx="225" cy="92" r="5"/><circle cx="220" cy="108" r="5"/></g>
+<path d="M112 66H168" stroke="#2742A0" stroke-width="3" stroke-linecap="round"/>
+<path d="M160 60L170 66L160 72" stroke="#2742A0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

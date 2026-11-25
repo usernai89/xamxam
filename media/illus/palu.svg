@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Frottis sanguin avec Plasmodium">
+<rect width="240" height="180" rx="18" fill="#F7E8EC"/>
+<g fill="#EFB7C2" stroke="#D98A9C" stroke-width="2">
+<circle cx="40" cy="40" r="17"/><circle cx="86" cy="30" r="17"/><circle cx="134" cy="44" r="17"/><circle cx="184" cy="34" r="17"/>
+<circle cx="30" cy="94" r="17"/><circle cx="78" cy="86" r="17"/><circle cx="126" cy="98" r="17"/><circle cx="172" cy="92" r="17"/>
+<circle cx="52" cy="142" r="17"/><circle cx="102" cy="144" r="17"/><circle cx="150" cy="148" r="17"/><circle cx="200" cy="140" r="17"/>
+</g>
+<g fill="#F6D3DA"><circle cx="40" cy="40" r="7"/><circle cx="86" cy="30" r="7"/><circle cx="134" cy="44" r="7"/><circle cx="184" cy="34" r="7"/><circle cx="30" cy="94" r="7"/><circle cx="126" cy="98" r="7"/><circle cx="52" cy="142" r="7"/><circle cx="150" cy="148" r="7"/><circle cx="200" cy="140" r="7"/></g>
+<g fill="none" stroke="#6B3FA0" stroke-width="2.4"><circle cx="82" cy="83" r="6"/><circle cx="70" cy="92" r="5"/><circle cx="176" cy="89" r="6"/><circle cx="106" cy="140" r="6"/></g>
+<g fill="#3F2270"><circle cx="87" cy="78" r="2.6"/><circle cx="66" cy="88" r="2.4"/><circle cx="181" cy="84" r="2.6"/><circle cx="111" cy="135" r="2.6"/></g>
+<path d="M200 70C210 60 230 62 234 78C226 72 212 70 202 80Z" fill="#B79AD6" stroke="#6B3FA0" stroke-width="2" stroke-linejoin="round"/>
+<g fill="#3F2270"><circle cx="216" cy="70" r="1.6"/><circle cx="222" cy="72" r="1.6"/></g>
+</svg>

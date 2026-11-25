@@ -342,6 +342,95 @@ mark.filled{background:var(--hl)!important;color:var(--hl-ink)!important;font-we
 .exo-in input{flex:1;min-width:0;font-variant-numeric:tabular-nums}
 .exo-in span{font-weight:700;white-space:nowrap}
 .exo-steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px;font-variant-numeric:tabular-nums}
+/* Cadre des maquettes : barre du haut, onglets en pastille */
+.appbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:2px;height:calc(56px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) max(6px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line)}
+.ab-brand{flex:1 1 auto;display:flex;align-items:center;gap:10px;min-height:44px;padding:0;border:0;background:none;color:var(--fg);text-align:left}
+.ab-brand svg{width:28px;height:28px;flex:none}
+.ab-brand span{font-family:var(--font-display);font-weight:700;font-size:1.3125rem;letter-spacing:-0.01em}
+.ab-btn{width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:var(--r-sm);background:transparent;color:var(--fg)}
+.ab-btn svg{width:22px;height:22px}
+.ab-btn[aria-pressed=true]{background:var(--hl);color:var(--hl-ink)}
+#app{padding-top:calc(56px + env(safe-area-inset-top,0px) + 16px*var(--sp))}
+.side-only{display:none!important}
+.tab{gap:4px;padding:6px 0 4px;font-size:0.6875rem}
+.tab-ic{width:56px;height:30px;border-radius:999px;display:grid;place-items:center;transition:background-color .15s}
+.tab-ic svg{width:22px;height:22px}
+.tab[aria-current=page]{color:var(--fg)}
+.tab[aria-current=page] .tab-ic{background:var(--hl);color:var(--hl-ink)}
+.tab[aria-current=page]::before{content:none}
+.tab .dot{top:0;margin-left:9px}
+/* Tableau de bord */
+.view>header{border-bottom:0;padding-bottom:0}
+.dash{display:flex;flex-direction:column;gap:calc(16px*var(--sp))}
+.dash-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.dash-head h1{font-size:1.625rem}
+.dash-tools{display:none}
+.tag-hl{align-self:flex-start;display:inline-flex;padding:3px 10px;border-radius:999px;background:var(--hl);color:var(--hl-ink);font-size:0.8125rem;font-weight:700}
+.dash-hero{display:flex;gap:20px;align-items:center}
+.dh-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:10px}
+.dh-big{font-family:var(--font-display);font-size:2rem;line-height:1.1;font-weight:700}
+.dh-sub{margin:0}
+.dh-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.dh-btns .btn{flex:1 1 auto}
+.dh-art{display:none;flex:none;width:200px;height:150px;border-radius:16px}
+.dh-plan>summary{cursor:pointer;font-weight:700;font-size:.9375rem;color:var(--link);padding:4px 0}
+.dh-plan[open]>summary{margin-bottom:8px}
+.btn-link{align-self:flex-start;border:0;background:none;padding:4px 0;min-height:40px;color:var(--link);font-weight:700;font-size:.9375rem;display:inline-flex;align-items:center;gap:6px;text-align:left}
+.btn-link svg{width:18px;height:18px}
+.btn-line{background:transparent;border:1px solid var(--line2);color:var(--fg)}
+.btn-sm{min-height:40px;padding:0 14px;font-size:.875rem}
+.t-bad{color:var(--bad)}
+.dash-exam{display:flex;flex-direction:column;gap:6px}
+.de-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.de-t{font-size:1.0625rem;line-height:1.3}
+.de-j{font-family:var(--font-display);font-size:1.875rem;line-height:1;color:var(--link);white-space:nowrap}
+.bar-pri,.bar-bad{display:block;height:8px;border-radius:999px;background:var(--surface2);overflow:hidden}
+.bar-pri i,.bar-bad i{display:block;height:100%;border-radius:inherit}
+.bar-pri i{background:var(--link)}
+.bar-bad{height:6px}
+.bar-bad i{background:var(--bad)}
+.d-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kpi{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;padding:12px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);color:var(--fg);text-align:left;font:inherit}
+button.kpi:disabled{opacity:1;cursor:default}
+.kpi-l,.kpi-s{font-size:.75rem;color:var(--muted);line-height:1.3}
+.kpi-v{font-family:var(--font-display);font-size:1.25rem;line-height:1.15;font-weight:700}
+.kpi-ring{display:none}
+.kpi-ring{width:40px;height:40px;flex:none}
+.kpi-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.wk{display:none;gap:6px}
+.wk i{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-style:normal;font-size:.75rem;font-weight:700;background:var(--surface2);color:var(--muted)}
+.wk i.on{background:var(--good);color:var(--surface)}
+.wk i.td{box-shadow:inset 0 0 0 2px var(--fg)}
+.rs{display:flex;flex-direction:column;gap:8px}
+.rs-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:0;border-radius:var(--r-sm);background:var(--bg);color:var(--fg);text-align:left;font:inherit}
+.rs-t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rs-t strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs-go{flex:none;font-weight:700;color:var(--link)}
+.wk-list{display:flex;flex-direction:column;gap:14px}
+.wk-row{display:flex;align-items:center;gap:12px}
+.wk-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px}
+.wk-name{border:0;background:none;padding:0;color:var(--fg);font:inherit;font-weight:700;text-align:left}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;padding:8px 8px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--bg);color:var(--fg);text-align:left;font:inherit}
+.tile img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:calc(var(--r) - 6px);margin-bottom:6px;background:var(--surface2)}
+.tile .t{font-weight:700;font-size:.9375rem;line-height:1.25;padding:0 4px}
+.tile .d{font-size:.8125rem;color:var(--muted);padding:0 4px}
+.tile:hover{border-color:var(--line2)}
+.view .hero{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.view .hero .eyebrow{color:var(--muted);opacity:1}
+.view .hero .ecg{opacity:.9}
+.view .hero-stats span{border-color:var(--line2)}
+@media (min-width:600px){
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpi{flex-direction:row;align-items:center;gap:14px;padding:16px 18px}
+  .kpi.kpi-col{flex-direction:column;align-items:flex-start;gap:6px}
+  .kpi-ring{width:54px;height:54px}
+  .kpi-l,.kpi-s{font-size:.875rem}
+  .kpi-v{font-size:1.5rem}
+  .kpi-ring{display:block}
+  .dh-art{display:block}
+  .dh-big{font-size:2.125rem}
+}
 /* Internat */
 .plan{display:flex;flex-direction:column}
 .pl{padding:3px 0;line-height:1.4}
@@ -598,34 +687,47 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 .tbl-wrap th{position:sticky;top:0;background:var(--surface2);font-size:0.8125rem;color:var(--muted)}
 .tbl-wrap td:first-child{font-weight:700;min-width:150px}
 .tbl-wrap tr.sysrow td{background:var(--fg);color:var(--surface);font-family:var(--font-display);font-weight:700}
-/* Ordinateur : menu sur le côté */
+/* Ordinateur : menu sur le côté, comme dans les maquettes */
 .side-foot{display:none}
 @media (min-width:1100px){
   body{padding-left:272px;padding-right:32px}
-  .tabbar{top:0;right:auto;width:240px;border-top:0;border-right:1px solid var(--line2);padding:28px 14px 20px;display:flex;flex-direction:column;overflow-y:auto}
-  .tabbar-in{max-width:none;margin:0;display:flex;flex-direction:column;gap:4px}
-  .tabbar-in::before{content:"XamXam";align-self:flex-start;margin:0 0 20px 12px;padding-bottom:2px;border-bottom:4px solid var(--hl);font-family:var(--font-display);font-weight:700;font-size:1.625rem;line-height:1.1;letter-spacing:-0.01em;color:var(--fg)}
-  .tab{flex-direction:row;justify-content:flex-start;gap:12px;padding:10px 12px;border-radius:var(--r-sm);font-size:0.9375rem}
-  .tab svg{width:22px;height:22px;flex:none}
-  .tab:hover{background:color-mix(in srgb,var(--fg) 6%,transparent);color:var(--fg)}
-  .tab[aria-current=page]{background:var(--surface2)}
-  .tab[aria-current=page]::before{top:8px;bottom:8px;left:0;width:4px;height:auto;margin-left:0;border-radius:0 3px 3px 0}
+  .appbar{display:none}
+  #app{max-width:1180px;padding-top:calc(30px*var(--sp));padding-bottom:64px}
+  body:not([data-tab=home]):not([data-tab=exam]) #app{max-width:860px}
+  .side-only{display:flex!important}
+  .tabbar{top:0;right:auto;width:240px;border-top:0;border-right:1px solid var(--line);padding:20px 12px 16px;display:flex;flex-direction:column;overflow-y:auto}
+  .tabbar-in{max-width:none;margin:0;display:flex;flex-direction:column;gap:2px}
+  .side-brand{align-items:center;gap:10px;padding:4px 10px 16px;font-family:var(--font-display);font-weight:700;font-size:1.375rem;color:var(--fg)}
+  .side-brand svg{width:30px;height:30px;flex:none}
+  .tab{flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;min-height:40px;padding:0 12px;border-radius:10px;font-size:0.9375rem;font-weight:400;color:var(--fg)}
+  .tab-ic{width:auto;height:auto;background:none!important;border-radius:0}
+  .tab-ic svg,.tab svg{width:20px;height:20px}
+  .tab[aria-current=page]{background:var(--hl);color:var(--hl-ink);font-weight:700}
+  .tab:hover:not([aria-current=page]){background:color-mix(in srgb,var(--fg) 6%,transparent)}
   .tab .dot{position:static;margin:0 0 0 auto;box-shadow:none}
-  .side-foot{display:flex;flex-direction:column;gap:8px;margin-top:auto;padding-top:20px}
+  .side-h{margin:14px 12px 4px;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .tab.sc{min-height:36px;font-size:.875rem;color:var(--muted)}
+  .tab.sc:hover{color:var(--fg)}
+  .side-foot{display:flex;flex-direction:column;gap:8px;margin-top:auto;padding-top:16px}
   .side-card{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:var(--r-sm);padding:10px 12px;color:var(--fg)}
   .side-card b{font-family:var(--font-display);font-size:1.5rem;line-height:1.1}
   .side-card svg{width:18px;height:18px}
   .side-card:hover{border-color:var(--line2)}
-  #app{max-width:820px;padding-block:calc(32px*var(--sp)) 64px}
   #sheet{left:240px}
   .layer-in{max-width:760px}
   #toast{bottom:32px;left:calc(50% + 120px)}
-}
-@media (min-width:1400px){
-  body[data-tab=home] #app{max-width:1180px}
-  body[data-tab=home] #view{display:block;column-count:2;column-gap:28px}
-  body[data-tab=home] #view>*{break-inside:avoid;margin:0 0 calc(20px*var(--sp))}
-  body[data-tab=home] #view>.home-head{column-span:all}
+  .dash{flex-direction:row;flex-wrap:wrap;gap:22px;align-items:stretch}
+  .dash>*{flex:1 1 100%;min-width:0;margin:0}
+  .dash>.d-hero{flex:2 1 480px}
+  .dash>.d-exam{flex:1 1 260px}
+  .dash>.d-half{flex:1 1 340px}
+  .dash-tools{display:flex;gap:10px;align-items:center}
+  .dash-search{display:flex;align-items:center;gap:8px;width:300px;height:46px;padding:0 14px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--surface);color:var(--muted);font:inherit;text-align:left}
+  .dash-search svg{width:18px;height:18px}
+  .dash-head h1{font-size:1.875rem}
+  .tiles{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .wk{display:flex}
+  .d-kpis{gap:22px}
 }
 </style>
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
@@ -634,13 +736,30 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 
 <div id="app"><main id="view" class="view" aria-live="polite"></main></div>
 
+<header class="appbar" id="appbar">
+  <button class="ab-brand" data-act="tab" data-tab="home" aria-label="XamXam : accueil"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="5" width="26" height="22" rx="5" fill="var(--hl)"/><path d="M8 12h10M8 17h14M8 22h8" stroke="#1E1C18" stroke-width="2.4" stroke-linecap="round"/></svg><span>XamXam</span></button>
+  <button class="ab-btn" data-act="gs-open" aria-label="Chercher dans tout XamXam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"/></svg></button>
+  <button class="ab-btn" id="abNew" data-act="tab" data-tab="new" aria-label="Créer des cartes ou importer un cours" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3.5h13a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2zM12 8v8M8 12h8"/></svg></button>
+</header>
+
 <nav class="tabbar" aria-label="Navigation">
   <div class="tabbar-in">
-    <button class="tab" data-act="tab" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</button>
-    <button class="tab" data-act="tab" data-tab="prog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 19.5V5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20"/><path d="M8 7h8M8 11h6"/></svg>Cours</button>
-    <button class="tab" data-act="tab" data-tab="rev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/></svg>Réviser<span class="dot mono" id="dueDot" hidden></span></button>
-    <button class="tab" data-act="tab" data-tab="new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M12 8v8M8 12h8"/></svg>Créer</button>
-    <button class="tab" data-act="tab" data-tab="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.6-3.9 3.6-6 7.5-6s6.9 2.1 7.5 6"/></svg>Moi</button>
+    <div class="side-brand side-only" aria-hidden="true"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="5" width="26" height="22" rx="5" fill="var(--hl)"/><path d="M8 12h10M8 17h14M8 22h8" stroke="#1E1C18" stroke-width="2.4" stroke-linecap="round"/></svg><span>XamXam</span></div>
+    <button class="tab" data-act="tab" data-tab="home"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span>Accueil</button>
+    <button class="tab" data-act="tab" data-tab="prog"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20M8 7h8M8 11h6"/></svg></span>Cours</button>
+    <button class="tab" data-act="tab" data-tab="rev"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zM7 3h12a2 2 0 0 1 2 2v12"/></svg></span>Réviser<span class="dot mono" id="dueDot" hidden></span></button>
+    <button class="tab" data-act="tab" data-tab="exam"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6v4H9zM7 5H5v16h14V5h-2M8.5 13l2.5 2.5 4.5-5"/></svg></span>Examens</button>
+    <button class="tab" data-act="tab" data-tab="me"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0"/></svg></span>Moi</button>
+    <button class="tab side-only" data-act="tab" data-tab="new"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3.5h13a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2zM12 8v8M8 12h8"/></svg></span>Créer</button>
+    <p class="side-h side-only">Raccourcis</p>
+    <button class="tab sc side-only" data-act="plan-open"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v16H4zM4 10h16M9 3v4M15 3v4"/></svg></span>Mon programme</button>
+    <button class="tab sc side-only" data-act="bl-open"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 9v4l2.5 1.5M10 2h4"/></svg></span>Examen blanc</button>
+    <button class="tab sc side-only" data-act="cas-open"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 12.5-6.6M18 15v6M15 18h6"/></svg></span>Cas cliniques</button>
+    <button class="tab sc side-only" data-act="exo-open"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg></span>Exercices de calcul</button>
+    <button class="tab sc side-only" data-act="sch-open"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 15l4-4 4 4 3-3 5 5M15 9h.01"/></svg></span>Analyse d'images</button>
+    <button class="tab sc side-only" data-act="exa-open"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v5a4 4 0 0 0 8 0V4M10 13v2a5 5 0 0 0 10 0v-1M20 13a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/></svg></span>Examen clinique</button>
+    <button class="tab sc side-only" data-act="eng-open"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h11v8H8l-4 3zM15 9h5v8l-3-2h-6v-2"/></svg></span>Anglais médical</button>
+    <button class="tab sc side-only" data-act="gs-open"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"/></svg></span>Chercher partout</button>
   </div>
   <div class="side-foot" id="sideFoot"></div>
 </nav>
@@ -991,8 +1110,8 @@ const FONTS = {
  serif:{name:'Livre', css:"'Source Serif 4',Georgia,'Times New Roman',serif"},
  system:{name:'Système', css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"}
 };
-const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', cas:'Cas cliniques', img:"Analyse d'images", exo:'Exercices de calcul', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Programme du jour'};
-const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'nunito', heads:'expressive', size:17, radius:'soft', density:'normal', anim:'flip', buttons:4,
+const HOME_SECTIONS = {today:'Révisions du jour', countdown:'Prochain examen', stats:'Objectif, série et semaine', plan:'Programme du jour', resume:'Reprendre', weak:'Points faibles à travailler', train:"S'entraîner", exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', cas:'Cas cliniques', img:"Analyse d'images", exo:'Exercices de calcul', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité"};
+const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'atkinson', heads:'expressive', size:17, radius:'round', density:'normal', anim:'flip', buttons:4,
   semStart:'2026-11-19', examDate:'', newPerDay:25, maxRev:300, capExam:true, quick:10, lastExport:0,
   home:[['today',1],['exams',1],['internat',1],['syn',1],['tri',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
 
@@ -1120,7 +1239,7 @@ function loadLocal(){
 }
 // Passage au style « Cahier » : une seule fois (les anciens thèmes restent dans Moi → Apparence).
 // « ui » n'est volontairement pas dans DEFAULT_PREFS : son absence signale des réglages d'avant ce style.
-function migratePrefs(){ const p=S.prefs; if(!p.level && (Object.keys(S.progress||{}).length || Object.keys(S.cards||{}).length)){ p.level='L3'; p.levelSem=1; } if(p.ui!==2){ p.theme='cahier'; p.accent=''; p.font='nunito'; p.heads='expressive'; p.radius='soft'; p.density='normal'; p.ui=2; } }
+function migratePrefs(){ const p=S.prefs; if(!p.level && (Object.keys(S.progress||{}).length || Object.keys(S.cards||{}).length)){ p.level='L3'; p.levelSem=1; } if(!(p.ui>=2)){ p.theme='cahier'; p.accent=''; p.font='nunito'; p.heads='expressive'; p.radius='soft'; p.density='normal'; p.ui=2; } if(p.ui<3){ p.font='atkinson'; p.radius='round'; p.ui=3; } }
 let localTimer;
 function saveLocal(){ clearTimeout(localTimer); localTimer=setTimeout(writeLocal, 250); }
 function writeLocal(){
@@ -1491,6 +1610,11 @@ function ensureHome(){
   const h=Array.isArray(S.prefs.home)?S.prefs.home:[];
   for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='eng'?Math.max(i,h.findIndex(r=>r[0]==='exa'))+1:k==='cas'?Math.max(i,h.findIndex(r=>r[0]==='eng'))+1:k==='img'?Math.max(i,h.findIndex(r=>r[0]==='cas'))+1:k==='exo'?Math.max(i,h.findIndex(r=>r[0]==='img'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
   if(!S.prefs.planV){ const j=h.findIndex(r=>r[0]==='plan'); if(j>=0){ const [row]=h.splice(j,1); h.splice(h.findIndex(r=>r[0]==='today')+1,0,row); } S.prefs.planV=1; }
+  if((S.prefs.homeV||0)<2){ // une fois : l'accueil prend la forme du tableau de bord des maquettes
+    const vis={}; h.forEach(r=>{ vis[r[0]]=r[1]; });
+    const order=['today','countdown','stats','plan','resume','weak','train','edt','progress','heatmap','exams','internat','syn','tri','exa','eng','cas','img','exo'];
+    const moved=new Set(['exams','internat','syn','tri','exa','eng','cas','img','exo']); // rangés dans « S'entraîner » et l'onglet Examens
+    h.length=0; order.forEach(k=>h.push([k, moved.has(k)?0:(vis[k]===0?0:1)])); S.prefs.homeV=2; }
   S.prefs.home=h.filter(r=>HOME_SECTIONS[r[0]]);
 }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -1546,7 +1670,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 47; // à changer avec VERSION dans sw.js
+const APP_VER = 48; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1732,9 +1856,10 @@ if(!['home','prog','rev','new','me'].includes(UI.tab)) UI.tab='home';
 
 function render(){
   const v=$('#view');
-  const fn={home:viewHome, prog:viewProg, rev:viewRev, new:viewNew, me:viewMe}[UI.tab]||viewHome;
+  const fn={home:viewHome, prog:viewProg, rev:viewRev, new:viewNew, me:viewMe, exam:viewExam}[UI.tab]||viewHome;
   const y=window.scrollY; v.innerHTML=fn(); if(UI.keepScroll){ window.scrollTo(0,y); UI.keepScroll=false; }
   $$('.tab').forEach(b=>b.setAttribute('aria-current', b.dataset.tab===UI.tab?'page':'false'));
+  const an=$('#abNew'); if(an) an.setAttribute('aria-pressed', UI.tab==='new');
   document.body.dataset.tab=UI.tab; const sf=$('#sideFoot'); if(sf) sf.innerHTML=sideFootHTML();
   afterRender();
 }
@@ -1748,13 +1873,15 @@ function updateDueDot(){ const c=counts('all'); const n=c.rev+c.lrn+c.nw; const 
 function viewHome(){
   ensureHome(); const p=S.prefs; const h=new Date().getHours();
   const hello=(h<5||h>=18)?'Bonsoir':'Bonjour';
-  let html=`<header class="home-head"><div class="stack" style="gap:6px"><p class="eyebrow">${esc(fmtLong(new Date()))}</p><h1>${hello}${p.name?' '+esc(p.name):''}</h1></div>
-    <button class="streak" data-act="tab" data-tab="me" aria-label="Série de jours de révision">${I.flame}<span class="mono">${streak()}</span><span class="small muted">j</span></button></header>`;
+  const who=[capFirst(fmtLong(new Date())), S.prefs.level?LV[myLvl()].id+' · semestre '+semNo(myLvl(),mySem()):''].filter(Boolean).join(' · ');
+  let html=`<header class="dash-head"><div class="stack" style="gap:4px"><p class="eyebrow">${esc(who)}</p><h1>${hello}${p.name?' '+esc(p.name):''} ! Voici ta journée.</h1></div>
+    <div class="dash-tools"><button class="dash-search" data-act="gs-open">${I.search}<span>Chercher dans tes cours</span></button><button class="btn btn-soft" data-act="tab" data-tab="new">Importer un cours</button></div></header>`;
   if(!S.prefs.level) html+=levelPickHome();
-  for(const [key,on] of p.home){ if(on && HOME_SECTIONS[key]) html+=homeSection(key); }
+  html+='<div class="dash">'; for(const [key,on] of p.home){ if(on && HOME_SECTIONS[key]) html+=homeSection(key); } html+='</div>';
   return html;
 }
 function homeSection(k){
+  const dash={today:dashToday, countdown:dashExam, stats:dashStats, resume:dashResume, weak:dashWeak, train:dashTrain}[k]; if(dash) return dash();
   if(k==='today'){
     const c=counts('all'); const total=Object.keys(S.cards).length;
     if(!total) return `<section class="today"><p class="eyebrow">Pour commencer</p><h2>Ouvre tes cours</h2>
@@ -4448,6 +4575,8 @@ document.addEventListener('click', async e=>{
     case 'bl-open': openSheet(blSheet); break;
     case 'plan-open': openSheet(planSheet); break;
     case 'exo-open': openSheet(exoSheet); break;
+    case 'exo-resume': exoOpenRun(); break;
+    case 'cas-resume': openSheet(casRunSheet); break;
     case 'exo-start': exoStart(d.id); break;
     case 'exo-series': exoSeries(d.sys||''); break;
     case 'exo-pick': if(UI.exo&&!UI.exo.done){ UI.exo.pick=+d.j; paintSheet(true); } break;
@@ -4516,7 +4645,7 @@ document.addEventListener('click', async e=>{
     case 'goto-mod': goMod(d.mod); break;
     case 'goto-subs': { const sub=d.subs.split(',')[0]; if(SUBS[sub]) goMod(SUBS[sub].mod, sub); break; }
     case 'progf': UI.progFilter=d.f; rerender(); break;
-    case 'chap': UI.chapId=d.id; openSheet(()=>chapterSheet(UI.chapId)); break;
+    case 'chap': UI.chapId=d.id; lsSet('xamxam.lastChap', d.id); openSheet(()=>chapterSheet(UI.chapId)); break;
     case 'add-chap': UI.addSub=d.sub; openSheet(addChapSheet); break;
     case 'add-chap-go': { const t=($('#newChapTitle')||{}).value||''; if(!t.trim()){ toast('Écris le titre du chapitre.'); break; }
       S.custom.push({id:uid('x'), sub:UI.addSub, title:t.trim(), created:now(), t:now()}); saveLocal(); cloudPut('progress'); buildIndex(); closeSheet(); toast('Chapitre ajouté'); break; }
@@ -7006,7 +7135,7 @@ function planSheet(){
 }
 function planHomeHTML(){
   const P=planBuild();
-  const sec=b=>`<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Programme du jour</h3><button class="btn btn-ghost" data-act="plan-open">Tout voir</button></div>${b}</section>`;
+  const sec=b=>`<section class="panel stack d-half"><div class="section-title" style="margin-bottom:0"><h3>Programme du jour</h3><button class="btn btn-ghost" data-act="plan-open">Tout voir</button></div>${b}</section>`;
   if(P.over) return sec(`<p style="margin:0">Ta date d'examen est passée. Indique la prochaine pour recalculer ton programme.</p><button class="btn btn-soft" data-act="plan-open">Fixer la date</button>`);
   const x=P.days[0], ex=P.ex; const out=[];
   out.push(`<p class="small muted" style="margin:0">J-${P.N} · ${x.rev?'révision générale':plural(P.K,'leçon')+' à apprendre avant la révision'}${ex.set?'':' · date estimée'}</p>`);
@@ -7022,6 +7151,96 @@ function planHomeHTML(){
   if(x.eve) out.push(`<p style="margin:0"><strong>Veille d'examen.</strong> Revois seulement tes cartes difficiles, puis repose-toi.</p><button class="btn btn-soft" data-act="start" data-mode="hard" data-scope="all">Mes cartes difficiles</button>`);
   if(P.K&&!P.catchup&&P.need>P.budget*1.05) out.push(`<p class="small" style="margin:0;color:var(--hard)">Rythme serré : il faudrait environ ${fmtMin(P.need)} par jour. <button class="btn-ghost" style="padding:0;min-height:0;border:0;background:none;font-weight:700;color:inherit;text-decoration:underline" data-act="plan-open">Ajuster</button></p>`);
   return sec(out.join(''));
+}
+
+// ---------- Interface des maquettes : tableau de bord de l'accueil, onglet Examens ----------
+I.ear='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 9a5.2 5.2 0 0 1 10.4 0c0 3.2-2.6 4.1-3.6 6.2-.9 1.9-1 4.3-3.7 4.3a3.2 3.2 0 0 1-3.1-3"/><path d="M10.6 9.4a2.1 2.1 0 0 1 4.2 0c0 1.6-1.6 2.1-2.1 3.2"/></svg>';
+const LOGO='<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="5" width="26" height="22" rx="5" fill="var(--hl)"/><path d="M8 12h10M8 17h14M8 22h8" stroke="#1E1C18" stroke-width="2.4" stroke-linecap="round"/></svg>';
+const capFirst = s => s ? s.charAt(0).toUpperCase()+s.slice(1) : s;
+const ILL = n => `media/illus/${n}.svg`;
+function dashToday(){
+  const c=counts('all'); const total=Object.keys(S.cards).length;
+  const art=`<img class="dh-art" src="${ILL('stetho')}" alt="" aria-hidden="true">`;
+  if(!total) return `<section class="panel d-hero dash-hero"><div class="dh-main"><span class="tag-hl">Pour commencer</span><strong class="dh-big">Ouvre tes cours</strong>
+    <p class="muted">Tes matières, tes chapitres et l'espace Internat sont dans l'onglet Cours.</p>
+    <div class="dh-btns"><button class="btn btn-primary" data-act="tab" data-tab="prog">Voir mes cours</button></div>${readyProposeHTML()}</div>${art}</section>`;
+  const n=c.rev+c.lrn+c.nw, mins=Math.max(1,Math.round(n*avgSec()/60)), q=S.prefs.quick||10, recent=recentCards('all').length;
+  const gs=planGroups(todayPlan('all')), names=gs.slice(0,3).map(g=>g.name).join(', ')+(gs.length>3?'…':'');
+  const sub=n?[c.nw?plural(c.nw,'nouvelle','nouvelles'):'', 'environ '+plural(mins,'minute'), names].filter(Boolean).join(' · '):"Les cartes reviendront toutes seules le jour prévu.";
+  return `<section class="panel d-hero dash-hero"><div class="dh-main">
+    <span class="tag-hl">Révisions du jour</span>
+    <strong class="dh-big">${n?plural(n,'carte')+' à revoir':'Tout est à jour'}</strong>
+    <p class="muted dh-sub">${esc(sub)}${c.late?` · <strong class="t-bad">${plural(c.late,'carte')} en retard</strong>`:''}</p>
+    <div class="dh-btns">${n?`<button class="btn btn-primary" data-act="start" data-mode="srs" data-scope="all">Commencer</button>${n>8?`<button class="btn btn-soft" data-act="start" data-mode="srs" data-scope="all" data-min="${q}">Séance express · ${q} min</button>`:''}`
+      :`${recent?`<button class="btn btn-primary" data-act="start" data-mode="recent" data-scope="all">Consolider la semaine (${recent})</button>`:''}<button class="btn btn-soft" data-act="tab" data-tab="rev">Bachoter un module</button>`}</div>
+    ${n&&gs.length?`<details class="dh-plan"><summary>Par leçon · ${gs.length}</summary>${dayPlanHTML(8)}</details>`:n?'':upcomingHTML(3,3)}
+    ${readyProposeHTML()}${intRereadHTML()}
+    ${n?`<button class="btn-link" data-act="aud-start" data-scope="all">${I.ear} Écouter mes cartes, mains libres</button>`:''}
+    ${gsMini()}
+  </div>${art}</section>`;
+}
+function dashExam(){
+  const ex=examDate(), dEx=daysUntil(ex.date), dSem=daysUntil(semStart()), pr=progOf(modsOf(myLvl(),mySem()).flatMap(modChaps));
+  return `<section class="panel d-exam dash-exam">
+    <span class="small muted">${dSem>0?'Rentrée dans '+plural(dSem,'jour'):'Prochain examen'}</span>
+    <div class="de-top"><strong class="de-t">Examens du semestre ${semNo(myLvl(),mySem())}</strong><strong class="de-j">${dEx>0?'J-'+dEx:dEx===0?"Aujourd'hui":'Passés'}</strong></div>
+    <span class="muted">${esc(capFirst(fmtLong(ex.date)))}${ex.set?'':' · date estimée'}</span>
+    <span class="small">Programme appris : ${pr.pct} %</span>
+    <span class="bar-pri" role="img" aria-label="Programme appris : ${pr.pct} %"><i style="width:${pr.pct}%"></i></span>
+    <button class="btn-link" data-act="plan-open">${ex.set?'Voir le programme de révision':'Fixer la date et voir le programme'}</button>
+  </section>`;
+}
+function dashStats(){
+  const t=S.stats.days[dayKey()]||{r:0,ok:0}, c=counts('all'), left=c.rev+c.lrn+c.nw, done=t.r||0, goal=done+left, pct=goal?Math.min(1,done/goal):0;
+  const R=19, C=2*Math.PI*R;
+  const ring=`<svg class="kpi-ring" viewBox="0 0 48 48" role="img" aria-label="Objectif du jour : ${done} cartes sur ${goal}"><circle cx="24" cy="24" r="${R}" fill="none" stroke="var(--surface2)" stroke-width="6"/>${pct?`<circle cx="24" cy="24" r="${R}" fill="none" stroke="var(--good)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${(C*pct).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 24 24)"/>`:''}</svg>`;
+  const d0=new Date(now()-CUT), dow=(d0.getDay()+6)%7; let wr=0, wok=0; const wk=[];
+  for(let i=0;i<7;i++){ const d=new Date(d0); d.setDate(d0.getDate()-dow+i); const v=S.stats.days[dayKey(d.getTime()+CUT)]||{}; if(i<=dow){ wr+=v.r||0; wok+=v.ok||0; } wk.push(`<i class="${(v.r||0)>0?'on':''}${i===dow?' td':''}" title="${esc(fmtLong(d))}">${'LMMJVSD'[i]}</i>`); }
+  const s=streak();
+  return `<section class="d-kpis">
+    <button class="kpi" data-act="start" data-mode="srs" data-scope="all" ${left?'':'disabled'}>${ring}<span class="kpi-t"><span class="kpi-l">Objectif du jour</span><strong class="kpi-v">${goal?done+' / '+goal:'—'}</strong><span class="kpi-s">${goal?'cartes':'rien de prévu'}</span></span></button>
+    <div class="kpi kpi-col"><span class="kpi-l">Série en cours</span><strong class="kpi-v">${plural(s,'jour')}</strong><span class="kpi-s">${s?"d'affilée":'à lancer'}</span><span class="wk" aria-label="Jours révisés cette semaine">${wk.join('')}</span></div>
+    <div class="kpi kpi-col"><span class="kpi-l">Cette semaine</span><strong class="kpi-v">${wr}</strong><span class="kpi-s">${wr?(wr>1?'questions':'question')+' · '+Math.round(100*wok/wr)+' % justes':'question pour l\'instant'}</span></div>
+  </section>`;
+}
+function dashResume(){
+  const it=[], row=(act,id,t,d,go)=>`<button class="rs-row" data-act="${act}" ${id?`data-id="${esc(id)}"`:''}><span class="rs-t"><strong>${esc(t)}</strong><span class="small muted">${esc(d)}</span></span><span class="rs-go">${go}</span></button>`;
+  for(const e of Object.values(S.exams)) if(e.kind!=='cas' && exrLive(e.id)) it.push(row('exr-resume', e.id, e.title, 'Question '+(EXR.i+1)+' sur '+EXR.idx.length+' · en cours', 'Continuer'));
+  if(UI.cas && !UI.cas.saved && CAS_BY[UI.cas.id] && UI.cas.i<CAS_BY[UI.cas.id].s.length){ const x=CAS_BY[UI.cas.id]; it.push(row('cas-resume','', 'Cas clinique · '+x.n, 'Étape '+(UI.cas.i+1)+' sur '+x.s.length+' · '+x.sys, 'Continuer')); }
+  if(UI.exo && UI.exo.ser && !UI.exo.end) it.push(row('exo-resume','', 'Exercices de calcul', 'Série · '+(UI.exo.ser.i+1)+' sur '+UI.exo.ser.ids.length, 'Continuer'));
+  const lc=lsGet('xamxam.lastChap'); if(lc && CH[lc]) it.push(row('chap', lc, CH[lc].title, 'Dernière leçon ouverte · '+(MODS[CH[lc].mod]?MODS[CH[lc].mod].short:''), 'Ouvrir'));
+  if(!it.length) return '';
+  return `<section class="panel stack d-half"><h3 style="margin:0">Reprendre</h3><div class="rs">${it.slice(0,4).join('')}</div></section>`;
+}
+function chapRate(ch, blancP){ const cs=liveCards('c:'+ch); let r=cs.length?(cs.length-cs.filter(isHard).length)/cs.length:null;
+  if(blancP!=null) r=r==null?blancP:(r+blancP)/2; return r; }
+function dashWeak(){
+  const g={}; for(const e of Object.values(S.exams)) if(e.kind==='blanc') for(const a of (e.attempts||[])) for(const [ch,[p,n]] of Object.entries(a.byChap||{})){ if(!g[ch]) g[ch]=[0,0]; g[ch][0]+=p; g[ch][1]+=n; }
+  const W=planWeak().slice(0,4);
+  const head=`<h3 style="margin:0">Points faibles à travailler</h3>`;
+  if(!W.length) return `<section class="panel stack d-half">${head}<p class="small muted" style="margin:0">Rien à signaler pour l'instant. Les chapitres que tu rates souvent, en révision ou en examen blanc, apparaîtront ici avec un bouton pour t'entraîner.</p></section>`;
+  return `<section class="panel stack d-half">${head}<div class="wk-list">${W.map(w=>{ const b=g[w.ch]?g[w.ch][0]/g[w.ch][1]:null, r=chapRate(w.ch,b), pct=r==null?0:Math.round(r*100), ch=CH[w.ch];
+    return `<div class="wk-row"><span class="wk-main"><button class="wk-name" data-act="chap" data-id="${w.ch}">${esc(ch.title)}</button><span class="bar-bad"><i style="width:${pct}%"></i></span><span class="small muted">${r==null?esc(w.why.join(' · ')):pct+' % de réussite'} · ${esc(MODS[ch.mod]?MODS[ch.mod].short:'')}</span></span>
+      <button class="btn btn-line btn-sm" data-act="start" data-mode="cram" data-scope="c:${w.ch}">S'entraîner</button></div>`; }).join('')}</div></section>`;
+}
+function trainTiles(keys){
+  const nEng=ENG.reduce((a,t)=>a+t.i.length,0);
+  const T={bl:['bl-open','Examen blanc','Note sur 20','balance'], cas:['cas-open','Cas cliniques',plural(CASES.length,'cas','cas'),'ecg'], exo:['exo-open','Exercices de calcul',plural(EXOS.length,'calcul'),'courbe'],
+    sch:['sch-open',"Analyse d'images",plural(SCHEMAS.length,'schéma'),'thorax'], exa:['exa-open','Examen clinique',plural(EXAMENS.length,'fiche'),'coeur'], eng:['eng-open','Anglais médical',plural(nEng,'expression'),'bulles'],
+    syn:['syn-open','Fiches syndromes',plural(SYNDROMES.length,'fiche'),'neurone'], tri:['tri-open','Triades',plural(TRIADES.length,'triade'),'cellule'], int:['goto-int','Internat','Programme du concours','molecule']};
+  return `<div class="tiles">${keys.filter(k=>T[k]).map(k=>{ const [act,t,d,ic]=T[k]; return `<button class="tile" data-act="${act}"><img src="${ILL(ic)}" alt="" loading="lazy"><span class="t">${t}</span><span class="d">${d}</span></button>`; }).join('')}</div>`;
+}
+function dashTrain(){ return `<section class="panel stack"><h3 style="margin:0">S'entraîner</h3>${trainTiles(['bl','cas','exo','sch','exa','eng','syn','tri','int'])}</section>`; }
+function viewExam(){
+  const hasBl=Object.values(S.exams).some(e=>e.kind==='blanc'&&(e.attempts||[]).some(a=>a.total));
+  return `<header class="stack" style="gap:4px"><p class="eyebrow">Examens blancs, annales et programme</p><h1>Examens</h1></header>
+   <div class="dash">${dashExam()}
+   <section class="panel stack d-hero"><span class="tag-hl">Examen blanc</span><strong class="dh-big" style="font-size:1.6rem">En conditions d'examen</strong>
+     <p class="muted" style="margin:0">Un sujet tiré de tes cartes : chronomètre, questions à rédiger corrigées point par point, QCM, note sur 20 et résultats par chapitre.</p>
+     <div class="dh-btns"><button class="btn btn-primary" data-act="bl-open">Nouvel examen blanc</button><button class="btn btn-soft" data-act="plan-open">Mon programme</button></div></section>
+   ${hasBl?blStatsHTML():''}
+   ${homeSection('exams')}
+   <section class="panel stack"><h3 style="margin:0">S'entraîner autrement</h3>${trainTiles(['cas','exo','sch','exa'])}</section></div>`;
 }
 
 // ---------- Démarrage ----------
