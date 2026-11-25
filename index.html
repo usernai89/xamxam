@@ -1699,7 +1699,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 52; // à changer avec VERSION dans sw.js
+const APP_VER = 53; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -2076,8 +2076,8 @@ function chapterSheet(id){
      ${cards.length?`<div class="clist">${cards.map(cardRow).join('')}</div>`:'<p class="muted small">Pas encore de carte pour ce chapitre.</p>'}
    </section>
    <section class="panel"><div class="section-title"><h3>Avec Claude</h3><span class="small muted">facultatif</span></div>
-     <p class="small muted" id="lessonHelp">Cours pas encore sorti ? <strong>Anticipe-le</strong> : Claude t'explique la leçon et t'entraîne, sans rien enregistrer. Cours sorti ? <strong>Prépare tes cartes</strong> à partir de lui : elles sont rangées dans la leçon.</p>
-     <div class="row" style="margin-top:10px"><button class="btn btn-soft" style="flex:1" data-act="ant-open" data-id="${id}">Anticiper ce cours</button><button class="btn btn-soft" style="flex:1" data-act="gen-for" data-id="${id}">Préparer des cartes</button></div>
+     <p class="small muted" id="lessonHelp">Tu viens d'apprendre la leçon ? <strong>Teste-toi</strong> avec des cartes tirées de ton cours, sans rien enregistrer. Pour garder des cartes dans tes révisions : <strong>Préparer des cartes</strong>, elles sont rangées dans la leçon.</p>
+     <div class="row" style="margin-top:10px"><button class="btn btn-soft" style="flex:1" data-act="ant-open" data-id="${id}">Me tester (sans enregistrer)</button><button class="btn btn-soft" style="flex:1" data-act="gen-for" data-id="${id}">Préparer des cartes</button></div>
    </section>
    ${c.custom?`<button class="btn danger" data-act="del-chap" data-id="${id}">Supprimer ce chapitre</button>`:''}`;
 }
@@ -2447,7 +2447,7 @@ function paintSession(anim){
     ? (c.type==='qcm'?`<button class="btn btn-primary btn-lg" data-act="reveal">Valider mes réponses</button>`:`<button class="btn btn-primary btn-lg" data-act="reveal">${am?'Voir la correction':'Afficher la réponse'}</button>`)
     : ansSugg(gradeButtons(c), cur);
   const tot=Math.max(s.done+1, s.done+(s.mode==='srs'?r.nw+r.lrn+r.rev:r.n));
-  const where=[s.tmp?'Anticipation, rien n\'est enregistré':({srs:'Révisions du jour', recent:'Cartes de la semaine', cram:'Bachotage', hard:'Cartes difficiles', list:'Révision ciblée'}[s.mode]||'Révision'), s.scope&&s.scope!=='all'?scopeLabel(s.scope):'', 'carte '+(s.done+1)+' sur '+tot].filter(Boolean).join(' · ');
+  const where=[s.tmp?'Test de la leçon, rien n\'est enregistré':({srs:'Révisions du jour', recent:'Cartes de la semaine', cram:'Bachotage', hard:'Cartes difficiles', list:'Révision ciblée'}[s.mode]||'Révision'), s.scope&&s.scope!=='all'?scopeLabel(s.scope):'', 'carte '+(s.done+1)+' sur '+tot].filter(Boolean).join(' · ');
   const kind=c.type==='qcm'?'QCM':c.type==='cloze'?'Texte à trous':c.img?'Image à identifier':am?'Question à rédiger':'Question';
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}${s.undo?'<button class="icon-btn" data-act="sess-undo" aria-label="Annuler la dernière note" title="Annuler la dernière note" style="font-size:1.25rem">↶</button>':''}</div>
    <p class="sess-where">${esc(where)}</p>
@@ -4619,9 +4619,9 @@ document.addEventListener('click', async e=>{
     case 'plan-open': openSheet(planSheet); break;
     case 'exo-open': openSheet(exoSheet); break;
     case 'ant-open': antOpen(d.id); break;
-    case 'ant-lesson': antLesson(); break;
     case 'ant-go': antGo(); break;
-    case 'ant-copy': await copyText(buildAntPrompt(ANT.chap, ANT.lesson)); toast('Consigne copiée : colle-la dans Claude, puis colle sa réponse ici.', 3600); break;
+    case 'ant-n': ANT.n=+d.n; paintSheet(true); break;
+    case 'ant-copy': if(!ANT.text.trim()){ toast('Colle d\'abord le texte de ton cours.'); break; } await copyText(antPrompt()); toast('Consigne copiée : colle-la dans Claude, puis colle sa réponse ici.', 3600); break;
     case 'ant-parse': { const res=parseLoose(ANT.paste); if(!res.length){ toast("Je n'ai trouvé aucune carte dans ce texte. Colle toute la réponse de l'IA."); break; } ANT.cards=res; ANT.cardsFor=ANT.chap; ANT.paste=''; antStart(res); break; }
     case 'ant-replay': if(ANT.cards.length) antStart(ANT.cards); break;
     case 'ant-missed': { const l=SESS&&SESS.antMissed; if(l&&l.length) antStart(l); break; }
@@ -4882,6 +4882,7 @@ document.addEventListener('input', e=>{
     case 'pref': { let v=el.value; if(el.type==='number'){ v=Math.max(+el.min||0, Math.min(+el.max||99999, parseInt(v||'0',10)||0)); } S.prefs[d.k]=v; savePrefs(); clearTimeout(UI.pt); UI.pt=setTimeout(updateDueDot, 300); break; }
     case 'exo-val': if(UI.exo) UI.exo.val=el.value; break;
     case 'ant-paste': ANT.paste=el.value; break;
+    case 'ant-text': ANT.text=el.value; break;
     case 'pref-size': S.prefs.size=+el.value; $('#sizeVal').textContent=el.value+'px'; applyTheme(); savePrefs(); break;
     case 'accent': S.prefs.accent=el.value; applyTheme(); savePrefs(); break;
   }
@@ -7304,62 +7305,41 @@ function sessAsideHTML(r){
     ${row('Encore à voir', left)}${row('Déjà faites', s.done)}${row('Réussite', s.done?Math.round(100*s.ok/s.done)+' %':'–')}${s.tmp?'':row('Difficiles', hard)+row('Demain', plural(tm?tm.n:0,'carte'))}</section>
     <section class="panel stack"><h3 style="margin:0">Au clavier</h3><p class="small muted" style="margin:0"><b>Espace</b> : voir la réponse, puis « Bien ».<br><b>1 à 4</b> : À revoir, Difficile, Bien, Facile.<br><b>Échap</b> : quitter.</p></section></aside>`;
 }
-// ---------- Anticiper un cours : leçon express et entraînement, sans rien enregistrer ----------
-// Les cartes d'anticipation sont « temporaires » (tmp) : jamais sauvegardées, ni synchronisées, ni comptées dans les statistiques.
-const ANT={chap:'', lesson:'', lessonFor:'', cards:[], cardsFor:'', paste:'', busy:false};
+// ---------- Me tester sur une leçon : cartes tirées du cours (objectifs et données), sans rien enregistrer ----------
+// Les cartes du test sont « temporaires » (tmp) : jamais sauvegardées, ni synchronisées, ni comptées dans les statistiques.
+const ANT={chap:'', text:'', loading:false, n:10, cards:[], cardsFor:'', paste:'', busy:false};
 function antPurge(){ for(const [k,c] of Object.entries(S.cards)) if(c&&c.tmp) delete S.cards[k]; }
-function buildAntPrompt(chapId, lesson){
-  const ctx=chapCtx(chapId);
-  const lv=(()=>{ try{ const l=LEVELS.find(x=>x.id===myLvl()); return l?l.name+' ('+l.an+')':'L3'; }catch{ return 'L3'; } })();
-  return `${AI_GO}
-
-Tu es un enseignant de médecine. Un étudiant en ${lv} à la Faculté de médecine de l'UCAD (Dakar) veut ANTICIPER un cours qui n'a pas encore été fait en classe : « ${ctx.title} » (${ctx.sub?ctx.sub+', ':''}${ctx.mod}). Ces cartes servent seulement à s'entraîner avant le cours : elles ne seront pas enregistrées.
-${lesson&&lesson.trim()?'\nAppuie-toi sur cette leçon express :\n"""\n'+lesson.trim().slice(0,12000)+'\n"""\n':"\nAppuie-toi sur ce qui est enseigné classiquement sur ce sujet dans les facultés de médecine francophones.\n"}
-Écris 10 cartes sur l'essentiel à connaître avant le cours : définitions, mécanismes, signes, valeurs clés. Mélange question / réponse, texte à trous et QCM.
-
-Règles :
-- Une seule idée par carte ; réponses courtes (1 à 3 lignes) en français médical correct.
-- N'invente jamais un chiffre, un seuil ou un nom : si tu n'es pas sûr, n'écris pas la carte.
-- Texte à trous : dans "front", entoure 1 ou 2 mots-clés avec {{ et }}.
-- QCM : 4 ou 5 propositions dans "choices", une ou plusieurs justes ; "answer" = indices (à partir de 0) de toutes les bonnes propositions ; "back" explique.
-
-Réponds uniquement avec un tableau JSON, sans texte autour ni balises de code. ${AI_JSON}
-[{"type":"qa","front":"…","back":"…"},{"type":"cloze","front":"… {{mot-clé}} …","back":"…"},{"type":"qcm","front":"…","choices":["…","…","…","…"],"answer":[0,2],"back":"…"}]`;
+const antPrompt = () => buildCardPrompt({chap:ANT.chap, text:ANT.text, n:ANT.n, types:['qa','cloze','qcm'], level:'l3', hint:false});
+async function antOpen(id){
+  if(ANT.chap!==id){ ANT.chap=id; ANT.cards=[]; ANT.cardsFor=id; ANT.text=''; } ANT.paste='';
+  openSheet(antSheet);
+  if(!ANT.text.trim()){ ANT.loading=true; paintSheet(true); const t=await chapCourseText(id); ANT.loading=false;
+    if(ANT.chap===id && !ANT.text.trim()) ANT.text=t; if(UI.sheetStack[UI.sheetStack.length-1]===antSheet) paintSheet(true); }
 }
-function antOpen(id){ ANT.chap=id; if(ANT.lessonFor!==id){ ANT.lesson=''; ANT.lessonFor=id; } if(ANT.cardsFor!==id){ ANT.cards=[]; ANT.cardsFor=id; } ANT.paste=''; openSheet(antSheet); }
 function antSheet(){
-  const ch=CH[ANT.chap]; if(!ch) return sheetTop('Anticiper ce cours')+'<p>Chapitre introuvable.</p>';
-  return sheetTop('Anticiper ce cours')+`<div class="stack" style="gap:4px"><p class="eyebrow">${esc(SUBS[ch.sub]?SUBS[ch.sub].name:'')}</p><h2>${esc(ch.title)}</h2></div>
-   <div class="notice">Ton cours n'est pas encore sorti ? Prépare-toi avec Claude. <strong>Rien n'est enregistré</strong> : ni cartes, ni notes, ni statistiques. Quand le cours sortira, crée tes vraies cartes à partir de lui (bouton « Préparer des cartes » de la leçon).</div>
-   <section class="panel stack"><h3 style="margin:0">1. Comprendre la leçon</h3>
-     <p class="small muted" style="margin:0">Claude t'explique le chapitre en 5 minutes, avec ce qui est enseigné habituellement.</p>
-     <div id="antOut" class="rt"${ANT.lesson?'':' hidden'}>${ANT.lesson?md(ANT.lesson):''}</div>
-     <button class="btn btn-soft" data-act="ant-lesson">${AI.sample?(ANT.lesson?'Refaire la leçon express':'Lire la leçon express'):'Copier la consigne de la leçon express'}</button></section>
-   <section class="panel stack"><h3 style="margin:0">2. M'entraîner, sans enregistrer</h3>
-     <p class="small muted" style="margin:0">10 cartes temporaires (questions, textes à trous, QCM)${ANT.lesson?', tirées de la leçon express':''}. Elles disparaissent à la fin de l'entraînement.</p>
-     ${ANT.cards.length?`<button class="btn btn-primary" data-act="ant-replay">Refaire l'entraînement (${ANT.cards.length} cartes)</button>`:''}
-     ${AI.sample?`<button class="btn ${ANT.cards.length?'btn-soft':'btn-primary'}" data-act="ant-go" ${ANT.busy?'disabled':''}>${ANT.busy?'Claude prépare les cartes…':ANT.cards.length?'Nouvelles cartes':'Préparer l\'entraînement'}</button>`
-       :`<button class="btn btn-soft" data-act="ant-copy">Copier la consigne des cartes</button>
+  const ch=CH[ANT.chap]; if(!ch) return sheetTop('Me tester')+'<p>Chapitre introuvable.</p>';
+  return sheetTop('Me tester sur cette leçon')+`<div class="stack" style="gap:4px"><p class="eyebrow">${esc(SUBS[ch.sub]?SUBS[ch.sub].name:'')}</p><h2>${esc(ch.title)}</h2></div>
+   <div class="notice">Tu viens d'apprendre la leçon ? Teste-toi tout de suite. Claude prépare des cartes à partir des <strong>objectifs et des données de ton cours</strong>, sans rien y ajouter. <strong>Rien n'est enregistré</strong> : ni cartes, ni statistiques.</div>
+   <section class="panel stack">
+     <label class="field">Ton cours <span class="field-hint">${ANT.loading?'Chargement de la leçon…':'Le cours que XamXam a pour cette leçon (années précédentes) et tes notes. Tu peux le remplacer par le cours de ton prof.'}</span><textarea data-input="ant-text" rows="7" placeholder="Colle ici le texte de ton cours…">${esc(ANT.text)}</textarea></label>
+     <div class="field"><span>Nombre de cartes</span><div class="seg" role="group" aria-label="Nombre de cartes">${[5,10,15,20].map(n=>`<button data-act="ant-n" data-n="${n}" aria-pressed="${ANT.n===n}">${n}</button>`).join('')}</div></div>
+     ${ANT.cards.length?`<button class="btn btn-soft" data-act="ant-replay">Refaire le même test (${ANT.cards.length} cartes)</button>`:''}
+     ${AI.sample?`<button class="btn btn-primary btn-lg" data-act="ant-go" ${ANT.busy||ANT.loading?'disabled':''}>${ANT.busy?'Claude prépare le test…':ANT.cards.length?'Nouveau test':'Me tester maintenant'}</button>`
+       :`<button class="btn btn-soft" data-act="ant-copy">Copier la consigne</button>
          <label class="field">Réponse de l'IA<textarea data-input="ant-paste" placeholder="[{&quot;type&quot;:&quot;qa&quot;, …}]">${esc(ANT.paste)}</textarea></label>
-         <button class="btn btn-primary" data-act="ant-parse">Commencer l'entraînement</button>`}
-   </section>`;
-}
-async function antLesson(){
-  const id=ANT.chap, prompt=buildLessonPrompt(id);
-  if(!AI.sample){ await copyText(prompt); toast('Consigne copiée : colle-la dans Claude. Rien ne sera enregistré.', 3600); return; }
-  const out=$('#antOut'); if(!out) return; out.hidden=false;
-  const btn=document.querySelector('[data-act="ant-lesson"]'); if(btn){ btn.disabled=true; btn.textContent='Leçon en cours…'; }
-  const text=await streamTo(out, prompt);
-  if(text){ ANT.lesson=text; ANT.lessonFor=id; }
-  if(UI.sheetStack[UI.sheetStack.length-1]===antSheet) paintSheet(true);
+         <button class="btn btn-primary" data-act="ant-parse">Commencer le test</button>`}
+   </section>
+   <p class="small muted">Pour garder des cartes dans tes révisions, utilise plutôt « Préparer des cartes » sur la page de la leçon.</p>`;
 }
 async function antGo(){
-  if(ANT.busy||!AI.sample) return; ANT.busy=true; paintSheet(true);
+  if(ANT.busy||!AI.sample) return;
+  if(!ANT.text.trim()){ toast('Colle d\'abord le texte de ton cours.'); return; }
+  ANT.busy=true; paintSheet(true);
   let res=[];
-  try{ const data=await AI.sample.json(buildAntPrompt(ANT.chap, ANT.lesson), {modelTier:'default'}); res=normalizeGenerated(data); }
+  try{ const data=await AI.sample.json(antPrompt(), {modelTier:'default'}); res=normalizeGenerated(data); }
   catch(e){ if(e&&e.code==='invalid_json'&&e.text) res=parseLoose(e.text); else toast(aiErr(e)); }
   ANT.busy=false;
-  if(!res.length){ if(UI.sheetStack[UI.sheetStack.length-1]===antSheet) paintSheet(true); toast('Aucune carte reçue. Réessaie.'); return; }
+  if(!res.length){ if(UI.sheetStack[UI.sheetStack.length-1]===antSheet) paintSheet(true); toast('Aucune carte reçue. Vérifie le texte du cours, puis réessaie.'); return; }
   ANT.cards=res; ANT.cardsFor=ANT.chap; antStart(res);
 }
 function antStart(list){ // séance avec des cartes temporaires
@@ -7377,7 +7357,7 @@ function antDone(){
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Fermer">${I.x}</button><div class="sess-bar"><i style="width:100%"></i></div></div>
    <div class="done"><h1>Entraînement terminé</h1>
    <div class="count-grid"><div class="count"><span class="eyebrow">Cartes</span><span class="num">${s.done}</span></div><div class="count"><span class="eyebrow">Réussite</span><span class="num">${pct}<small>%</small></span></div></div>
-   <p class="muted">Rien n'a été enregistré : ni cartes, ni statistiques. Quand ton cours sortira, crée tes vraies cartes à partir de lui.</p>
+   <p class="muted">Rien n'a été enregistré : ni cartes, ni statistiques. Pour garder des cartes dans tes révisions, utilise « Préparer des cartes » sur la leçon.</p>
    ${missed.length?`<button class="btn btn-primary btn-lg" data-act="ant-missed">Refaire ${missed.length>1?'les '+missed.length+' cartes ratées':'la carte ratée'}</button>`:''}
    <button class="btn ${missed.length?'':'btn-primary btn-lg'}" data-act="ant-replay">Refaire tout l'entraînement</button>
    <button class="btn btn-ghost" data-act="sess-close">Terminer</button></div>`;
