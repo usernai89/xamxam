@@ -1699,7 +1699,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 53; // à changer avec VERSION dans sw.js
+const APP_VER = 54; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1768,14 +1768,23 @@ Méthode, dans cet ordre :
 
 Règles :
 - Une seule idée par carte, formulée précisément ; pas de question à réponse oui/non.
-- Réponses courtes (1 à 4 lignes) en français médical correct ; listes avec des tirets "- ".
+- Réponses courtes, en français médical correct.
 - Choisis dans la leçon ce qui tombe à l'examen : définitions, signes cliniques, mécanismes (le pourquoi), valeurs normales, étiologies, diagnostics différentiels, conduite à tenir.
 - Texte à trous : dans "front", entoure 1 ou 2 mots-clés avec {{ et }} ; "back" donne une courte explication tirée de la leçon.
 - QCM : 4 ou 5 propositions dans "choices", une ou plusieurs justes ; "answer" = liste des indices (à partir de 0) de TOUTES les bonnes propositions ; "back" explique pourquoi, avec ce que dit la leçon.
 - ${o.hint?'"hint" : une astuce pour retenir ce que dit la leçon (moyen mnémotechnique, analogie ou mini-histoire de 1 à 2 phrases, en tutoyant ; exemples du quotidien sénégalais bienvenus), sans ajouter de connaissance médicale absente de la leçon.':'"hint" : chaîne vide.'}
 
+Mise en forme des réponses ("back") : JAMAIS un bloc de texte. L'étudiant doit lire la réponse d'un coup d'œil.
+- Première ligne : la réponse essentielle, avec ses mots-clés en **gras** (1 à 4 mots-clés : signes, valeurs, noms, étapes).
+- Ensuite, s'il y a plusieurs éléments : une liste, un élément par ligne, avec des tirets "- " ; pour des étapes ou un ordre, numérote « 1. », « 2. »…
+- Une explication éventuelle va sur une ligne à part, après une ligne vide.
+- Phrases courtes (20 mots au plus), pas de paragraphe.
+- QCM : dans "back", une ligne par proposition, par exemple « A. Vrai : … » puis « B. Faux : … ».
+- Dans le JSON, chaque retour à la ligne s'écrit \\n et une ligne vide \\n\\n.
+Exemple de "back" bien présenté : "**Mot-clé 1**, **mot-clé 2** et **mot-clé 3**\\n\\n- détail tiré de la leçon\\n- autre détail".
+
 Réponds uniquement avec un tableau JSON, sans texte autour ni balises de code, de cette forme. ${AI_JSON}
-[{"type":"qa","front":"…","back":"…","hint":"…"},{"type":"cloze","front":"… {{mot-clé}} …","back":"…","hint":"…"},{"type":"qcm","front":"…","choices":["…","…","…","…"],"answer":[0,2],"back":"…","hint":"…"}]`;
+[{"type":"qa","front":"…","back":"**…** …\\n\\n- …\\n- …","hint":"…"},{"type":"cloze","front":"… {{mot-clé}} …","back":"…","hint":"…"},{"type":"qcm","front":"…","choices":["…","…","…","…"],"answer":[0,2],"back":"A. Vrai : …\\nB. Faux : …\\nC. Vrai : …\\nD. Faux : …","hint":"…"}]`;
 }
 function buildLessonPrompt(chapId){
   const ctx=chapCtx(chapId); const notes=(S.notes[chapId]||{}).text||'';
@@ -1804,6 +1813,13 @@ ${c.type==='qcm'?'Propositions : '+c.choices.map((x,i)=>String.fromCharCode(65+i
 
 Explique en 120 à 200 mots, en le tutoyant : pourquoi c'est la bonne réponse (le mécanisme), puis une façon simple de s'en souvenir. Markdown simple (**gras**, "- "). Si la carte contient une erreur ou une imprécision, signale-la clairement dès la première ligne.`;
 }
+function shapeBack(t){ // découpe une réponse arrivée en un seul bloc : listes, propositions de QCM, phrases
+  t=String(t||'').replace(/\\n/g,'\n').trim(); if(!t || /\n/.test(t)) return t;
+  if((t.match(/ - /g)||[]).length>=2){ const parts=t.split(/ - /).map(x=>x.trim()).filter(Boolean); const head=/[:.]$/.test(parts[0])||parts[0].length>60?parts.shift():''; return (head?head+'\n\n':'')+parts.map(x=>'- '+x).join('\n'); }
+  if((t.match(/(^|\s)[A-E][.)]\s/g)||[]).length>=3) return t.replace(/\s+(?=[B-E][.)]\s)/g,'\n');
+  if(t.length>160){ const u=t.replace(/([.!?])\s+(?=[A-ZÀ-Ý«])/g,'$1\n'); if(u.includes('\n')) return u; }
+  return t;
+}
 function normalizeGenerated(arr){
   if(!Array.isArray(arr)){ if(arr&&typeof arr==='object'){ const k=['cards','cartes','flashcards','questions','items','data'].find(k=>Array.isArray(arr[k])); if(k) arr=arr[k]; else return []; } else return []; }
   const out=[], get=(x,...ks)=>{ for(const k of ks){ if(x[k]!=null&&x[k]!=='') return x[k]; } return ''; };
@@ -1817,7 +1833,7 @@ function normalizeGenerated(arr){
     const front=String(get(x,'front','question','recto','enonce','q')).trim(); if(!front) continue;
     let backV=get(x,'back','verso','explication','explanation','reponse','answer_text','correction');
     if(!backV && type!=='qcm' && typeof x.answer==='string') backV=x.answer;
-    const c={type, front, back:String(backV).trim(), hint:String(get(x,'hint','astuce','mnemo','mnemotechnique')).trim(), choices:[], answer:[]};
+    const c={type, front, back:shapeBack(String(backV).trim()), hint:String(get(x,'hint','astuce','mnemo','mnemotechnique')).trim(), choices:[], answer:[]};
     if(type==='qcm'){
       c.choices=Array.isArray(choicesRaw)?choicesRaw.map(s=>String(s).replace(/^\s*[A-Fa-f][.)]\s+/,'').trim()).filter(Boolean).slice(0,6):[];
       let ans=get(x,'answer','answers','bonnes','correct','reponses');
