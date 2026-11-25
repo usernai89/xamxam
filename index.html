@@ -338,6 +338,10 @@ mark.filled{background:var(--hl)!important;color:var(--hl-ink)!important;font-we
 .pl-wk[open]>summary{margin-bottom:8px}
 .plan-row.pl-ok{opacity:.75}
 .plan-row.pl-ok .pr-n{color:var(--good)}
+.exo-in{display:flex;align-items:center;gap:10px;font-weight:400}
+.exo-in input{flex:1;min-width:0;font-variant-numeric:tabular-nums}
+.exo-in span{font-weight:700;white-space:nowrap}
+.exo-steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px;font-variant-numeric:tabular-nums}
 /* Internat */
 .plan{display:flex;flex-direction:column}
 .pl{padding:3px 0;line-height:1.4}
@@ -987,7 +991,7 @@ const FONTS = {
  serif:{name:'Livre', css:"'Source Serif 4',Georgia,'Times New Roman',serif"},
  system:{name:'Système', css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"}
 };
-const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', cas:'Cas cliniques', img:"Analyse d'images", countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Programme du jour'};
+const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', cas:'Cas cliniques', img:"Analyse d'images", exo:'Exercices de calcul', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Programme du jour'};
 const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'nunito', heads:'expressive', size:17, radius:'soft', density:'normal', anim:'flip', buttons:4,
   semStart:'2026-11-19', examDate:'', newPerDay:25, maxRev:300, capExam:true, quick:10, lastExport:0,
   home:[['today',1],['exams',1],['internat',1],['syn',1],['tri',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
@@ -1472,6 +1476,7 @@ function gsResults(){
   const en=[]; for(const t of ENG) for(const it of t.i) if(hit(it[0]+' '+it[1]+' '+(it[2]||''))) en.push([t,it]);
   if(en.length) out.push(['Anglais médical', en.slice(0,15).map(([t,it])=>row('eng-theme',t.id,I.ear,(it[2]?it[2]+' · ':'')+engAlt(it[0])[0],it[1]+' · '+t.n))]);
   const cz=CASES.filter(x=>hit(x.n+' '+x.sys+' '+x.s.map(st=>st.d+' '+st.a).join(' '))).slice(0,10); if(cz.length) out.push(['Cas cliniques', cz.map(x=>row('cas-start',x.id,I.stetho||I.exam,x.n,x.sys))]);
+  const xz=EXOS.filter(x=>hit(x.n+' '+x.f+' '+EXO_SYS[x.sys])); if(xz.length) out.push(['Exercices de calcul', xz.map(x=>row('exo-start',x.id,I.pen,x.n,x.f))]);
   const sz=SCHEMAS.filter(x=>hit(x.n+' '+x.m.map(m=>m[2]).join(' '))); if(sz.length) out.push(["Analyse d'images", sz.map(x=>row('sch-start',x.id,I.img||I.exam,x.n,x.m.map(m=>m[2]).join(' · ')))]);
   const cs=Object.values(S.cards).filter(c=>hit(String(c.front)+' '+String(c.back))).slice(0,20); if(cs.length) out.push(['Mes cartes', cs.map(c=>row('gs-card',c.id,I.cards,plain(c.front).slice(0,90),CH[c.chap]?CH[c.chap].title:''))]);
   return out.length?out.map(([h,items])=>`<h3 class="syn-sys">${h} <span class="small muted">· ${items.length}</span></h3><div class="menu">${items.join('')}</div>`).join(''):'<p class="muted">Rien trouvé. Essaie un autre mot.</p>';
@@ -1484,7 +1489,7 @@ function weakSpot(){
 }
 function ensureHome(){
   const h=Array.isArray(S.prefs.home)?S.prefs.home:[];
-  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='eng'?Math.max(i,h.findIndex(r=>r[0]==='exa'))+1:k==='cas'?Math.max(i,h.findIndex(r=>r[0]==='eng'))+1:k==='img'?Math.max(i,h.findIndex(r=>r[0]==='cas'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
+  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='eng'?Math.max(i,h.findIndex(r=>r[0]==='exa'))+1:k==='cas'?Math.max(i,h.findIndex(r=>r[0]==='eng'))+1:k==='img'?Math.max(i,h.findIndex(r=>r[0]==='cas'))+1:k==='exo'?Math.max(i,h.findIndex(r=>r[0]==='img'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
   if(!S.prefs.planV){ const j=h.findIndex(r=>r[0]==='plan'); if(j>=0){ const [row]=h.splice(j,1); h.splice(h.findIndex(r=>r[0]==='today')+1,0,row); } S.prefs.planV=1; }
   S.prefs.home=h.filter(r=>HOME_SECTIONS[r[0]]);
 }
@@ -1541,7 +1546,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 46; // à changer avec VERSION dans sw.js
+const APP_VER = 47; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1823,6 +1828,12 @@ function homeSection(k){
     return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Analyse d'images</h3><span class="small muted">${SCHEMAS.length} schémas</span></div>
       <p>Radiographie du thorax, cœur, ECG, cellule, neurone, frottis de paludisme : des repères à légender.</p>
       <div class="row"><button class="btn btn-soft" style="flex:1" data-act="sch-open">Ouvrir</button>${mine?`<button class="btn" style="flex:1" data-act="start" data-mode="cram" data-scope="sch">Me tester</button>`:''}</div></section>`;
+  }
+  if(k==='exo'){
+    const tried=Object.keys(exoStats()).filter(id=>EXO_BY[id]).length;
+    return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Exercices de calcul</h3><span class="small muted">${EXOS.length} calculs${tried?' · '+tried+' essayés':''}</span></div>
+      <p>VGM, trou anionique, clairance, doses selon le poids, débit de perfusion, densité parasitaire… De nouvelles valeurs à chaque fois, et la correction pas à pas.</p>
+      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="exo-open">Ouvrir</button><button class="btn" style="flex:1" data-act="exo-series">Série de 10</button></div></section>`;
   }
   if(k==='countdown'){
     const st=semStart(), dSem=daysUntil(st), ex=examDate(), dEx=daysUntil(ex.date);
@@ -4292,7 +4303,7 @@ function viewLevel(lvl, sem){
   if(hid.length) html+=`<details class="peek"><summary>${plural(hid.length,'matière masquée','matières masquées')}</summary><div class="chips" style="margin-top:6px">${hid.map(m=>`<button class="chip" data-act="mod-unhide" data-id="${m.id}">Réafficher ${esc(m.short)}</button>`).join('')}</div></details>`;
   if(LV[lvl].i>=2) html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button><button class="btn btn-soft" data-act="tri-open" style="justify-content:space-between;width:100%"><span>Triades · ${TRIADES.length} triades</span>${I.chev}</button><button class="btn btn-soft" data-act="exa-open" style="justify-content:space-between;width:100%"><span>Examen clinique · ${EXAMENS.length} fiches</span>${I.chev}</button>`;
   html+=`<button class="btn btn-soft" data-act="eng-open" style="justify-content:space-between;width:100%"><span>Anglais médical · ${ENG.reduce((a,t)=>a+t.i.length,0)} expressions</span>${I.chev}</button>`;
-  html+=`<button class="btn btn-soft" data-act="cas-open" style="justify-content:space-between;width:100%"><span>Cas cliniques · ${CASES.length} cas</span>${I.chev}</button><button class="btn btn-soft" data-act="sch-open" style="justify-content:space-between;width:100%"><span>Analyse d'images · ${SCHEMAS.length} schémas</span>${I.chev}</button>`;
+  html+=`<button class="btn btn-soft" data-act="cas-open" style="justify-content:space-between;width:100%"><span>Cas cliniques · ${CASES.length} cas</span>${I.chev}</button><button class="btn btn-soft" data-act="sch-open" style="justify-content:space-between;width:100%"><span>Analyse d'images · ${SCHEMAS.length} schémas</span>${I.chev}</button><button class="btn btn-soft" data-act="exo-open" style="justify-content:space-between;width:100%"><span>Exercices de calcul · ${EXOS.length} calculs</span>${I.chev}</button>`;
   return html;
 }
 function modSheet(){
@@ -4436,6 +4447,13 @@ document.addEventListener('click', async e=>{
     case 'say': if(!sayText(d.t, d.l)) toast("La lecture à voix haute n'est pas disponible ici."); break;
     case 'bl-open': openSheet(blSheet); break;
     case 'plan-open': openSheet(planSheet); break;
+    case 'exo-open': openSheet(exoSheet); break;
+    case 'exo-start': exoStart(d.id); break;
+    case 'exo-series': exoSeries(d.sys||''); break;
+    case 'exo-pick': if(UI.exo&&!UI.exo.done){ UI.exo.pick=+d.j; paintSheet(true); } break;
+    case 'exo-check': exoCheck(); break;
+    case 'exo-giveup': exoCheck(true); break;
+    case 'exo-next': exoNext(); break;
     case 'plan-blanc': UI.bl.scope='all'; UI.bl.n=+d.n||20; UI.bl.dur=UI.bl.n>=40?60:30; openSheet(blSheet); break;
     case 'bl-go': blStart(); break;
     case 'bl-resume': if(exrLive(d.id)) exrOpen(); break;
@@ -4680,6 +4698,7 @@ document.addEventListener('input', e=>{
     case 'ed': ED[d.f]=el.value; break;
     case 'ed-choice': ED.choices[+d.i]=el.value; break;
     case 'pref': { let v=el.value; if(el.type==='number'){ v=Math.max(+el.min||0, Math.min(+el.max||99999, parseInt(v||'0',10)||0)); } S.prefs[d.k]=v; savePrefs(); clearTimeout(UI.pt); UI.pt=setTimeout(updateDueDot, 300); break; }
+    case 'exo-val': if(UI.exo) UI.exo.val=el.value; break;
     case 'pref-size': S.prefs.size=+el.value; $('#sizeVal').textContent=el.value+'px'; applyTheme(); savePrefs(); break;
     case 'accent': S.prefs.accent=el.value; applyTheme(); savePrefs(); break;
   }
@@ -6636,6 +6655,249 @@ async function genQcmFor(id){
   UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render();
   toast(txt?'Le contenu de la leçon est prêt : lance la création des QCM en bas de la page.':'Pas de contenu pour cette leçon : précise la notion, puis lance la création.', 3800);
 }
+
+// ---------- Exercices de calcul : valeurs tirées au hasard, correction pas à pas ----------
+const exR=(a,b,st=1)=>{ const n=Math.round((b-a)/st); return Math.round((a+Math.floor(Math.random()*(n+1))*st)*1e6)/1e6; };
+const exPick=a=>a[Math.floor(Math.random()*a.length)];
+function exNf(x,d=0){ const neg=x<0; let s=(Math.round(Math.abs(x)*10**d)/10**d).toFixed(d); if(d>0) s=s.replace(/0+$/,'').replace(/\.$/,''); let [i,f]=s.split('.'); i=i.replace(/\B(?=(\d{3})+(?!\d))/g,' '); return (neg?'−':'')+i+(f?','+f:''); }
+const EXP=['','¹','²','³','⁴','⁵'];
+const EXO_SYS={hem:'Hématologie', bio:'Biochimie', rein:'Rein', pha:'Pharmacologie', phy:'Physiologie et clinique', ped:'Pédiatrie', par:'Parasitologie'};
+const EXOS=[
+ {id:'vgm', sys:'hem', n:'Volume globulaire moyen (VGM)', f:'VGM = Ht × 10 / GR', g(){
+   const cat=exR(0,2), gr=exR(2.5,5.2,0.1), tgt=[exR(62,77),exR(83,96),exR(104,118)][cat], ht=Math.round(tgt*gr/10*2)/2, a=ht*10/gr;
+   return {q:`Numération : hématocrite **${exNf(ht,1)} %**, globules rouges **${exNf(gr,1)} T/L** (10¹²/L). Calcule le VGM.`, a, d:0, u:'fL', abs:1,
+    steps:['VGM (fL) = Ht (%) × 10 / GR (T/L)', `= ${exNf(ht,1)} × 10 / ${exNf(gr,1)}`, `= ${exNf(a,1)} fL`],
+    ch:{q:'Le VGM montre…', o:['Une microcytose','Un VGM normal','Une macrocytose'], a:a<80?0:a>100?2:1},
+    x:"Normes : 80 à 100 fL. Microcytose (< 80) : carence en fer, thalassémie, inflammation chronique. Macrocytose (> 100) : carence en vitamine B12 ou en folates, alcool, réticulocytose, certains médicaments."}; }},
+ {id:'tcmh', sys:'hem', n:'Teneur corpusculaire moyenne en hémoglobine (TCMH)', f:'TCMH = Hb × 10 / GR', g(){
+   const lo=Math.random()<0.5, gr=exR(2.8,5.2,0.1), tgt=lo?exR(19,25,0.5):exR(28,31.5,0.5), hb=Math.round(tgt*gr)/10, a=hb*10/gr;
+   return {q:`Hémoglobine **${exNf(hb,1)} g/dL**, globules rouges **${exNf(gr,1)} T/L**. Calcule la TCMH.`, a, d:1, u:'pg', abs:0.5,
+    steps:['TCMH (pg) = Hb (g/dL) × 10 / GR (T/L)', `= ${exNf(hb,1)} × 10 / ${exNf(gr,1)}`, `= ${exNf(a,1)} pg`],
+    ch:{q:'Interprétation', o:['TCMH basse : hypochromie','TCMH normale'], a:a<27?0:1},
+    x:"Normes : 27 à 32 pg. Une TCMH basse accompagne en général la microcytose (carence martiale, thalassémie). L'hypochromie se juge surtout sur la CCMH."}; }},
+ {id:'ccmh', sys:'hem', n:'Concentration corpusculaire moyenne en hémoglobine (CCMH)', f:'CCMH = Hb / Ht × 100', g(){
+   const lo=Math.random()<0.5, ht=exR(24,46,0.5), tgt=lo?exR(26,30.5,0.5):exR(32.5,35.5,0.5), hb=Math.round(tgt*ht/10)/10, a=hb/ht*100;
+   return {q:`Hémoglobine **${exNf(hb,1)} g/dL**, hématocrite **${exNf(ht,1)} %**. Calcule la CCMH.`, a, d:1, u:'g/dL', abs:0.4,
+    steps:['CCMH (g/dL) = Hb (g/dL) / Ht (%) × 100', `= ${exNf(hb,1)} / ${exNf(ht,1)} × 100`, `= ${exNf(a,1)} g/dL`],
+    ch:{q:'Interprétation', o:['Hypochromie (CCMH < 32)','CCMH normale'], a:a<32?0:1},
+    x:"Normes : 32 à 36 g/dL. Une CCMH basse signe l'hypochromie, surtout dans la carence en fer. Au-dessus de 36, pense à une sphérocytose héréditaire, ou à une erreur de mesure."}; }},
+ {id:'reti', sys:'hem', n:'Réticulocytes en valeur absolue', f:'Réticulocytes = % × GR × 10', g(){
+   const reg=Math.random()<0.5, gr=exR(1.8,3.8,0.1), tgt=reg?exR(170,380,10):exR(20,95,5), pct=Math.max(0.2,Math.round(tgt/gr)/10), a=pct*gr*10, hb=exR(6,10,0.1);
+   return {q:`Anémie à **${exNf(hb,1)} g/dL**. Globules rouges **${exNf(gr,1)} T/L**, réticulocytes **${exNf(pct,1)} %**. Calcule les réticulocytes en valeur absolue.`, a, d:0, u:'G/L', tol:0.03, abs:2,
+    steps:['Réticulocytes (G/L) = % × GR (T/L) × 10', `= ${exNf(pct,1)} × ${exNf(gr,1)} × 10`, `= ${exNf(a,0)} G/L`],
+    ch:{q:"L'anémie est…", o:['Arégénérative (cause centrale)','Régénérative (cause périphérique)'], a:a>=120?1:0},
+    x:"Seuil : 120 G/L (100 à 150 selon les laboratoires). Au-dessus, l'anémie est régénérative : hémolyse ou saignement aigu. En dessous, elle est arégénérative : atteinte de la moelle, carence, inflammation ou insuffisance rénale."}; }},
+ {id:'pnn', sys:'hem', n:'Neutrophiles en valeur absolue', f:'PNN = GB × % / 100', g(){
+   const cat=exR(0,3), gb=[exR(1.2,3,0.1),exR(2,4,0.1),exR(4.5,9,0.1),exR(11,19,0.5)][cat], tgt=[exR(0.1,0.4,0.05),exR(0.6,1.3,0.05),exR(2,6.5,0.1),exR(8.5,15,0.5)][cat];
+   const pct=Math.min(95,Math.max(2,Math.round(tgt/gb*100))), a=gb*pct/100;
+   return {q:`Globules blancs **${exNf(gb,1)} G/L**, dont **${pct} %** de polynucléaires neutrophiles. Calcule les neutrophiles en valeur absolue.`, a, d:2, u:'G/L', abs:0.05,
+    steps:['PNN (G/L) = GB (G/L) × % / 100', `= ${exNf(gb,1)} × ${pct} / 100`, `= ${exNf(a,2)} G/L`],
+    ch:{q:'Interprétation', o:['Agranulocytose (< 0,5 G/L)','Neutropénie (0,5 à 1,5 G/L)','Normal (1,5 à 7 G/L)','Polynucléose neutrophile (> 7,5 G/L)'], a:a<0.5?0:a<1.5?1:a<=7.5?2:3},
+    x:"Raisonne toujours en valeur absolue, jamais en pourcentage. Normes : 1,5 à 7 G/L. Chez beaucoup de personnes d'origine africaine, une neutropénie modérée (1 à 1,5 G/L) peut être constitutionnelle et sans danger. L'agranulocytose est une urgence (risque infectieux)."}; }},
+ {id:'ta', sys:'bio', n:'Trou anionique', f:'TA = Na − (Cl + HCO₃⁻)', g(){
+   for(let k=0;k<80;k++){ const na=exR(132,146), acid=Math.random()<0.7, hco=acid?exR(8,18):exR(22,28), high=Math.random()<0.55, ta=high?exR(20,32):exR(8,14), cl=na-hco-ta; if(cl<88||cl>122) continue;
+    const a=na-(cl+hco);
+    return {q:`Ionogramme sanguin : Na⁺ **${na}**, Cl⁻ **${cl}**, HCO₃⁻ **${hco}** mmol/L. Calcule le trou anionique.`, a, d:0, u:'mmol/L', abs:0,
+     steps:['TA = Na⁺ − (Cl⁻ + HCO₃⁻)', `= ${na} − (${cl} + ${hco})`, `= ${a} mmol/L`],
+     ch:acid?{q:'Conclusion', o:['Acidose métabolique à trou anionique normal (hyperchlorémique)','Acidose métabolique à trou anionique augmenté'], a:a>16?1:0}:{q:'Le trou anionique est…', o:['Normal','Augmenté'], a:a>16?1:0},
+     x:"Norme : 12 ± 4 mmol/L (sans le potassium). Augmenté : acidocétose, acidose lactique, insuffisance rénale, intoxications (aspirine, méthanol, éthylène glycol). Normal avec une acidose : perte de bicarbonates digestive (diarrhée) ou rénale (acidose tubulaire)."}; } }},
+ {id:'osm', sys:'bio', n:'Osmolarité plasmatique calculée', f:'Osm = 2 × Na + glucose + urée', g(){
+   for(let k=0;k<80;k++){ const cat=exR(0,2), tgt=[exR(250,280),exR(287,293),exR(300,370)][cat], gl=cat===2&&Math.random()<0.5?exR(25,55,0.5):exR(4,9,0.1), ur=exR(3,cat===2?30:9,0.5), na=Math.round((tgt-gl-ur)/2);
+    if(na<112||na>165) continue; const a=2*na+gl+ur; if(Math.abs(a-285)<1.5||Math.abs(a-295)<1.5) continue;
+    return {q:`Na⁺ **${na} mmol/L**, glycémie **${exNf(gl,1)} mmol/L**, urée **${exNf(ur,1)} mmol/L**. Calcule l'osmolarité plasmatique.`, a, d:1, u:'mOsm/L', abs:1,
+     steps:['Osm = 2 × Na⁺ + glycémie + urée (tout en mmol/L)', `= 2 × ${na} + ${exNf(gl,1)} + ${exNf(ur,1)}`, `= ${exNf(a,1)} mOsm/L`],
+     ch:{q:'Interprétation', o:['Hypo-osmolarité (< 285)','Normale (285 à 295)','Hyperosmolarité (> 295)'], a:a<285?0:a>295?2:1},
+     x:"Norme : 285 à 295 mOsm/L. Le sodium compte deux fois, avec ses anions. Une hyperosmolarité avec une glycémie très haute évoque un syndrome d'hyperosmolarité du diabétique de type 2. Une hyponatrémie avec osmolarité basse est une vraie hyponatrémie."}; } }},
+ {id:'ca', sys:'bio', n:'Calcémie corrigée', f:'Ca corrigée = Ca + 0,02 × (40 − albumine)', g(){
+   for(let k=0;k<80;k++){ const alb=exR(16,40), ca=exR(1.7,2.7,0.02), a=ca+0.02*(40-alb); if(Math.abs(a-2.2)<0.03||Math.abs(a-2.6)<0.03) continue;
+    return {q:`Calcémie totale **${exNf(ca,2)} mmol/L**, albumine **${alb} g/L**. Calcule la calcémie corrigée.`, a, d:2, u:'mmol/L', abs:0.02,
+     steps:['Ca corrigée = Ca mesurée + 0,02 × (40 − albumine en g/L)', `= ${exNf(ca,2)} + 0,02 × (40 − ${alb})`, `= ${exNf(a,2)} mmol/L`],
+     ch:{q:'Interprétation', o:['Hypocalcémie vraie (< 2,20)','Calcémie normale (2,20 à 2,60)','Hypercalcémie (> 2,60)'], a:a<2.2?0:a>2.6?2:1},
+     x:"Norme : 2,20 à 2,60 mmol/L. Une partie du calcium est liée à l'albumine : quand l'albumine baisse (dénutrition, cirrhose, syndrome néphrotique), la calcémie totale baisse sans vraie hypocalcémie. Il faut corriger, ou doser le calcium ionisé."}; } }},
+ {id:'nac', sys:'bio', n:'Natrémie corrigée (hyperglycémie)', f:'Na corrigée = Na + 1,6 × (glycémie en g/L − 1)', g(){
+   for(let k=0;k<80;k++){ const gl=exR(2,9,0.1), na=exR(118,142), a=na+1.6*(gl-1); if(Math.abs(a-135)<1||Math.abs(a-145)<1) continue;
+    return {q:`Diabétique en décompensation : Na⁺ **${na} mmol/L**, glycémie **${exNf(gl,1)} g/L**. Calcule la natrémie corrigée.`, a, d:1, u:'mmol/L', abs:1,
+     steps:['Na corrigée = Na⁺ + 1,6 × (glycémie en g/L − 1)', `= ${na} + 1,6 × (${exNf(gl,1)} − 1)`, `= ${exNf(a,1)} mmol/L`],
+     ch:{q:'Interprétation', o:['Hyponatrémie vraie (Na corrigée < 135)','Natrémie corrigée normale : fausse hyponatrémie due au glucose','Hypernatrémie (Na corrigée > 145) : déshydratation intracellulaire'], a:a<135?0:a>145?2:1},
+     x:"Le glucose attire l'eau hors des cellules et dilue le sodium : la natrémie mesurée baisse. Formule de Katz : + 1,6 mmol/L par g/L de glucose au-dessus de 1 g/L (certains utilisent 2,4). Norme : 135 à 145 mmol/L."}; } }},
+ {id:'ldl', sys:'bio', n:'LDL-cholestérol (Friedewald)', f:'LDL = CT − HDL − TG / 5', g(){
+   for(let k=0;k<80;k++){ const ct=exR(1.5,3.2,0.05), hdl=exR(0.3,0.8,0.05), tg=exR(0.5,3.3,0.1), a=ct-hdl-tg/5; if(a<0.5) continue;
+    return {q:`Bilan lipidique (en g/L) : cholestérol total **${exNf(ct,2)}**, HDL **${exNf(hdl,2)}**, triglycérides **${exNf(tg,1)}**. Calcule le LDL-cholestérol.`, a, d:2, u:'g/L', abs:0.03,
+     steps:['LDL = CT − HDL − TG / 5 (en g/L)', `= ${exNf(ct,2)} − ${exNf(hdl,2)} − ${exNf(tg,1)} / 5`, `= ${exNf(a,2)} g/L`],
+     x:"Formule de Friedewald, valable seulement si les triglycérides sont sous 3,4 g/L (sinon, dosage direct du LDL). En mmol/L, on divise les TG par 2,2. L'objectif de LDL dépend du risque cardiovasculaire : plus le risque est élevé, plus l'objectif est bas."}; } }},
+ {id:'conv', sys:'bio', n:"Conversions d'unités", f:'mmol/L = g/L × 1000 / masse molaire', g(){
+   const [nm,v,u1,u2,k,how,d1,d2]=exPick([
+     ['glycémie',exR(0.6,4,0.05),'g/L','mmol/L',5.55,'× 5,55',2,1],
+     ['glycémie',exR(3,22,0.1),'mmol/L','g/L',1/5.55,'÷ 5,55',1,2],
+     ['créatininémie',exR(6,60),'mg/L','µmol/L',8.84,'× 8,84',0,0],
+     ['urée',exR(0.15,2.5,0.05),'g/L','mmol/L',16.6,'× 16,6',2,1],
+     ['calcémie',exR(70,125),'mg/L','mmol/L',1/40,'÷ 40',0,2],
+     ['cholestérol total',exR(1.4,3.2,0.05),'g/L','mmol/L',2.58,'× 2,58',2,2]]);
+   const a=v*k;
+   return {q:`Convertis : ${nm} **${exNf(v,d1)} ${u1}** en ${u2}.`, a, d:d2, u:u2, tol:0.02,
+    steps:[`${u1} → ${u2} : ${how}`, `= ${exNf(v,d1)} ${how}`, `= ${exNf(a,d2)} ${u2}`],
+    x:"Des g/L aux mmol/L : × 1 000 / masse molaire. Retiens : glucose (180 g/mol) × 5,55 ; créatinine (113 g/mol), des mg/L aux µmol/L, × 8,84 ; urée (60 g/mol) × 16,6 ; calcium (40 g/mol), des mg/L aux mmol/L, ÷ 40 ; cholestérol (387 g/mol) × 2,58."}; }},
+ {id:'cg', sys:'rein', n:'Clairance de la créatinine (Cockcroft et Gault)', f:'Cl = (140 − âge) × poids × k / créatinine', g(){
+   for(let k=0;k<80;k++){ const fe=Math.random()<0.5, age=exR(22,88), w=exR(45,100), cr=exPick([exR(55,110),exR(120,250),exR(260,500),exR(500,900,10)]), kk=fe?1.04:1.23, a=(140-age)*w*kk/cr;
+    if([15,30,60].some(b=>Math.abs(a-b)<2)) continue;
+    return {q:`${fe?'Femme':'Homme'} de **${age} ans**, **${w} kg**, créatininémie **${cr} µmol/L**. Calcule la clairance de la créatinine.`, a, d:0, u:'mL/min', tol:0.03, abs:1,
+     steps:[`Cl (mL/min) = (140 − âge) × poids × k / créatinine (µmol/L), avec k = ${fe?'1,04 chez la femme':'1,23 chez l\'homme'}`, `= (140 − ${age}) × ${w} × ${fe?'1,04':'1,23'} / ${cr}`, `= ${exNf(a,0)} mL/min`],
+     ch:{q:'Interprétation', o:['60 mL/min ou plus','Insuffisance rénale modérée (30 à 59)','Insuffisance rénale sévère (15 à 29)','Insuffisance rénale terminale (< 15)'], a:a>=60?0:a>=30?1:a>=15?2:3},
+     x:"Cockcroft et Gault estime la clairance de la créatinine ; on s'en sert surtout pour adapter les doses de médicaments. Elle est moins fiable chez le sujet âgé, obèse ou dénutri. Pour classer une maladie rénale, on préfère le DFG estimé (CKD-EPI)."}; } }},
+ {id:'uvp', sys:'rein', n:'Clairance urinaire (U × V / P)', f:'Cl = U × V / P', g(){
+   const u=exR(4,16,0.5), vol=exR(0.6,2.6,0.1), p=exR(60,400,5), v=vol*1000/1440, a=u*1000*v/p;
+   return {q:`Urines de 24 h : **${exNf(vol,1)} L**, créatinine urinaire **${exNf(u,1)} mmol/L**. Créatininémie **${p} µmol/L**. Calcule la clairance de la créatinine.`, a, d:0, u:'mL/min', tol:0.04, abs:2,
+    steps:['V (mL/min) = volume des 24 h (mL) / 1 440', `V = ${exNf(vol*1000,0)} / 1 440 = ${exNf(v,2)} mL/min`, `U et P dans la même unité : U = ${exNf(u,1)} mmol/L = ${exNf(u*1000,0)} µmol/L`, `Cl = U × V / P = ${exNf(u*1000,0)} × ${exNf(v,2)} / ${p} = ${exNf(a,0)} mL/min`],
+    x:"U et P doivent être dans la même unité, et V en mL/min (1 440 minutes par jour). Norme : environ 90 à 130 mL/min. Si le recueil des urines de 24 h est incomplet, la clairance est sous-estimée."}; }},
+ {id:'dose', sys:'pha', n:'Dose selon le poids', f:'Dose = mg/kg × poids', g(){
+   const t=exPick(['para','amox','ceftri','arte']);
+   if(t==='para'){ const w=exR(4,40,0.5), a=15*w; return {q:`Enfant de **${exNf(w,1)} kg**. Paracétamol : **15 mg/kg par prise**, toutes les 6 heures. Quelle dose par prise ?`, a, d:0, u:'mg', tol:0.01,
+     steps:['Dose par prise = 15 mg/kg × poids', `= 15 × ${exNf(w,1)}`, `= ${exNf(a,0)} mg par prise, soit ${exNf(a*4,0)} mg par jour`], x:"Paracétamol : 15 mg/kg toutes les 6 heures, sans dépasser 60 mg/kg par jour chez l'enfant (ni 4 g par jour chez l'adulte)."}; }
+   if(t==='amox'){ const w=exR(5,30,0.5), a=50*w/2; return {q:`Enfant de **${exNf(w,1)} kg**. Prescription : amoxicilline **50 mg/kg/j en 2 prises**. Quelle dose par prise ?`, a, d:0, u:'mg', tol:0.01,
+     steps:[`Dose par jour = 50 mg/kg/j × poids = 50 × ${exNf(w,1)} = ${exNf(50*w,0)} mg`, 'Dose par prise = dose par jour / 2', `= ${exNf(a,0)} mg par prise`], x:"Lis bien si la dose est « par jour » ou « par prise ». Une dose par jour se divise ensuite par le nombre de prises."}; }
+   if(t==='ceftri'){ const w=exPick([exR(8,35,0.5),exR(45,80)]), raw=100*w, a=Math.min(raw,4000); return {q:`Méningite chez un malade de **${exNf(w,1)} kg**. Ceftriaxone **100 mg/kg/j en 1 injection**, sans dépasser **4 g par jour**. Quelle dose par jour ?`, a, d:0, u:'mg', tol:0.01,
+     steps:['Dose = 100 mg/kg/j × poids', `= 100 × ${exNf(w,1)} = ${exNf(raw,0)} mg`, raw>4000?`C'est plus que le maximum : on donne 4 000 mg (4 g)`:`C'est sous le maximum de 4 g : on donne ${exNf(a,0)} mg`], x:"Vérifie toujours la dose maximale : chez le grand enfant et l'adulte, le calcul selon le poids peut la dépasser."}; }
+   const w=exR(20,85), a=2.4*w, fl=Math.ceil(a/60); return {q:`Paludisme grave chez un malade de **${w} kg**. Artésunate IV : **2,4 mg/kg** par injection (à H0, H12 et H24, puis une fois par jour). Quelle dose par injection ?`, a, d:0, u:'mg', tol:0.02,
+     steps:['Dose = 2,4 mg/kg × poids', `= 2,4 × ${w}`, `= ${exNf(a,0)} mg par injection, soit ${fl} flacon${fl>1?'s':''} de 60 mg`], x:"Artésunate IV : 2,4 mg/kg à H0, H12 et H24, puis une fois par jour jusqu'à ce que le malade puisse avaler, avec un relais oral complet (CTA). Chez l'enfant de moins de 20 kg, l'OMS recommande 3 mg/kg."}; }},
+ {id:'perf', sys:'pha', n:'Débit de perfusion', f:'gouttes/min = volume × 20 / minutes', g(){
+   const v=exPick([250,500,500,1000,1000,1500,2000]), h=exPick([1,2,4,6,8,12,24]), a=v*20/(h*60);
+   return {q:`Passer **${exNf(v,0)} mL** de soluté en **${h} heure${h>1?'s':''}** avec un perfuseur standard (1 mL = 20 gouttes). Quel débit, en gouttes par minute ?`, a, d:0, u:'gouttes/min', abs:1,
+    steps:['Débit = volume (mL) × 20 / durée (min)', `= ${exNf(v,0)} × 20 / (${h} × 60)`, `= ${exNf(a,1)}, soit environ ${Math.round(a)} gouttes/min`],
+    x:"Perfuseur standard : 1 mL = 20 gouttes. Raccourci : gouttes/min = volume (mL) / (3 × heures). Exemple : 1 L en 8 h ≈ 42 gouttes/min. Au pousse-seringue, on raisonne en mL/h : volume / heures."}; }},
+ {id:'t12c', sys:'pha', n:'Concentration après plusieurs demi-vies', f:'C = C₀ / 2ⁿ', g(){
+   const n=exR(1,5), th=exPick([2,3,4,6,8,12]), c0=exPick([8,10,12,16,20,24,32,40,48,64,80,96,120,160]), a=c0/2**n;
+   if(Math.random()<0.3) return {q:`Un médicament a une demi-vie de **${th} heures**. Au bout de combien de temps est-il presque entièrement éliminé (environ 97 %) ?`, a:5*th, d:0, u:'heures', abs:0,
+     steps:['Il faut environ 5 demi-vies', `= 5 × ${th}`, `= ${5*th} heures`], x:"Après 5 demi-vies, il reste 1/32 du médicament, soit environ 3 %. C'est aussi le temps qu'il faut pour atteindre l'état d'équilibre avec des prises répétées."};
+   return {q:`Concentration juste après l'injection : **${c0} mg/L**. Demi-vie : **${th} heures**. Quelle est la concentration **${n*th} heures** plus tard ?`, a, d:2, u:'mg/L', tol:0.02,
+    steps:[`${n*th} h = ${n} demi-vie${n>1?'s':''} (${n*th} / ${th})`, `C = C₀ / 2${EXP[n]} = ${c0} / ${2**n}`, `= ${exNf(a,2)} mg/L`],
+    x:"À chaque demi-vie, la concentration est divisée par 2. Il faut environ 5 demi-vies pour éliminer un médicament (97 %), et autant pour atteindre l'état d'équilibre."}; }},
+ {id:'vd', sys:'pha', n:'Volume de distribution et dose de charge', f:'Vd = dose / C₀ ; dose de charge = Vd × C', g(){
+   if(Math.random()<0.5){ const dose=exPick([100,200,250,400,500,750,1000]), c0=exPick([2,4,5,8,10,12.5,20,25,40]), a=dose/c0;
+     return {q:`On injecte **${dose} mg** en IV ; la concentration plasmatique juste après est de **${exNf(c0,1)} mg/L**. Calcule le volume de distribution.`, a, d:1, u:'L', tol:0.02,
+      steps:['Vd = dose / C₀', `= ${dose} / ${exNf(c0,1)}`, `= ${exNf(a,1)} L`], x:"Un Vd plus grand que l'eau totale du corps (environ 42 L chez l'adulte) veut dire que le médicament quitte le sang pour se fixer dans les tissus."}; }
+   const w=exR(40,90), vdk=exPick([0.25,0.3,0.6,0.7,1]), c=exPick([2,4,5,8,10]), a=vdk*w*c;
+   return {q:`Malade de **${w} kg**. Le médicament a un volume de distribution de **${exNf(vdk,2)} L/kg**. On veut une concentration de **${c} mg/L** tout de suite. Quelle dose de charge ?`, a, d:0, u:'mg', tol:0.02,
+    steps:[`Vd = ${exNf(vdk,2)} × ${w} = ${exNf(vdk*w,1)} L`, 'Dose de charge = Vd × concentration voulue', `= ${exNf(vdk*w,1)} × ${c} = ${exNf(a,0)} mg`], x:"La dose de charge remplit tout de suite le volume de distribution ; les doses d'entretien compensent ensuite l'élimination."}; }},
+ {id:'t12', sys:'pha', n:'Demi-vie à partir du Vd et de la clairance', f:'T½ = 0,693 × Vd / Cl', g(){
+   const vd=exPick([14,21,28,35,42,50,70,100,140,210,300]), cl=exPick([1.5,2,3,3.5,5,7,10,14]), a=0.693*vd/cl;
+   return {q:`Volume de distribution **${vd} L**, clairance totale **${exNf(cl,1)} L/h**. Calcule la demi-vie.`, a, d:1, u:'heures', tol:0.03,
+    steps:['T½ = 0,693 × Vd / Cl', `= 0,693 × ${vd} / ${exNf(cl,1)}`, `= ${exNf(a,1)} h`], x:"La demi-vie s'allonge quand le volume de distribution augmente ou quand la clairance baisse (insuffisance rénale ou hépatique). On espace alors les prises."}; }},
+ {id:'pam', sys:'phy', n:'Pression artérielle moyenne (PAM)', f:'PAM = (PAS + 2 × PAD) / 3', g(){
+   for(let k=0;k<80;k++){ const low=Math.random()<0.35, pas=low?exR(70,95,5):exR(95,210,5), pad=low?exR(35,55,5):exR(50,125,5); if(pad>pas-20) continue; const a=(pas+2*pad)/3; if(Math.abs(a-65)<1.5) continue;
+    return {q:`Tension artérielle **${pas}/${pad} mmHg**. Calcule la pression artérielle moyenne.`, a, d:0, u:'mmHg', abs:1,
+     steps:['PAM = (PAS + 2 × PAD) / 3', `= (${pas} + 2 × ${pad}) / 3`, `= ${exNf(a,1)} mmHg`],
+     ch:{q:'Interprétation', o:['PAM < 65 mmHg : organes mal perfusés','PAM de 65 mmHg ou plus'], a:a<65?0:1},
+     x:"La diastole dure plus longtemps que la systole, d'où le poids double de la PAD. Norme ≈ 70 à 105 mmHg. En cas de choc (septique notamment), on vise une PAM ≥ 65 mmHg."}; } }},
+ {id:'imc', sys:'phy', n:'Indice de masse corporelle (IMC)', f:'IMC = poids / taille²', g(){
+   for(let k=0;k<80;k++){ const t=exR(1.48,1.95,0.01), tgt=exPick([exR(15,18,0.1),exR(19,24.5,0.1),exR(25.5,29.5,0.1),exR(30.5,45,0.1)]), w=Math.round(tgt*t*t), a=w/(t*t); if([18.5,25,30].some(b=>Math.abs(a-b)<0.15)) continue;
+    return {q:`Poids **${w} kg**, taille **${exNf(t,2)} m**. Calcule l'IMC.`, a, d:1, u:'kg/m²', abs:0.2,
+     steps:['IMC = poids (kg) / taille² (m)', `= ${w} / (${exNf(t,2)} × ${exNf(t,2)}) = ${w} / ${exNf(t*t,2)}`, `= ${exNf(a,1)} kg/m²`],
+     ch:{q:'Classe (OMS)', o:['Maigreur (< 18,5)','Corpulence normale (18,5 à 24,9)','Surpoids (25 à 29,9)','Obésité (30 ou plus)'], a:a<18.5?0:a<25?1:a<30?2:3},
+     x:"Classes de l'OMS. L'obésité se divise en classe I (30 à 34,9), II (35 à 39,9) et III (40 ou plus). Le tour de taille complète l'IMC pour juger la graisse abdominale."}; } }},
+ {id:'sc', sys:'phy', n:'Surface corporelle (Mosteller)', f:'SC = √(taille × poids / 3600)', g(){
+   const kid=Math.random()<0.35, t=kid?exR(75,145):exR(150,192), w=Math.round((kid?exR(14.5,18,0.1):exR(18.5,31,0.1))*(t/100)**2), a=Math.sqrt(t*w/3600);
+   return {q:`${kid?'Enfant':'Adulte'} de **${t} cm** et **${w} kg**. Calcule sa surface corporelle.`, a, d:2, u:'m²', abs:0.02,
+    steps:['SC (m²) = √(taille en cm × poids en kg / 3 600)', `= √(${t} × ${w} / 3 600) = √${exNf(t*w/3600,3)}`, `= ${exNf(a,2)} m²`], x:"Formule de Mosteller. Adulte moyen ≈ 1,7 à 1,9 m². On s'en sert pour doser les chimiothérapies et pour indexer le débit cardiaque ou le DFG (par 1,73 m²)."}; }},
+ {id:'dc', sys:'phy', n:'Débit cardiaque', f:'DC = FC × VES', g(){
+   const fc=exR(45,140), ves=exR(35,100,5), a=fc*ves/1000;
+   return {q:`Fréquence cardiaque **${fc} /min**, volume d'éjection systolique **${ves} mL**. Calcule le débit cardiaque.`, a, d:2, u:'L/min', abs:0.05,
+    steps:['DC = FC × VES', `= ${fc} × ${ves} mL = ${exNf(fc*ves,0)} mL/min`, `= ${exNf(a,2)} L/min`], x:"Norme au repos : environ 4 à 8 L/min. Divisé par la surface corporelle, il donne l'index cardiaque (2,5 à 4 L/min/m²). Quand le VES baisse, le cœur compense en accélérant."}; }},
+ {id:'fe', sys:'phy', n:"Fraction d'éjection (FE)", f:'FE = (VTD − VTS) / VTD × 100', g(){
+   for(let k=0;k<80;k++){ const vtd=exR(90,260,5), fe=exPick([exR(15,38),exR(42,48),exR(52,72)]), vts=Math.round(vtd*(1-fe/100)), a=(vtd-vts)/vtd*100; if([40,50].some(b=>Math.abs(a-b)<1)) continue;
+    return {q:`Échocardiographie : volume télédiastolique **${vtd} mL**, volume télésystolique **${vts} mL**. Calcule la fraction d'éjection du ventricule gauche.`, a, d:0, u:'%', abs:1,
+     steps:['FE = (VTD − VTS) / VTD × 100', `= (${vtd} − ${vts}) / ${vtd} × 100`, `= ${exNf(a,1)} %`],
+     ch:{q:'Interprétation', o:['FE réduite (40 % ou moins)','FE modérément réduite (41 à 49 %)','FE préservée (50 % ou plus)'], a:a<=40?0:a<50?1:2},
+     x:"Normale : 50 % ou plus (souvent 55 à 70 %). On distingue l'insuffisance cardiaque à FE réduite (≤ 40 %), modérément réduite (41 à 49 %) et préservée (≥ 50 %)."}; } }},
+ {id:'pf', sys:'phy', n:'Rapport PaO₂ / FiO₂', f:'P/F = PaO₂ / FiO₂', g(){
+   for(let k=0;k<80;k++){ const fi=exPick([0.21,0.3,0.4,0.5,0.6,0.8,1]), pao=exR(45,120), a=pao/fi; if([100,200,300].some(b=>Math.abs(a-b)<4)) continue;
+    return {q:`Gaz du sang : PaO₂ **${pao} mmHg** sous FiO₂ **${Math.round(fi*100)} %**. Calcule le rapport PaO₂/FiO₂.`, a, d:0, u:'mmHg', abs:2,
+     steps:['P/F = PaO₂ (mmHg) / FiO₂ (en fraction : 40 % = 0,4)', `= ${pao} / ${exNf(fi,2)}`, `= ${exNf(a,0)} mmHg`],
+     ch:{q:'Si les autres critères de SDRA sont réunis', o:['Plus de 300 : pas de SDRA','200 à 300 : SDRA léger','100 à 200 : SDRA modéré','100 ou moins : SDRA sévère'], a:a>300?0:a>200?1:a>100?2:3},
+     x:"Normal ≈ 400 à 500 mmHg. Définition de Berlin du SDRA (début aigu, opacités bilatérales, PEP ≥ 5 cmH₂O) : léger de 200 à 300, modéré de 100 à 200, sévère à 100 ou moins."}; } }},
+ {id:'desh', sys:'ped', n:"Pourcentage de déshydratation de l'enfant", f:'Perte (%) = (poids avant − poids actuel) / poids avant × 100', g(){
+   for(let k=0;k<80;k++){ const p0=exR(5,24,0.1), pc=exPick([exR(2,4.5,0.1),exR(5.5,9.5,0.1),exR(10.5,15,0.1)]), p1=Math.round(p0*(1-pc/100)*10)/10, a=(p0-p1)/p0*100; if([5,10].some(b=>Math.abs(a-b)<0.3)) continue;
+    return {q:`Enfant avec une diarrhée : poids la semaine dernière **${exNf(p0,1)} kg**, poids aujourd'hui **${exNf(p1,1)} kg**. Calcule le pourcentage de déshydratation.`, a, d:1, u:'%', abs:0.3,
+     steps:['Perte (%) = (poids avant − poids actuel) / poids avant × 100', `= (${exNf(p0,1)} − ${exNf(p1,1)}) / ${exNf(p0,1)} × 100`, `= ${exNf(a,1)} %`],
+     ch:{q:'Gravité', o:['Légère (moins de 5 %)','Modérée (5 à 10 %)','Sévère (plus de 10 %)'], a:a<5?0:a<=10?1:2},
+     x:"La perte de poids est la meilleure mesure de la déshydratation. Au-delà de 10 %, c'est une urgence (risque de choc) : réhydratation par voie veineuse. En dessous, on privilégie le soluté de réhydratation orale (SRO)."}; } }},
+ {id:'hs', sys:'ped', n:"Besoins en eau d'entretien (Holliday et Segar)", f:'100, puis 50, puis 20 mL/kg/j', g(){
+   const w=exPick([exR(3,9.5,0.5),exR(11,19.5,0.5),exR(21,45)]), a=Math.min(w,10)*100+Math.max(0,Math.min(w,20)-10)*50+Math.max(0,w-20)*20;
+   const st=['100 mL/kg pour les 10 premiers kg'+(w<=10?` : 100 × ${exNf(w,1)} = ${exNf(w*100,0)} mL`:' : 1 000 mL')];
+   if(w>10) st.push('+ 50 mL/kg de 10 à 20 kg'+(w<=20?` : 50 × ${exNf(w-10,1)} = ${exNf((w-10)*50,0)} mL`:' : 500 mL'));
+   if(w>20) st.push(`+ 20 mL/kg au-delà de 20 kg : 20 × ${exNf(w-20,1)} = ${exNf((w-20)*20,0)} mL`);
+   st.push(`Total : ${exNf(a,0)} mL par 24 h (≈ ${exNf(a/24,0)} mL/h)`);
+   return {q:`Enfant de **${exNf(w,1)} kg**. Quels sont ses besoins en eau d'entretien par 24 heures ?`, a, d:0, u:'mL/24 h', tol:0.01, abs:5, steps:st,
+    x:"Règle de Holliday et Segar : 100 mL/kg/j pour les 10 premiers kg, 50 mL/kg/j pour les 10 kg suivants, puis 20 mL/kg/j. Ce sont les besoins d'entretien : on y ajoute les pertes (déshydratation, fièvre, diarrhée)."}; }},
+ {id:'ge', sys:'par', n:'Densité parasitaire (goutte épaisse)', f:'Parasites/µL = parasites comptés × 8 000 / 200', g(){
+   const n=exR(12,1500), a=n*8000/200;
+   return {q:`Goutte épaisse : **${n} trophozoïtes** comptés pour **200 leucocytes**. Calcule la densité parasitaire (convention : 8 000 leucocytes/µL).`, a, d:0, u:'parasites/µL', tol:0.01,
+    steps:['Densité = parasites comptés × 8 000 / leucocytes comptés', `= ${n} × 8 000 / 200 = ${n} × 40`, `= ${exNf(a,0)} parasites/µL`],
+    x:"On compte les parasites en même temps que 200 leucocytes (500 si on trouve moins de 10 parasites), puis on rapporte à 8 000 leucocytes/µL (convention de l'OMS), ou au vrai nombre de leucocytes du malade s'il est connu. La densité sert aussi à suivre l'efficacité du traitement."}; }},
+ {id:'frottis', sys:'par', n:'Parasitémie sur frottis', f:'Parasitémie (%) = hématies parasitées / hématies comptées × 100', g(){
+   for(let k=0;k<80;k++){ const tot=exPick([500,1000,2000]), pc=exPick([exR(0.4,3.5,0.1),exR(4.5,9.5,0.1),exR(11,25,0.5)]), np=Math.round(pc/100*tot), a=np/tot*100; if(np<1||[4,10].some(b=>Math.abs(a-b)<0.15)) continue;
+    return {q:`Frottis mince : **${np} hématies parasitées** sur **${exNf(tot,0)} hématies** comptées. Calcule la parasitémie.`, a, d:1, u:'%', abs:0.1,
+     steps:['Parasitémie = hématies parasitées / hématies comptées × 100', `= ${np} / ${exNf(tot,0)} × 100`, `= ${exNf(a,1)} %`],
+     ch:{q:'Interprétation', o:['Moins de 4 %','4 à 10 % : signe de gravité chez le voyageur non immun','Plus de 10 % : critère de paludisme grave (OMS)'], a:a<4?0:a<=10?1:2},
+     x:"Pour l'OMS, une parasitémie à P. falciparum au-dessus de 10 % est un critère de paludisme grave. Les recommandations françaises retiennent 4 % chez le voyageur non immun. La clinique compte autant : un seul signe de gravité suffit."}; } }},
+];
+const EXO_BY={}; EXOS.forEach(x=>{ EXO_BY[x.id]=x; });
+UI.exo=null;
+function exoGen(id){ const x=EXO_BY[id]; if(!x) return null; for(let k=0;k<6;k++){ const v=x.g(); if(v) return v; } return null; }
+function exoStats(){ if(!S.prefs.exo||typeof S.prefs.exo!=='object') S.prefs.exo={}; return S.prefs.exo; }
+function exoLim(v){ return Math.max(v.abs||0, (v.tol||0)*Math.abs(v.a), 0.5*10**-v.d)+1e-9; } // l'arrondi affiché est toujours accepté
+function exoPnum(v){ const s=String(v||'').replace(/[\s ]/g,'').replace(',','.').replace('−','-'); return s===''||isNaN(+s)?NaN:+s; }
+function exoNew(id, ser){ UI.exo={id, v:exoGen(id), val:'', pick:null, done:false, ok:null, okNum:null, okCh:null, gave:false, ser:ser||null, end:false}; }
+function exoOpenRun(){ const top=UI.sheetStack[UI.sheetStack.length-1]; if(top===exoRunSheet) paintSheet(); else openSheet(exoRunSheet); }
+function exoStart(id){ exoNew(id); exoOpenRun(); }
+function exoSeries(sys){
+  const pool=EXOS.filter(x=>!sys||x.sys===sys).map(x=>x.id); if(!pool.length) return;
+  const n=Math.min(10, sys?pool.length*2:10); let ids=[]; while(ids.length<n) ids=ids.concat(shuffle(pool.slice()));
+  ids=ids.slice(0,n); exoNew(ids[0], {ids, i:0, res:[], sys:sys||''}); exoOpenRun();
+}
+function exoCheck(giveUp){
+  const u=UI.exo; if(!u||u.done||!u.v) return; const v=u.v, num=exoPnum(u.val);
+  if(!giveUp && isNaN(num)){ toast('Écris ton résultat : un nombre.'); return; }
+  if(!giveUp && v.ch && u.pick===null){ toast('Choisis aussi une interprétation.'); return; }
+  const lim=exoLim(v);
+  u.gave=!!giveUp; u.okNum=!giveUp && Math.abs(num-v.a)<=lim; u.okCh=v.ch&&!giveUp?u.pick===v.ch.a:null; u.ok=u.okNum&&u.okCh!==false; u.done=true;
+  const st=exoStats(), r=st[u.id]||[0,0]; st[u.id]=[r[0]+(u.ok?1:0), r[1]+1, now()]; savePrefs();
+  if(u.ser) u.ser.res[u.ser.i]=u.ok;
+  paintSheet(true);
+}
+function exoNext(){ const u=UI.exo; if(!u) return;
+  if(u.ser){ const s=u.ser; s.i++; if(s.i>=s.ids.length){ u.end=true; paintSheet(); return; } Object.assign(u,{id:s.ids[s.i], v:exoGen(s.ids[s.i]), val:'', pick:null, done:false, ok:null, okNum:null, okCh:null, gave:false}); }
+  else exoNew(u.id);
+  paintSheet(); }
+function exoSheet(){
+  const st=exoStats(), groups={}; EXOS.forEach(x=>{ (groups[x.sys]=groups[x.sys]||[]).push(x); });
+  return sheetTop('Exercices de calcul')+`<p>${EXOS.length} calculs de médecine, avec des valeurs qui changent à chaque fois. Tu calcules, puis tu vois la formule, le calcul pas à pas et ce que le résultat veut dire.</p>
+   <button class="btn btn-primary btn-lg" data-act="exo-series">Série de 10 au hasard</button>
+   ${Object.entries(groups).map(([k,L])=>`<div class="spread" style="margin-top:4px"><h3 class="syn-sys" style="margin:0">${EXO_SYS[k]}</h3>${L.length>1?`<button class="btn btn-ghost" data-act="exo-series" data-sys="${k}">Série</button>`:''}</div>
+    <div class="menu">${L.map(x=>{ const r=st[x.id]; return `<button data-act="exo-start" data-id="${x.id}">${I.pen}<span><span class="t">${esc(x.n)}</span><span class="d">${esc(x.f)}${r?' · '+r[0]+' juste'+(r[0]>1?'s':'')+' sur '+r[1]:''}</span></span>${I.chev}</button>`; }).join('')}</div>`).join('')}`;
+}
+function exoRunSheet(){
+  const u=UI.exo; if(!u) return sheetTop('Exercice')+'<p>Exercice introuvable.</p>';
+  if(u.end){ const s=u.ser, n=s.res.filter(Boolean).length, N=s.ids.length;
+    return sheetTop('Série terminée')+`<section class="panel stack" style="align-items:center;text-align:center"><p class="eyebrow">Résultat</p><p class="score">${n}<small>/${N}</small></p><p class="small muted">${n===N?'Parfait !':n>=N*0.7?'Très bien.':'Revois les formules ratées : chaque exercice se refait avec de nouvelles valeurs.'}</p></section>
+     <section class="panel"><div class="menu">${s.ids.map((id,k)=>`<button data-act="exo-start" data-id="${id}"><span class="verdict ${s.res[k]?'ok':'ko'}">${s.res[k]?'Juste':'Faux'}</span><span><span class="t">${esc(EXO_BY[id].n)}</span><span class="d">Refaire avec d'autres valeurs</span></span>${I.chev}</button>`).join('')}</div></section>
+     <div class="row"><button class="btn btn-primary" style="flex:1" data-act="exo-series" data-sys="${esc(s.sys)}">Nouvelle série</button><button class="btn" style="flex:1" data-act="sheet-back">Terminer</button></div>`; }
+  const x=EXO_BY[u.id], v=u.v; if(!x||!v) return sheetTop('Exercice')+'<p>Exercice indisponible.</p>';
+  let h=sheetTop(u.ser?`Série · ${u.ser.i+1} sur ${u.ser.ids.length}`:'Exercice')+`<div class="stack" style="gap:4px"><p class="eyebrow">${esc(EXO_SYS[x.sys])}</p><h2>${esc(x.n)}</h2></div>
+   <section class="panel stack"><div class="rt">${md(v.q)}</div>
+    <label class="field">Ton résultat<span class="exo-in"><input type="text" id="exoVal" inputmode="decimal" autocomplete="off" data-input="exo-val" value="${esc(u.val)}" ${u.done?'disabled':''} placeholder="Par exemple 12,5"><span>${esc(v.u)}</span></span></label>
+    ${v.ch?`<p style="margin:0"><strong>${esc(v.ch.q)}</strong></p><div class="qcm">${v.ch.o.map((o,j)=>`<button data-act="exo-pick" data-j="${j}" class="${u.done?(j===v.ch.a?'ok':j===u.pick?'ko':''):''}" aria-pressed="${u.pick===j}" ${u.done?'disabled':''}><span class="k">${String.fromCharCode(65+j)}</span><span>${esc(o)}</span></button>`).join('')}</div>`:''}
+    ${u.done?'':`<button class="btn btn-primary btn-lg" data-act="exo-check">Vérifier</button><button class="btn btn-ghost" data-act="exo-giveup">Voir la solution</button>`}
+   </section>`;
+  if(u.done) h+=`<section class="panel stack">
+    <p style="margin:0">${u.gave?'<span class="verdict todo">Solution</span>':u.ok?'<span class="verdict ok">Juste</span>':'<span class="verdict ko">Pas tout à fait</span>'}${u.gave?'':` <span class="small">Ton résultat : ${esc(u.val)} ${esc(v.u)} ${u.okNum?'✓':'✗'}</span>`}</p>
+    <p style="margin:0">Résultat attendu : <strong>${exNf(v.a,v.d)} ${esc(v.u)}</strong></p>
+    <ol class="exo-steps">${v.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
+    ${v.ch?`<p class="small" style="margin:0">Interprétation : <strong>${esc(v.ch.o[v.ch.a])}</strong>${u.okCh===false&&u.pick!==null?' (tu avais choisi : '+esc(v.ch.o[u.pick])+')':''}</p>`:''}
+    <div class="hintbox"><p class="eyebrow">À retenir</p><p class="small" style="margin:0">${esc(v.x)}</p></div></section>
+    <button class="btn btn-primary btn-lg" data-act="exo-next">${u.ser?(u.ser.i+1<u.ser.ids.length?'Exercice suivant':'Voir mon résultat'):'Un autre, avec de nouvelles valeurs'}</button>`;
+  return h;
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target && e.target.id==='exoVal' && UI.exo && !UI.exo.done){ e.preventDefault(); exoCheck(); } });
 
 // ---------- Programme de révision jusqu'à l'examen ----------
 // Recalculé chaque jour à partir de l'état réel : leçons pas encore « Appris », cartes prévues, examens blancs.
