@@ -459,6 +459,7 @@ button.kpi:disabled{opacity:1;cursor:default}
   .sess-aside{display:flex;flex-direction:column;gap:12px;position:sticky;top:72px}
   .flash .front{font-size:1.4375rem}
 }
+.gen-saved{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px;font-size:.9375rem}
 /* Internat */
 .plan{display:flex;flex-direction:column}
 .pl{padding:3px 0;line-height:1.4}
@@ -1698,7 +1699,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 50; // à changer avec VERSION dans sw.js
+const APP_VER = 51; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -2182,16 +2183,16 @@ function aiPanel(){
    <label class="row" style="justify-content:space-between;font-weight:700"><span>Astuce ou mini-histoire pour retenir</span><input type="checkbox" class="toggle" id="genHint" data-input="gen-hint" ${g.hint?'checked':''}></label>`;
   if(AI.sample){
     html+=g.busy?`<div class="row"><button class="btn btn-primary" style="flex:1" disabled>Claude rédige… <span class="mono" id="genCount"></span></button><button class="btn" data-act="gen-stop">Arrêter</button></div>`
-      :`<button class="btn btn-primary btn-lg" data-act="gen-go">Demander les cartes à Claude</button>`;
+      :`<button class="btn btn-primary btn-lg" data-act="gen-go">Créer les cartes avec Claude</button><p class="small muted" style="margin:0">Elles sont enregistrées directement dans la leçon choisie.</p>`;
   } else {
     html+=`<div class="notice">${AI.ready?(PWA?"Trois gestes : copie la consigne, colle-la dans ton IA (Claude, ChatGPT, Gemini…), puis colle sa réponse ci-dessous.":"Claude n'est pas joignable depuis cette page. Copie la consigne, colle-la dans une conversation avec Claude, puis colle sa réponse ci-dessous."):'Connexion à Claude…'}</div>
      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="gen-copy">Copier la consigne</button></div>${PWA?aiLinks():''}
      <label class="field">Réponse de l'IA<textarea id="genPaste" data-input="gen-paste" placeholder="[{&quot;type&quot;:&quot;qa&quot;, …}]">${esc(g.paste)}</textarea></label>
-     <button class="btn btn-primary" data-act="gen-parse">Lire la réponse</button>`;
+     <button class="btn btn-primary" data-act="gen-parse">Ajouter ces cartes à la leçon</button>`;
   }
   if(g.err) html+=`<div class="notice warn">${esc(g.err)}</div>`;
   html+='</section>';
-  if(g.results) html+=resultsPanel();
+  if(g.saved) html+=savedPanel();
   return html;
 }
 function resultsPanel(){
@@ -2535,9 +2536,10 @@ function explainSheet(){ return sheetTop('Explication')+`<div class="panel"><p c
 async function generate(){
   const g=UI.gen; if(g.busy) return;
   if(!g.types.length){ toast('Choisis au moins un type de carte.'); return; }
+  if(!g.chap){ toast('Choisis d\'abord la leçon : les cartes y seront rangées.'); return; }
   if(!g.text.trim()){ toast('Colle d\'abord le texte de ton cours, ou charge la leçon du chapitre.'); return; }
   const prompt=buildCardPrompt(g);
-  g.busy=true; g.err=''; g.results=null; rerender();
+  g.busy=true; g.err=''; g.results=null; g.saved=null; rerender();
   aiCtl=new AbortController();
   try{
     const opts={signal:aiCtl.signal, modelTier:'default', onText:({text})=>{ const n=(text.match(/"front"\s*:/g)||[]).length; const el=$('#genCount'); if(el) el.textContent=n?n+'/'+g.n:''; }};
@@ -2546,15 +2548,33 @@ async function generate(){
     if(!res.length) g.err='Aucune carte exploitable. Vérifie le texte de ton cours (assez long et lisible), puis réessaie.';
     else g.results=res;
   }catch(e){ if(e&&e.code==='invalid_json'&&e.text){ const res=parseLoose(e.text); if(res.length) g.results=res; else g.err=aiErr(e); } else g.err=aiErr(e); }
-  g.busy=false; rerender();
-  if(g.results){ const el=$('#genResults'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }
+  g.busy=false; if(g.results) saveGenerated(); else rerender();
+  if(g.saved){ const el=$('#genResults'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }
 }
-function saveGenerated(){
-  const g=UI.gen; let n=0;
-  for(const r of g.results){ if(r.off) continue; const c=newCard({chap:g.chap, type:r.type, front:r.front, back:r.back, hint:r.hint||'', choices:r.choices||[], answer:r.answer||[]}); saveCard(c); n++; }
-  toast(plural(n,'carte')+' ajoutée'+(n>1?'s':''));
+function saveGenerated(){ // les cartes de Claude vont directement dans la leçon, sans étape de relecture
+  const g=UI.gen; const ids=[];
+  for(const r of (g.results||[])){ if(r.off) continue; const c=newCard({chap:g.chap, type:r.type, front:r.front, back:r.back, hint:r.hint||'', choices:r.choices||[], answer:r.answer||[]}); saveCard(c); ids.push(c.id); }
   if(g.chap && statusOf(g.chap)===0) setStatus(g.chap,1);
-  g.results=null; updateDueDot(); rerender();
+  g.results=null; g.saved=ids.length?{ids, chap:g.chap}:null; updateDueDot();
+  toast(ids.length?plural(ids.length,'carte')+' ajoutée'+(ids.length>1?'s':'')+' à la leçon':'Aucune carte à ajouter.', 3200); rerender();
+}
+function savedPanel(){
+  const sv=UI.gen.saved, cs=sv.ids.map(id=>S.cards[id]).filter(Boolean), ch=CH[sv.chap];
+  if(!cs.length) return '';
+  return `<section class="panel stack" id="genResults"><span class="tag-hl">Enregistré</span>
+    <h2 style="margin:0">${plural(cs.length,'carte')} ajoutée${cs.length>1?'s':''}${ch?' à « '+esc(ch.title)+' »':''}</h2>
+    <p class="small muted" style="margin:0">Faites à partir de la leçon et rangées dans ce chapitre, elles arrivent dans tes révisions. Pour en corriger une, ouvre la leçon puis la carte.</p>
+    <ol class="gen-saved">${cs.map(c=>`<li>${esc(plain(c.front).slice(0,160))}</li>`).join('')}</ol>
+    <div class="row"><button class="btn btn-primary" style="flex:1" data-act="gen-review">Les réviser maintenant</button>${ch?`<button class="btn btn-soft" style="flex:1" data-act="chap" data-id="${sv.chap}">Ouvrir la leçon</button>`:''}</div>
+    <button class="btn-link" data-act="gen-undo">Annuler cet ajout</button></section>`;
+}
+async function genFromLesson(id, types, text){ // depuis la page d'une leçon : la leçon est chargée et Claude lance tout de suite
+  const txt=String(text||await chapCourseText(id)||'').trim();
+  Object.assign(UI.gen, {chap:id, source:'text', text:txt, focus:'', results:null, saved:null, err:'', paste:''}); if(types) UI.gen.types=types;
+  UI.newTab='ai'; UI.tab='new'; lsSet('xamxam.tab','new'); UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render();
+  if(!txt){ toast('Pas encore de contenu pour cette leçon : colle le texte de ton cours, puis lance la création.', 4200); return; }
+  if(AI.sample) generate();
+  else toast('Copie la consigne, colle-la dans Claude, puis colle sa réponse : les cartes iront directement dans la leçon.', 4800);
 }
 
 // ---------- Export / import ----------
@@ -4690,8 +4710,8 @@ document.addEventListener('click', async e=>{
       if(text){ UI.lastLesson=text; $('#lessonBtns').insertAdjacentHTML('beforeend',`<button class="btn" data-act="lesson-save" data-id="${id}">Ajouter à mes notes</button><button class="btn" data-act="lesson-cards" data-id="${id}">Cartes depuis cette leçon</button>`); }
       break; }
     case 'lesson-save': { const id=d.id; const old=(S.notes[id]||{}).text||''; saveNote(id, (old?old.trim()+'\n\n':'')+UI.lastLesson); toast('Ajouté à tes notes'); paintSheet(true); break; }
-    case 'lesson-cards': UI.gen.chap=d.id; UI.gen.source='text'; UI.gen.text=UI.lastLesson||''; UI.gen.results=null; UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); render(); break;
-    case 'gen-for': UI.gen.chap=d.id; UI.gen.results=null; UI.gen.err=''; UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render(); break;
+    case 'lesson-cards': genFromLesson(d.id, null, UI.lastLesson||''); break;
+    case 'gen-for': genFromLesson(d.id); break;
     case 'edit-card': openEditor(d.id||null, d.chap||(UI.tab==='rev'&&UI.rev.scope.startsWith('c:')?UI.rev.scope.slice(2):''), d.type); break;
     case 'sheet-back': audStop(); closeSheet(); break;
     case 'ready-add': try{ const n=await readyAdd(d.id); toast(n?n+' cartes ajoutées. Elles arrivent peu à peu dans tes révisions du jour.':'Déjà dans tes révisions', 4000); }catch{ toast('Pas de connexion : réessaie avec internet.'); } paintSheet(true); rerender(); break;
@@ -4739,9 +4759,11 @@ document.addEventListener('click', async e=>{
     case 'gen-photo-clear': UI.gen.photos.forEach(p=>URL.revokeObjectURL(p.url)); UI.gen.photos=[]; rerender(); break;
     case 'gen-go': generate(); break;
     case 'gen-stop': if(aiCtl) aiCtl.abort(); break;
-    case 'gen-copy': if(!UI.gen.text.trim()){ toast('Colle d\'abord le texte de ton cours, ou charge la leçon du chapitre.'); break; } await copyText(buildCardPrompt(UI.gen)); break;
+    case 'gen-copy': if(!UI.gen.chap){ toast('Choisis d\'abord la leçon : les cartes y seront rangées.'); break; } if(!UI.gen.text.trim()){ toast('Colle d\'abord le texte de ton cours, ou charge la leçon du chapitre.'); break; } await copyText(buildCardPrompt(UI.gen)); break;
     case 'gen-load-chap': { const id=UI.gen.chap; if(!id) break; const txt=await chapCourseText(id); if(!txt){ toast('Impossible de charger cette leçon. Vérifie ta connexion.'); break; } UI.gen.text=txt; rerender(); toast('Leçon chargée : relis le texte, puis lance la création.'); break; }
-    case 'gen-parse': { const res=parseLoose(UI.gen.paste); if(!res.length){ UI.gen.err="Je n'ai trouvé aucune carte dans ce texte. Colle toute la réponse de l'IA."; } else { UI.gen.err=''; UI.gen.results=res; } rerender(); break; }
+    case 'gen-parse': { if(!UI.gen.chap){ toast('Choisis d\'abord la leçon : les cartes y seront rangées.'); break; } const res=parseLoose(UI.gen.paste); if(!res.length){ UI.gen.err="Je n'ai trouvé aucune carte dans ce texte. Colle toute la réponse de l'IA."; rerender(); } else { UI.gen.err=''; UI.gen.results=res; UI.gen.paste=''; saveGenerated(); } break; }
+    case 'gen-review': { const ids=((UI.gen.saved||{}).ids||[]).filter(id=>S.cards[id]); if(!ids.length) break; if(SESS){ $('#session').hidden=true; SESS=null; } startSession('list','all',{ids}); break; }
+    case 'gen-undo': { const sv=UI.gen.saved; if(!sv) break; let n=0; for(const id of sv.ids) if(S.cards[id]){ deleteCard(id); n++; } UI.gen.saved=null; updateDueDot(); toast(n?'Ajout annulé : '+plural(n,'carte')+' retirée'+(n>1?'s':'')+'.':'Ces cartes étaient déjà retirées.'); rerender(); break; }
     case 'gen-clear': UI.gen.results=null; rerender(); break;
     case 'gen-save': saveGenerated(); break;
     case 'imp-go': { const res=parseLoose(UI.impText||''); if(!res.length){ toast('Aucune carte reconnue. Vérifie le format.'); break; }
@@ -6799,17 +6821,12 @@ function trainChapPanel(id){ const cs=CASES.filter(x=>x.ch.includes(id));
   return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>S'entraîner sur cette leçon</h3></div>
    ${cs.map(x=>`<button class="btn btn-soft" data-act="cas-start" data-id="${x.id}" style="justify-content:space-between;width:100%"><span>Cas clinique · ${esc(x.n)}</span>${I.chev}</button>`).join('')}
    <button class="btn btn-soft" data-act="gen-qcm" data-id="${id}" style="justify-content:space-between;width:100%"><span>QCM sur cette leçon, préparés par Claude</span>${I.chev}</button>
-   <p class="small muted">${AI.sample?'Claude prépare les QCM à partir du contenu de la leçon ; tu gardes ceux que tu veux.':'Ici, XamXam prépare un texte à copier dans Claude ; tu colles ensuite sa réponse pour créer les QCM.'}</p></section>`; }
+   <p class="small muted">${AI.sample?'Claude prépare les QCM à partir du contenu de la leçon et les ajoute directement à la leçon.':'Ici, XamXam prépare un texte à copier dans Claude ; tu colles ensuite sa réponse et les QCM sont ajoutés à la leçon.'}</p></section>`; }
 async function chapCourseText(id){ // ce que XamXam a du cours de ce chapitre : notes de l'étudiant et leçon tirée de son polycopié
   let txt=''; try{ if(READY[id]){ const r=await readyLoad(id);
     txt=(r.obj||[]).map(o=>'Objectif : '+o).join('\n')+'\n\n'+(r.cards||[]).map(([t,f,b])=>t==='c'?String(f).replace(/\{\{(.+?)\}\}/g,'$1'):'Q : '+f+'\nR : '+b).join('\n\n'); } }catch{}
   const note=(S.notes[id]||{}).text||''; if(note) txt=note+'\n\n'+txt; return txt.trim(); }
-async function genQcmFor(id){
-  const txt=await chapCourseText(id);
-  Object.assign(UI.gen, {chap:id, source:'text', text:txt, focus:'', types:['qcm'], n:10, results:null, err:''});
-  UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render();
-  toast(txt?'Le contenu de la leçon est prêt : lance la création des QCM en bas de la page.':'Pas encore de contenu pour cette leçon : colle le texte de ton cours, puis lance la création.', 3800);
-}
+async function genQcmFor(id){ return genFromLesson(id, ['qcm']); }
 
 // ---------- Exercices de calcul : valeurs tirées au hasard, correction pas à pas ----------
 const exR=(a,b,st=1)=>{ const n=Math.round((b-a)/st); return Math.round((a+Math.floor(Math.random()*(n+1))*st)*1e6)/1e6; };
