@@ -1272,9 +1272,9 @@ function migratePrefs(){ const p=S.prefs; if(!p.level && (Object.keys(S.progress
 let localTimer;
 function saveLocal(){ clearTimeout(localTimer); localTimer=setTimeout(writeLocal, 250); }
 function writeLocal(){
-  const d={cards:S.cards, progress:S.progress, notes:S.notes, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams, internat:S.internat, fsync:S.fsync};
+  const d={cards:Object.values(S.cards).some(c=>c&&c.tmp)?Object.fromEntries(Object.entries(S.cards).filter(([,c])=>!(c&&c.tmp))):S.cards, progress:S.progress, notes:S.notes, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, docs:S.docs, exams:S.exams, internat:S.internat, fsync:S.fsync};
   if(!lsSet(LS_KEY, JSON.stringify(d))){ // trop lourd (images) : on garde le texte sur le téléphone, les images restent dans la sauvegarde en ligne
-    const light={...d, cards:Object.fromEntries(Object.entries(S.cards).map(([k,c])=>[k, c.img?{...c, img:'', imgCloud:true}:c]))};
+    const light={...d, cards:Object.fromEntries(Object.entries(d.cards).map(([k,c])=>[k, c.img?{...c, img:'', imgCloud:true}:c]))};
     lsSet(LS_KEY, JSON.stringify(light));
   }
   if(typeof gsSchedule==='function') gsSchedule();
@@ -1474,7 +1474,7 @@ function nextSrs(srs, g, fuzz=true){
 const isLearning = c => c.srs.state==='learning'||c.srs.state==='relearning';
 // Cartes prêtes : elles restent en attente tant que la leçon n'est pas marquée « Appris »
 const isHeld = c => !!c.ready && statusOf(c.chap)<2;
-const isLive = c => !c.suspended && !isHeld(c);
+const isLive = c => !c.tmp && !c.suspended && !isHeld(c);
 
 // ---------- Portée & files ----------
 function inScope(c, scope){
@@ -1699,7 +1699,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 51; // à changer avec VERSION dans sw.js
+const APP_VER = 52; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -2076,9 +2076,8 @@ function chapterSheet(id){
      ${cards.length?`<div class="clist">${cards.map(cardRow).join('')}</div>`:'<p class="muted small">Pas encore de carte pour ce chapitre.</p>'}
    </section>
    <section class="panel"><div class="section-title"><h3>Avec Claude</h3><span class="small muted">facultatif</span></div>
-     <p class="small muted" id="lessonHelp">${AI.sample?'Claude peut t\'expliquer ce chapitre en 5 minutes, ou préparer des cartes.':'Une consigne toute prête à coller dans ton IA (Claude, ChatGPT, Gemini…) : elle t\'explique le chapitre en 5 minutes, ou prépare des cartes.'}${note?' Il s\'appuie sur tes notes.':''}</p>
-     <div id="lessonOut" class="rt" style="margin-top:10px" hidden></div>
-     <div class="row" style="margin-top:10px" id="lessonBtns"><button class="btn btn-soft" style="flex:1" data-act="lesson" data-id="${id}">Leçon express</button><button class="btn btn-soft" style="flex:1" data-act="gen-for" data-id="${id}">Préparer des cartes</button></div>
+     <p class="small muted" id="lessonHelp">Cours pas encore sorti ? <strong>Anticipe-le</strong> : Claude t'explique la leçon et t'entraîne, sans rien enregistrer. Cours sorti ? <strong>Prépare tes cartes</strong> à partir de lui : elles sont rangées dans la leçon.</p>
+     <div class="row" style="margin-top:10px"><button class="btn btn-soft" style="flex:1" data-act="ant-open" data-id="${id}">Anticiper ce cours</button><button class="btn btn-soft" style="flex:1" data-act="gen-for" data-id="${id}">Préparer des cartes</button></div>
    </section>
    ${c.custom?`<button class="btn danger" data-act="del-chap" data-id="${id}">Supprimer ce chapitre</button>`:''}`;
 }
@@ -2448,7 +2447,7 @@ function paintSession(anim){
     ? (c.type==='qcm'?`<button class="btn btn-primary btn-lg" data-act="reveal">Valider mes réponses</button>`:`<button class="btn btn-primary btn-lg" data-act="reveal">${am?'Voir la correction':'Afficher la réponse'}</button>`)
     : ansSugg(gradeButtons(c), cur);
   const tot=Math.max(s.done+1, s.done+(s.mode==='srs'?r.nw+r.lrn+r.rev:r.n));
-  const where=[{srs:'Révisions du jour', recent:'Cartes de la semaine', cram:'Bachotage', hard:'Cartes difficiles', list:'Révision ciblée'}[s.mode]||'Révision', s.scope&&s.scope!=='all'?scopeLabel(s.scope):'', 'carte '+(s.done+1)+' sur '+tot].filter(Boolean).join(' · ');
+  const where=[s.tmp?'Anticipation, rien n\'est enregistré':({srs:'Révisions du jour', recent:'Cartes de la semaine', cram:'Bachotage', hard:'Cartes difficiles', list:'Révision ciblée'}[s.mode]||'Révision'), s.scope&&s.scope!=='all'?scopeLabel(s.scope):'', 'carte '+(s.done+1)+' sur '+tot].filter(Boolean).join(' · ');
   const kind=c.type==='qcm'?'QCM':c.type==='cloze'?'Texte à trous':c.img?'Image à identifier':am?'Question à rédiger':'Question';
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}${s.undo?'<button class="icon-btn" data-act="sess-undo" aria-label="Annuler la dernière note" title="Annuler la dernière note" style="font-size:1.25rem">↶</button>':''}</div>
    <p class="sess-where">${esc(where)}</p>
@@ -2457,7 +2456,7 @@ function paintSession(anim){
      <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):c.exa&&EXA_BY[c.exa]?'Examen clinique · '+esc(EXA_SYS[EXA_BY[c.exa].sys]):c.eng&&ENG_BY[c.eng]?'Anglais médical · '+esc(ENG_BY[c.eng].n):c.sch&&SCH_BY[c.sch]?"Analyse d'images · "+esc(SCH_BY[c.sch].n):'Sans chapitre')}</p><span class="fl-kind">${kind}</span>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
      ${img('front')}${front}${back}
    </article>
-   ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button>${c.srs.state==='new'&&s.mode==='srs'?'<button class="btn btn-ghost" data-act="sess-later">Pas aujourd\'hui</button>':''}<button class="btn btn-ghost" data-act="sess-suspend">Retirer de mes révisions</button></div>`:''}
+   ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}${c.tmp?'<span class="small muted" style="align-self:center">Carte temporaire : elle ne sera pas enregistrée.</span>':`<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button>${c.srs.state==='new'&&s.mode==='srs'?'<button class="btn btn-ghost" data-act="sess-later">Pas aujourd\'hui</button>':''}<button class="btn btn-ghost" data-act="sess-suspend">Retirer de mes révisions</button>`}</div>`:''}
    ${(!cur.revealed&&!cur.disc&&(c.type==='qa'||c.type==='cloze'))?ansModesHTML():''}<div class="sess-actions">${actions}</div></div>${sessAsideHTML(r)}</div>`;
   $('#session').scrollTop=0;
   if(am==='voice' && !cur.revealed && !cur.spoke){ cur.spoke=true; sayText(ansQuestion(c), 'fr-FR'); }
@@ -2490,12 +2489,13 @@ function grade(g){
     if(isLearning(c)) s.later.push(c.id);
     logReview(g>=3, wasNew, ms);
   } else {
-    logReview(g>=3, false, ms);
+    if(!c.tmp) logReview(g>=3, false, ms);
     if(g===1){ s.missed.push(c.id); const pos=Math.min(s.queue.length, 3+Math.floor(Math.random()*4)); s.queue.splice(pos,0,c.id); }
   }
   updateDueDot(); nextCard();
 }
 function sessionDone(){
+  if(SESS&&SESS.tmp){ antDone(); return; }
   if(typeof gsSchedule==='function' && GS.token && GS.gist){ clearTimeout(GS.timer); GS.timer=setTimeout(()=>gsSync(false), 800); }
   const s=SESS; const mins=Math.max(1,Math.round((now()-s.start)/MIN));
   const pct=s.done?Math.round(s.ok/s.done*100):0;
@@ -2517,7 +2517,7 @@ function sessionDone(){
    </div>`;
   SESS.cur=null; SESS.finished=true;
 }
-function closeSession(){ recStop(); $('#session').hidden=true; document.body.style.overflow=''; SESS=null; flushAll(); rerender(); histSync(); }
+function closeSession(){ recStop(); const tmp=SESS&&SESS.tmp, stack=SESS&&SESS.stack; $('#session').hidden=true; document.body.style.overflow=''; SESS=null; if(tmp) antPurge(); flushAll(); rerender(); histSync(); if(tmp&&stack&&stack.length){ UI.sheetStack=stack; paintSheet(true); } }
 
 // ---------- Explication / leçon (Claude) ----------
 let aiCtl=null;
@@ -3191,7 +3191,7 @@ async function gh(method, path, body){
   if(!r.ok) throw Object.assign(new Error('http'),{code:'http', status:r.status});
   return r.json();
 }
-function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, appv:APP_VER, cards:Object.values(S.cards), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams, internat:S.internat, drive:DRV, docs:S.docs, fsync:S.fsync}; }
+function syncSnapshot(){ return {app:'xamxam', kind:'sync', v:1, appv:APP_VER, cards:Object.values(S.cards).filter(c=>!c.tmp), notes:S.notes, progress:S.progress, custom:S.custom, stats:S.stats, prefs:S.prefs, trash:S.trash, exams:S.exams, internat:S.internat, drive:DRV, docs:S.docs, fsync:S.fsync}; }
 function applyRemote(d){
   const before=JSON.stringify([Object.keys(S.cards).length, Object.keys(S.exams).length]);
   const notes=Object.entries(d.notes||{}).map(([id,n])=>({...n, id}));
@@ -4618,6 +4618,13 @@ document.addEventListener('click', async e=>{
     case 'bl-open': openSheet(blSheet); break;
     case 'plan-open': openSheet(planSheet); break;
     case 'exo-open': openSheet(exoSheet); break;
+    case 'ant-open': antOpen(d.id); break;
+    case 'ant-lesson': antLesson(); break;
+    case 'ant-go': antGo(); break;
+    case 'ant-copy': await copyText(buildAntPrompt(ANT.chap, ANT.lesson)); toast('Consigne copiée : colle-la dans Claude, puis colle sa réponse ici.', 3600); break;
+    case 'ant-parse': { const res=parseLoose(ANT.paste); if(!res.length){ toast("Je n'ai trouvé aucune carte dans ce texte. Colle toute la réponse de l'IA."); break; } ANT.cards=res; ANT.cardsFor=ANT.chap; ANT.paste=''; antStart(res); break; }
+    case 'ant-replay': if(ANT.cards.length) antStart(ANT.cards); break;
+    case 'ant-missed': { const l=SESS&&SESS.antMissed; if(l&&l.length) antStart(l); break; }
     case 'exo-resume': exoOpenRun(); break;
     case 'cas-resume': openSheet(casRunSheet); break;
     case 'exo-start': exoStart(d.id); break;
@@ -4874,6 +4881,7 @@ document.addEventListener('input', e=>{
     case 'ed-choice': ED.choices[+d.i]=el.value; break;
     case 'pref': { let v=el.value; if(el.type==='number'){ v=Math.max(+el.min||0, Math.min(+el.max||99999, parseInt(v||'0',10)||0)); } S.prefs[d.k]=v; savePrefs(); clearTimeout(UI.pt); UI.pt=setTimeout(updateDueDot, 300); break; }
     case 'exo-val': if(UI.exo) UI.exo.val=el.value; break;
+    case 'ant-paste': ANT.paste=el.value; break;
     case 'pref-size': S.prefs.size=+el.value; $('#sizeVal').textContent=el.value+'px'; applyTheme(); savePrefs(); break;
     case 'accent': S.prefs.accent=el.value; applyTheme(); savePrefs(); break;
   }
@@ -7293,8 +7301,87 @@ function sessAsideHTML(r){
   const tm=upcoming(1)[0]; const hard=liveCards(s.scope||'all').filter(isHard).length;
   const row=(t,v)=>`<div class="pk"><span>${t}</span><b>${v}</b></div>`;
   return `<aside class="sess-aside"><section class="panel stack"><h3 style="margin:0">Ce paquet</h3>
-    ${row('Encore à voir', left)}${row('Déjà faites', s.done)}${row('Réussite', s.done?Math.round(100*s.ok/s.done)+' %':'–')}${row('Difficiles', hard)}${row('Demain', plural(tm?tm.n:0,'carte'))}</section>
+    ${row('Encore à voir', left)}${row('Déjà faites', s.done)}${row('Réussite', s.done?Math.round(100*s.ok/s.done)+' %':'–')}${s.tmp?'':row('Difficiles', hard)+row('Demain', plural(tm?tm.n:0,'carte'))}</section>
     <section class="panel stack"><h3 style="margin:0">Au clavier</h3><p class="small muted" style="margin:0"><b>Espace</b> : voir la réponse, puis « Bien ».<br><b>1 à 4</b> : À revoir, Difficile, Bien, Facile.<br><b>Échap</b> : quitter.</p></section></aside>`;
+}
+// ---------- Anticiper un cours : leçon express et entraînement, sans rien enregistrer ----------
+// Les cartes d'anticipation sont « temporaires » (tmp) : jamais sauvegardées, ni synchronisées, ni comptées dans les statistiques.
+const ANT={chap:'', lesson:'', lessonFor:'', cards:[], cardsFor:'', paste:'', busy:false};
+function antPurge(){ for(const [k,c] of Object.entries(S.cards)) if(c&&c.tmp) delete S.cards[k]; }
+function buildAntPrompt(chapId, lesson){
+  const ctx=chapCtx(chapId);
+  const lv=(()=>{ try{ const l=LEVELS.find(x=>x.id===myLvl()); return l?l.name+' ('+l.an+')':'L3'; }catch{ return 'L3'; } })();
+  return `${AI_GO}
+
+Tu es un enseignant de médecine. Un étudiant en ${lv} à la Faculté de médecine de l'UCAD (Dakar) veut ANTICIPER un cours qui n'a pas encore été fait en classe : « ${ctx.title} » (${ctx.sub?ctx.sub+', ':''}${ctx.mod}). Ces cartes servent seulement à s'entraîner avant le cours : elles ne seront pas enregistrées.
+${lesson&&lesson.trim()?'\nAppuie-toi sur cette leçon express :\n"""\n'+lesson.trim().slice(0,12000)+'\n"""\n':"\nAppuie-toi sur ce qui est enseigné classiquement sur ce sujet dans les facultés de médecine francophones.\n"}
+Écris 10 cartes sur l'essentiel à connaître avant le cours : définitions, mécanismes, signes, valeurs clés. Mélange question / réponse, texte à trous et QCM.
+
+Règles :
+- Une seule idée par carte ; réponses courtes (1 à 3 lignes) en français médical correct.
+- N'invente jamais un chiffre, un seuil ou un nom : si tu n'es pas sûr, n'écris pas la carte.
+- Texte à trous : dans "front", entoure 1 ou 2 mots-clés avec {{ et }}.
+- QCM : 4 ou 5 propositions dans "choices", une ou plusieurs justes ; "answer" = indices (à partir de 0) de toutes les bonnes propositions ; "back" explique.
+
+Réponds uniquement avec un tableau JSON, sans texte autour ni balises de code. ${AI_JSON}
+[{"type":"qa","front":"…","back":"…"},{"type":"cloze","front":"… {{mot-clé}} …","back":"…"},{"type":"qcm","front":"…","choices":["…","…","…","…"],"answer":[0,2],"back":"…"}]`;
+}
+function antOpen(id){ ANT.chap=id; if(ANT.lessonFor!==id){ ANT.lesson=''; ANT.lessonFor=id; } if(ANT.cardsFor!==id){ ANT.cards=[]; ANT.cardsFor=id; } ANT.paste=''; openSheet(antSheet); }
+function antSheet(){
+  const ch=CH[ANT.chap]; if(!ch) return sheetTop('Anticiper ce cours')+'<p>Chapitre introuvable.</p>';
+  return sheetTop('Anticiper ce cours')+`<div class="stack" style="gap:4px"><p class="eyebrow">${esc(SUBS[ch.sub]?SUBS[ch.sub].name:'')}</p><h2>${esc(ch.title)}</h2></div>
+   <div class="notice">Ton cours n'est pas encore sorti ? Prépare-toi avec Claude. <strong>Rien n'est enregistré</strong> : ni cartes, ni notes, ni statistiques. Quand le cours sortira, crée tes vraies cartes à partir de lui (bouton « Préparer des cartes » de la leçon).</div>
+   <section class="panel stack"><h3 style="margin:0">1. Comprendre la leçon</h3>
+     <p class="small muted" style="margin:0">Claude t'explique le chapitre en 5 minutes, avec ce qui est enseigné habituellement.</p>
+     <div id="antOut" class="rt"${ANT.lesson?'':' hidden'}>${ANT.lesson?md(ANT.lesson):''}</div>
+     <button class="btn btn-soft" data-act="ant-lesson">${AI.sample?(ANT.lesson?'Refaire la leçon express':'Lire la leçon express'):'Copier la consigne de la leçon express'}</button></section>
+   <section class="panel stack"><h3 style="margin:0">2. M'entraîner, sans enregistrer</h3>
+     <p class="small muted" style="margin:0">10 cartes temporaires (questions, textes à trous, QCM)${ANT.lesson?', tirées de la leçon express':''}. Elles disparaissent à la fin de l'entraînement.</p>
+     ${ANT.cards.length?`<button class="btn btn-primary" data-act="ant-replay">Refaire l'entraînement (${ANT.cards.length} cartes)</button>`:''}
+     ${AI.sample?`<button class="btn ${ANT.cards.length?'btn-soft':'btn-primary'}" data-act="ant-go" ${ANT.busy?'disabled':''}>${ANT.busy?'Claude prépare les cartes…':ANT.cards.length?'Nouvelles cartes':'Préparer l\'entraînement'}</button>`
+       :`<button class="btn btn-soft" data-act="ant-copy">Copier la consigne des cartes</button>
+         <label class="field">Réponse de l'IA<textarea data-input="ant-paste" placeholder="[{&quot;type&quot;:&quot;qa&quot;, …}]">${esc(ANT.paste)}</textarea></label>
+         <button class="btn btn-primary" data-act="ant-parse">Commencer l'entraînement</button>`}
+   </section>`;
+}
+async function antLesson(){
+  const id=ANT.chap, prompt=buildLessonPrompt(id);
+  if(!AI.sample){ await copyText(prompt); toast('Consigne copiée : colle-la dans Claude. Rien ne sera enregistré.', 3600); return; }
+  const out=$('#antOut'); if(!out) return; out.hidden=false;
+  const btn=document.querySelector('[data-act="ant-lesson"]'); if(btn){ btn.disabled=true; btn.textContent='Leçon en cours…'; }
+  const text=await streamTo(out, prompt);
+  if(text){ ANT.lesson=text; ANT.lessonFor=id; }
+  if(UI.sheetStack[UI.sheetStack.length-1]===antSheet) paintSheet(true);
+}
+async function antGo(){
+  if(ANT.busy||!AI.sample) return; ANT.busy=true; paintSheet(true);
+  let res=[];
+  try{ const data=await AI.sample.json(buildAntPrompt(ANT.chap, ANT.lesson), {modelTier:'default'}); res=normalizeGenerated(data); }
+  catch(e){ if(e&&e.code==='invalid_json'&&e.text) res=parseLoose(e.text); else toast(aiErr(e)); }
+  ANT.busy=false;
+  if(!res.length){ if(UI.sheetStack[UI.sheetStack.length-1]===antSheet) paintSheet(true); toast('Aucune carte reçue. Réessaie.'); return; }
+  ANT.cards=res; ANT.cardsFor=ANT.chap; antStart(res);
+}
+function antStart(list){ // séance avec des cartes temporaires
+  const stack=UI.sheetStack.length?UI.sheetStack.slice():((SESS&&SESS.stack)||[]);
+  antPurge(); const ids=[];
+  for(const r of list){ const c=newCard({chap:ANT.chap, type:r.type, front:r.front, back:r.back||'', hint:r.hint||'', choices:r.choices||[], answer:r.answer||[], tmp:true}); S.cards[c.id]=c; ids.push(c.id); }
+  if(!ids.length) return;
+  UI.sheetStack=[]; paintSheet(); if(SESS){ SESS=null; }
+  SESS={mode:'list', scope:'all', tmp:true, stack, queue:shuffle(ids.slice()), later:[], done:0, ok:0, start:now(), shown:0, total:ids.length, missed:[], seen:new Set()};
+  $('#session').hidden=false; document.body.style.overflow='hidden'; histSync(); nextCard();
+}
+function antDone(){
+  const s=SESS, pct=s.done?Math.round(s.ok/s.done*100):0, missed=[...new Set(s.missed)].filter(id=>S.cards[id]);
+  s.antMissed=missed.map(id=>{ const c=S.cards[id]; return {type:c.type, front:c.front, back:c.back, hint:c.hint, choices:c.choices, answer:c.answer}; });
+  $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Fermer">${I.x}</button><div class="sess-bar"><i style="width:100%"></i></div></div>
+   <div class="done"><h1>Entraînement terminé</h1>
+   <div class="count-grid"><div class="count"><span class="eyebrow">Cartes</span><span class="num">${s.done}</span></div><div class="count"><span class="eyebrow">Réussite</span><span class="num">${pct}<small>%</small></span></div></div>
+   <p class="muted">Rien n'a été enregistré : ni cartes, ni statistiques. Quand ton cours sortira, crée tes vraies cartes à partir de lui.</p>
+   ${missed.length?`<button class="btn btn-primary btn-lg" data-act="ant-missed">Refaire ${missed.length>1?'les '+missed.length+' cartes ratées':'la carte ratée'}</button>`:''}
+   <button class="btn ${missed.length?'':'btn-primary btn-lg'}" data-act="ant-replay">Refaire tout l'entraînement</button>
+   <button class="btn btn-ghost" data-act="sess-close">Terminer</button></div>`;
+  s.cur=null; s.finished=true;
 }
 // ---------- Démarrage ----------
 loadLocal(); exrLoad(); buildIndex(); itrLoad(); applyTheme(); updateDueDot(); render();
