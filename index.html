@@ -508,6 +508,38 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 .exa-fig .credit{display:block;color:var(--muted);font-size:0.75rem;margin-top:3px;overflow-wrap:anywhere}
 .exa-fig .credit a{color:inherit}
 .exa-lnk{background:none;border:0;padding:0;font:inherit;color:var(--link);text-decoration:underline;text-underline-offset:2px;cursor:pointer;text-align:left}
+.ans-modes{margin:2px 0 10px}
+.ans-modes button{min-height:40px;font-size:0.875rem}
+.ans-box{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.ans-box textarea{min-height:92px}
+.ans-res{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px 14px;border-radius:var(--r-sm);background:var(--surface2)}
+.ans-res .eyebrow{margin:0}
+.ans-you{margin:0;font-style:italic;line-height:1.5}
+.ans-score{padding:3px 10px;border-radius:999px;font-size:0.8125rem;font-weight:700}
+.ans-score.ok{background:var(--good);color:var(--bg)}
+.ans-score.mid{background:var(--hl);color:var(--hl-ink)}
+.ans-score.ko{background:var(--bad);color:var(--bg)}
+.ans-els{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ans-els li{display:flex;gap:10px;align-items:baseline;line-height:1.45}
+.ans-els li>span{flex:none;min-width:80px;padding:2px 8px;border-radius:999px;font-size:0.75rem;font-weight:700;text-align:center}
+.ans-els li.ok>span{background:var(--good);color:var(--bg)}
+.ans-els li.mid>span{background:var(--hl);color:var(--hl-ink)}
+.ans-els li.ko>span{background:var(--bad);color:var(--bg)}
+.grade.sugg{outline:3px solid var(--fg);outline-offset:2px}
+.chbar{display:grid;grid-template-columns:minmax(0,1fr) 30% 48px;gap:10px;align-items:center;font-size:0.875rem}
+.chbar .track{height:8px;border-radius:999px;background:var(--surface2);overflow:hidden}
+.chbar .track i{display:block;height:100%}
+.chbar b{text-align:right}
+.eng-list{display:flex;flex-direction:column}
+.eng-row{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.eng-row>span{display:flex;flex-direction:column;gap:2px;min-width:0;line-height:1.35}
+.eng-q{margin:0;font-family:var(--font-display);font-size:1.5rem;line-height:1.25}
+.eng-bar{display:block;height:6px;border-radius:999px;background:var(--surface2);overflow:hidden;margin-top:4px}
+.eng-bar i{display:block;height:100%;background:var(--accent2)}
+.eng-res{padding:10px 12px;border-radius:var(--r-sm);line-height:1.5}
+.eng-res.ok{background:var(--good);color:var(--bg)}
+.eng-res.mid{background:var(--hl);color:var(--hl-ink)}
+.eng-res.ko{background:var(--surface2)}
 .badge.sn{margin-left:6px;font-family:var(--font-body);font-size:0.6875rem;font-weight:700;vertical-align:middle;background:var(--hl-soft);color:var(--fg)}
 .syn-sys{font-family:var(--font-display);font-size:1.125rem;margin:calc(10px*var(--sp)) 2px 0}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);-webkit-overflow-scrolling:touch}
@@ -879,7 +911,7 @@ const FONTS = {
  serif:{name:'Livre', css:"'Source Serif 4',Georgia,'Times New Roman',serif"},
  system:{name:'Système', css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"}
 };
-const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
+const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
 const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'nunito', heads:'expressive', size:17, radius:'soft', density:'normal', anim:'flip', buttons:4,
   semStart:'2026-11-19', examDate:'', newPerDay:25, maxRev:300, capExam:true, quick:10, lastExport:0,
   home:[['today',1],['exams',1],['internat',1],['syn',1],['tri',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
@@ -1222,6 +1254,7 @@ function inScope(c, scope){
   if(scope==='syn') return !!c.syn;
   if(scope==='tri') return !!c.tri;
   if(scope==='exa') return !!c.exa;
+  if(scope==='eng') return !!c.eng;
   if(scope==='exam') return !!c.exam;
   if(scope.startsWith('e:')) return c.exam===scope.slice(2);
   const [k,v]=scope.split(':'); const ch=CH[c.chap];
@@ -1237,6 +1270,7 @@ function scopeLabel(scope){
   if(scope==='syn') return 'Fiches syndromes';
   if(scope==='tri') return 'Triades';
   if(scope==='exa') return 'Examen clinique';
+  if(scope==='eng') return 'Anglais médical';
   if(scope==='exam') return 'Annales';
   if(scope.startsWith('e:')) return annLabel(scope.slice(2));
   const [k,v]=scope.split(':');
@@ -1268,7 +1302,7 @@ function todayPlan(scope){
     rev:cards.filter(x=>x.srs.state==='review'&&x.srs.due<end).sort((a,b)=>a.srs.due-b.srs.due).slice(0,c.rev),
     nw:cards.filter(x=>x.srs.state==='new'&&x.later!==dk).sort((a,b)=>(a.created||0)-(b.created||0)).slice(0,c.nw) };
 }
-function cardGroup(c){ const ch=CH[c.chap]; if(ch) return {k:'c:'+c.chap, name:ch.title, sub:SUBS[ch.sub].name}; if(c.syn) return {k:'syn', name:'Fiches syndromes'}; if(c.tri) return {k:'tri', name:'Triades'}; if(c.exa) return {k:'exa', name:'Examen clinique'}; if(c.exam) return {k:'exam', name:'Annales'}; return {k:'', name:'Sans chapitre'}; }
+function cardGroup(c){ const ch=CH[c.chap]; if(ch) return {k:'c:'+c.chap, name:ch.title, sub:SUBS[ch.sub].name}; if(c.syn) return {k:'syn', name:'Fiches syndromes'}; if(c.tri) return {k:'tri', name:'Triades'}; if(c.exa) return {k:'exa', name:'Examen clinique'}; if(c.eng) return {k:'eng', name:'Anglais médical'}; if(c.exam) return {k:'exam', name:'Annales'}; return {k:'', name:'Sans chapitre'}; }
 function planGroups(p){
   const g={}; const add=(c,f)=>{ const o=cardGroup(c); const key=o.k+'|'+o.name; const x=g[key]||(g[key]={k:o.k, name:o.name, sub:o.sub||'', rev:0, lrn:0, nw:0}); x[f]++; };
   p.rev.forEach(c=>add(c,'rev')); p.lrn.forEach(c=>add(c,'lrn')); p.nw.forEach(c=>add(c,'nw'));
@@ -1357,6 +1391,8 @@ function gsResults(){
   const sy=SYNDROMES.filter(x=>hit(x.n+' '+x.s.join(' ')+' '+x.c.join(' ')+' '+x.k)).slice(0,15); if(sy.length) out.push(['Fiches syndromes', sy.map(x=>row('gs-syn',x.id,I.stetho||I.exam,x.n,SYN_SYS[x.sys]))]);
   const tr=TRIADES.filter(x=>hit(x.n+' '+x.t.join(' ')+' '+x.m)).slice(0,15); if(tr.length) out.push(['Triades', tr.map(x=>row('gs-tri',x.id,I.brain||I.exam,x.n,x.t.join(' · ')))]);
   const ex=EXAMENS.filter(x=>hit(x.n+' '+x.v)).slice(0,15); if(ex.length) out.push(['Examen clinique', ex.map(x=>row('gs-exa',x.id,I.stetho||I.exam,x.n,EXA_KIND[x.k]+' · '+EXA_SYS[x.sys]))]);
+  const en=[]; for(const t of ENG) for(const it of t.i) if(hit(it[0]+' '+it[1]+' '+(it[2]||''))) en.push([t,it]);
+  if(en.length) out.push(['Anglais médical', en.slice(0,15).map(([t,it])=>row('eng-theme',t.id,I.ear,(it[2]?it[2]+' · ':'')+engAlt(it[0])[0],it[1]+' · '+t.n))]);
   const cs=Object.values(S.cards).filter(c=>hit(String(c.front)+' '+String(c.back))).slice(0,20); if(cs.length) out.push(['Mes cartes', cs.map(c=>row('gs-card',c.id,I.cards,plain(c.front).slice(0,90),CH[c.chap]?CH[c.chap].title:''))]);
   return out.length?out.map(([h,items])=>`<h3 class="syn-sys">${h} <span class="small muted">· ${items.length}</span></h3><div class="menu">${items.join('')}</div>`).join(''):'<p class="muted">Rien trouvé. Essaie un autre mot.</p>';
 }
@@ -1368,7 +1404,7 @@ function weakSpot(){
 }
 function ensureHome(){
   const h=Array.isArray(S.prefs.home)?S.prefs.home:[];
-  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
+  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='eng'?Math.max(i,h.findIndex(r=>r[0]==='exa'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
   S.prefs.home=h.filter(r=>HOME_SECTIONS[r[0]]);
 }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -1424,7 +1460,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 43; // à changer avec VERSION dans sw.js
+const APP_VER = 44; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1657,11 +1693,11 @@ function homeSection(k){
   if(k==='exams'){
     const all=Object.values(S.exams);
     if(!all.length) return `<section class="panel stack"><h3 style="margin:0">Mes examens</h3>
-      <p>Ajoute une épreuve des années passées, en fichier ou en photo : tu la refais ici, avec chronomètre, correction et note sur 20.</p>
-      <button class="btn btn-soft" data-act="exam-pick">Ajouter un examen</button></section>`;
+      <p>Ajoute une épreuve des années passées, en fichier ou en photo, ou passe un examen blanc tiré de tes cartes : chronomètre, correction et note sur 20.</p>
+      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="exam-pick">Ajouter un examen</button><button class="btn" style="flex:1" data-act="bl-open">Examen blanc</button></div></section>`;
     const live=all.find(e=>exrLive(e.id)); const rank=e=>e===live?0:(bestScore(e)<0?1:2);
     const list=all.slice().sort((a,b)=>rank(a)-rank(b)||(rank(a)===2?bestScore(a)-bestScore(b):(b.date||'').localeCompare(a.date||''))).slice(0,3);
-    return `<section class="panel"><div class="section-title"><h3>Mes examens</h3><button class="btn btn-ghost" data-act="exam-pick">${I.plus} Ajouter</button></div>
+    return `<section class="panel"><div class="section-title"><h3>Mes examens</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="bl-open">Examen blanc</button><button class="btn btn-ghost" data-act="exam-pick">${I.plus} Ajouter</button></div></div>
       ${list.map(e=>{ const b=bestScore(e), on=e===live;
         return `<div class="exam-row"><button style="text-align:left;padding:0;border:0;background:none;color:inherit;min-width:0" data-act="exam-open" data-id="${e.id}"><span class="t">${esc(e.title)}</span><span class="m">${on?`En cours · question ${EXR.i+1} sur ${EXR.idx.length}`:plural(e.items.length,'question')+' · '+(b>=0?'meilleure note : '+fmt20(b):'pas encore fait')}</span></button>
           <button class="btn ${on||b<0?'btn-primary':''}" data-act="${on?'exr-resume':'exr-start'}" data-id="${e.id}">${on?'Reprendre':b<0?'Faire':'Refaire'}</button></div>`; }).join('')}
@@ -1684,6 +1720,12 @@ function homeSection(k){
     return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Examen clinique</h3><span class="small muted">${EXAMENS.length} fiches</span></div>
       <p>Les signes et les manœuvres de l'examen clinique, appareil par appareil : comment faire, ce qu'on trouve, ce que ça évoque.${EXAMENS.some(x=>exaMedia(x).length)?' Avec de vraies photos et de courtes vidéos.':''}</p>
       <div class="row"><button class="btn btn-soft" style="flex:1" data-act="exa-open">Ouvrir les fiches</button>${mine?`<button class="btn" style="flex:1" data-act="start" data-mode="cram" data-scope="exa">Me tester</button>`:''}</div></section>`;
+  }
+  if(k==='eng'){
+    const mine=Object.values(S.cards).filter(c=>c.eng).length; const n=ENG.reduce((a,t)=>a+t.i.length,0);
+    return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Anglais médical</h3><span class="small muted">${n} expressions</span></div>
+      <p>Les mots et les phrases de la consultation en anglais, avec la prononciation : écouter, traduire, prononcer.</p>
+      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="eng-open">Ouvrir</button>${mine?`<button class="btn" style="flex:1" data-act="start" data-mode="cram" data-scope="eng">Me tester</button>`:''}</div></section>`;
   }
   if(k==='countdown'){
     const st=semStart(), dSem=daysUntil(st), ex=examDate(), dEx=daysUntil(ex.date);
@@ -1816,6 +1858,7 @@ function scopeOptions(sel, withNone){
   if(!withNone && Object.values(S.cards).some(c=>c.syn)) o+=`<option value="syn" ${sel==='syn'?'selected':''}>Fiches syndromes (toutes)</option>`;
   if(!withNone && Object.values(S.cards).some(c=>c.tri)) o+=`<option value="tri" ${sel==='tri'?'selected':''}>Triades (toutes)</option>`;
   if(!withNone && Object.values(S.cards).some(c=>c.exa)) o+=`<option value="exa" ${sel==='exa'?'selected':''}>Examen clinique (toutes)</option>`;
+  if(!withNone && Object.values(S.cards).some(c=>c.eng)) o+=`<option value="eng" ${sel==='eng'?'selected':''}>Anglais médical (toutes)</option>`;
   return o;
 }
 function viewRev(){
@@ -1836,6 +1879,8 @@ function viewRev(){
     <button class="btn btn-primary btn-lg" data-act="start" data-mode="${r.mode}" data-scope="${esc(r.scope)}" ${n?'':'disabled'}>${n?'Commencer':'Rien à réviser ici'}</button>
     ${r.mode==='srs'&&n>8?`<button class="btn" data-act="start" data-mode="srs" data-scope="${esc(r.scope)}" data-min="${q}">Séance express · ${q} min</button>`:''}
     ${pool.length?`<button class="btn btn-line" data-act="aud-start" data-scope="${esc(r.scope)}">${I.ear} Écouter ces cartes (mains libres)</button>`:''}
+    <button class="btn btn-line" data-act="bl-open">${I.exam} Examen blanc</button>
+    <div class="stack" style="gap:6px"><span class="small muted">Pour les questions et les cartes à trous, je réponds :</span>${ansModesHTML()}</div>
    </section>
    ${r.mode==='srs'?forecastHTML():''}
    <section class="panel"><div class="section-title"><h3>Mes cartes</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="share-scope">Partager</button><button class="btn btn-ghost" data-act="edit-card">${I.plus} Nouvelle</button></div></div>
@@ -1940,6 +1985,7 @@ function viewMe(){
    <h3 style="margin-top:16px;font-size:0.9375rem">Cartes à revoir les 7 prochains jours</h3>
    <div class="fbars" style="margin-top:8px">${fc.map((n,i)=>{ const d=new Date(dayStart()+(i+1)*DAY); return `<span class="muted">${esc(fmtD(d,{weekday:'short',day:'numeric'}))}</span><span class="track"><i style="width:${n/fmax*100}%"></i></span><b class="mono">${n}</b>`; }).join('')}</div>
   </section>
+  ${blStatsHTML()}
   <section class="panel stack"><h3>Mon année et mes objectifs</h3>
    <label class="field">Mon année d'études<select data-input="pref-level">${LEVELS.map(l=>`<option value="${l.id}" ${myLvl()===l.id?'selected':''}>${l.name} · ${l.an}</option>`).join('')}</select></label>
    <div class="seg" role="group" aria-label="Mon semestre">${[1,2].map(n=>`<button data-act="pref-lsem" data-s="${n}" aria-pressed="${mySem()===n}">Semestre ${n} · S${semNo(myLvl(),n)}</button>`).join('')}</div>
@@ -2112,6 +2158,7 @@ function startSession(mode, scope, opt){
   nextCard();
 }
 function nextCard(){
+  recStop(); if((S.prefs.ans||'flip')==='voice'){ try{ speechSynthesis.cancel(); }catch{} }
   const s=SESS; const t=now();
   if(s.limit && s.done>0 && t-s.start>=s.limit){ s.timeUp=true; sessionDone(); return; }
   let id=null;
@@ -2137,27 +2184,29 @@ function paintSession(anim){
   const tl=s.limit?`<span class="c-time">${Math.max(1,Math.ceil((s.limit-(now()-s.start))/MIN))} min</span>`:'';
   const counter=s.mode==='srs'?`<div class="sess-counts">${tl}<span class="c-new">${r.nw}</span><span class="c-lrn">${r.lrn}</span><span class="c-rev">${r.rev}</span></div>`:`<div class="sess-counts"><span>${r.n}</span></div>`;
   const img = pos => (c.img && ((c.imgSide||'front')===pos))?`<img src="${c.img}" alt="Image de la carte">`:'';
-  let front='', back='';
+  let front='', back=''; const am=ansMode(c, cur);
   if(c.type==='cloze'){ front=`<div class="front rt">${cur.revealed?clozeBack(c.front):clozeFront(c.front)}</div>`; }
   else front=`<div class="front rt">${md(c.front)}</div>`;
   if(c.type==='qcm'){
     front+=`<div class="qcm">${c.choices.map((x,i)=>{ let cls=''; if(cur.revealed){ const good=c.answer.includes(i), p=cur.picked.has(i); cls=good&&p?'ok':(!good&&p?'ko':(good?'ok miss':'')); }
       return `<button class="${cls}" data-act="qcm-pick" data-i="${i}" aria-pressed="${cur.picked.has(i)}" ${cur.revealed?'disabled':''}><span class="k">${String.fromCharCode(65+i)}</span><span>${esc(x)}</span></button>`; }).join('')}</div>`;
   }
+  if(am && !cur.revealed) front+=ansBoxHTML(c, cur, am);
   if(cur.revealed){
-    back=`<div class="divider"></div>${img('back')}${c.back?`<div class="rt">${md(c.back)}</div>`:''}${c.hint?`<div class="hintbox"><p class="eyebrow">Pour retenir</p><div class="rt">${md(c.hint)}</div></div>`:''}`;
+    back=`<div class="divider"></div>${cur.res?ansResHTML(c,cur):''}${img('back')}${c.back?`<div class="rt">${md(c.back)}</div>`:''}${c.say?`<button class="btn btn-ghost" style="align-self:flex-start" data-act="say" data-l="en-US" data-t="${esc(c.say)}">${I.ear} Écouter en anglais</button>`:''}${c.hint?`<div class="hintbox"><p class="eyebrow">Pour retenir</p><div class="rt">${md(c.hint)}</div></div>`:''}`;
   }
   const actions = cur.disc ? discButtons(c) : !cur.revealed
-    ? (c.type==='qcm'?`<button class="btn btn-primary btn-lg" data-act="reveal">Valider mes réponses</button>`:`<button class="btn btn-primary btn-lg" data-act="reveal">Afficher la réponse</button>`)
-    : gradeButtons(c);
+    ? (c.type==='qcm'?`<button class="btn btn-primary btn-lg" data-act="reveal">Valider mes réponses</button>`:`<button class="btn btn-primary btn-lg" data-act="reveal">${am?'Voir la correction':'Afficher la réponse'}</button>`)
+    : ansSugg(gradeButtons(c), cur);
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}${s.undo?'<button class="icon-btn" data-act="sess-undo" aria-label="Annuler la dernière note" title="Annuler la dernière note" style="font-size:1.25rem">↶</button>':''}</div>
    <article class="flash ${anim&&S.prefs.anim!=='none'?'anim-'+S.prefs.anim:''}" id="flash">
-     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):c.exa&&EXA_BY[c.exa]?'Examen clinique · '+esc(EXA_SYS[EXA_BY[c.exa].sys]):'Sans chapitre')}</p>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
+     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):c.exa&&EXA_BY[c.exa]?'Examen clinique · '+esc(EXA_SYS[EXA_BY[c.exa].sys]):c.eng&&ENG_BY[c.eng]?'Anglais médical · '+esc(ENG_BY[c.eng].n):'Sans chapitre')}</p>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
      ${img('front')}${front}${back}
    </article>
    ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button>${c.srs.state==='new'&&s.mode==='srs'?'<button class="btn btn-ghost" data-act="sess-later">Pas aujourd\'hui</button>':''}<button class="btn btn-ghost" data-act="sess-suspend">Retirer de mes révisions</button></div>`:''}
-   <div class="sess-actions">${actions}</div>`;
+   ${(!cur.revealed&&!cur.disc&&(c.type==='qa'||c.type==='cloze'))?ansModesHTML():''}<div class="sess-actions">${actions}</div>`;
   $('#session').scrollTop=0;
+  if(am==='voice' && !cur.revealed && !cur.spoke){ cur.spoke=true; sayText(ansQuestion(c), 'fr-FR'); }
 }
 function discButtons(c){
   const iv=g=>fmtIvl(nextSrs(c.srs,g,false).due-now());
@@ -2171,7 +2220,10 @@ function gradeButtons(c){
   return `<div class="grades"><button class="grade g1" data-act="grade" data-g="1">À revoir<small>${iv(1)}</small></button><button class="grade g2" data-act="grade" data-g="2">Difficile<small>${iv(2)}</small></button><button class="grade g3" data-act="grade" data-g="3">Bien<small>${iv(3)}</small></button><button class="grade g4" data-act="grade" data-g="4">Facile<small>${iv(4)}</small></button></div>`;
 }
 function reveal(){
-  const cur=SESS.cur; if(cur.revealed) return; cur.revealed=true; paintSession(true);
+  const cur=SESS.cur; if(cur.revealed) return; const c=S.cards[cur.id];
+  if(cur.rec){ recStop(); cur.rec=false; }
+  if(c && ansMode(c,cur) && (cur.text||'').trim()) cur.res=gradeAnswer(c, cur.text);
+  cur.revealed=true; paintSession(true);
 }
 function grade(g){
   const s=SESS, cur=s.cur, c=S.cards[cur.id]; if(!c) return nextCard();
@@ -2211,7 +2263,7 @@ function sessionDone(){
    </div>`;
   SESS.cur=null; SESS.finished=true;
 }
-function closeSession(){ $('#session').hidden=true; document.body.style.overflow=''; SESS=null; flushAll(); rerender(); histSync(); }
+function closeSession(){ recStop(); $('#session').hidden=true; document.body.style.overflow=''; SESS=null; flushAll(); rerender(); histSync(); }
 
 // ---------- Explication / leçon (Claude) ----------
 let aiCtl=null;
@@ -2744,10 +2796,10 @@ function examSheet(id){
    <label class="field">Durée<select data-input="ex-dur">${DURS.map(([v,l])=>`<option value="${v}" ${(+e.dur||0)===v?'selected':''}>${l}</option>`).join('')}</select>
     <span class="field-hint">Le chronomètre s'arrête quand tu quittes l'examen.${k<n?' Sans corrigé, tu indiques les bonnes réponses pendant la correction.':''}</span></label>
    ${at.length?`<section class="panel"><div class="section-title"><h3>Mes résultats</h3>${best>=0?`<span class="small muted">meilleure note : ${fmt20(best)}</span>`:''}</div>
-     <div class="stack" style="gap:8px">${at.slice(0,8).map(a=>`<div class="spread small"><span>${fmtD(new Date(a.t),{day:'numeric',month:'short'})} · ${fmtDur(a.ms)}</span><strong>${a.total?fmt20(a.score/a.total):'—'} <span class="muted" style="font-weight:400">(${a.score}/${a.total})</span></strong></div>`).join('')}</div></section>`:''}
+     <div class="stack" style="gap:8px">${at.slice(0,8).map(a=>`<div class="spread small"><span>${fmtD(new Date(a.t),{day:'numeric',month:'short'})} · ${fmtDur(a.ms)}</span><strong>${a.total?fmt20(a.score/a.total):'—'} <span class="muted" style="font-weight:400">(${fmtPts(a.score)}/${a.total})</span></strong></div>`).join('')}</div></section>`:''}
    <section class="panel"><div class="menu">
-     <button data-act="exam-edit">${I.checks}<span><span class="t">Questions et corrigé</span><span class="d">Corriger une réponse, modifier un énoncé.</span></span>${I.chev}</button>
-     <button data-act="exam-cards">${I.cards}<span><span class="t">Ajouter aux révisions</span><span class="d">Les questions deviennent des cartes à revoir.</span></span>${I.chev}</button>
+     ${e.kind==='blanc'?'':`<button data-act="exam-edit">${I.checks}<span><span class="t">Questions et corrigé</span><span class="d">Corriger une réponse, modifier un énoncé.</span></span>${I.chev}</button>
+     <button data-act="exam-cards">${I.cards}<span><span class="t">Ajouter aux révisions</span><span class="d">Les questions deviennent des cartes à revoir.</span></span>${I.chev}</button>`}
      <button data-act="share-exam">${I.upload}<span><span class="t">Partager cet examen</span><span class="d">Envoyer les questions à un camarade.</span></span>${I.chev}</button>
      ${(e.files||[]).map(f=>`<button data-act="exam-file" data-id="${f.id}">${I.doc}<span><span class="t">${esc(f.name)}</span><span class="d">Sujet d'origine · ${fmtSize(f.size)}</span></span>${I.chev}</button>`).join('')}
    </div></section>
@@ -2802,9 +2854,10 @@ function examRunSheet(){
 function qState(k){ // juste / faux / null (pas encore de corrigé)
   const r=exrItems()[k];
   if(r.type==='qcm'){ if(!r.answer.length) return null; const p=EXR.picks[k]; return p.length===r.answer.length && p.every(x=>r.answer.includes(x)); }
-  return EXR.self[k];
+  if(EXR.self[k]===true||EXR.self[k]===false) return EXR.self[k];
+  const a=qAuto(k); return a?a.frac>=0.5:null;
 }
-function exrScore(){ let s=0, t=0; EXR.idx.forEach((_,k)=>{ const st=qState(k); if(st===null) return; t++; if(st) s++; }); return {s,t}; }
+function exrScore(){ let s=0, t=0; EXR.idx.forEach((_,k)=>{ const p=qPts(k); if(p===null) return; t++; s+=p; }); return {s:Math.round(s*100)/100,t}; }
 function exrWrong(){ return EXR.idx.filter((_,k)=>qState(k)===false); }
 function exrFinish(){
   clearInterval(exrTimer);
@@ -2814,7 +2867,7 @@ function exrFinish(){
   const top=UI.sheetStack.length-1; if(UI.sheetStack[top]===examRunSheet) UI.sheetStack[top]=examResultSheet; else UI.sheetStack.push(examResultSheet);
   paintSheet();
 }
-function exrUpdate(){ const e=S.exams[EXR.examId]; const {s,t}=exrScore(); EXR.attempt.score=s; EXR.attempt.total=t; e.t=now(); saveExams(); }
+function exrUpdate(){ const e=S.exams[EXR.examId]; const {s,t}=exrScore(); EXR.attempt.score=s; EXR.attempt.total=t; if(e.kind==='blanc') EXR.attempt.byChap=exrByChap(); e.t=now(); saveExams(); }
 function examResultSheet(){
   const e=S.exams[EXR.examId], items=exrItems(); const {s,t}=exrScore();
   const pending=items.filter((_,k)=>qState(k)===null).length; const wrong=exrWrong();
@@ -2822,18 +2875,19 @@ function examResultSheet(){
   return sheetTop(EXR.partial?'Correction · mes erreurs':'Correction')+`
    <section class="panel stack" style="text-align:center;gap:8px"><p class="eyebrow">${esc(e.title)}</p>
     <p class="score">${t?String(Math.round(s/t*200)/10).replace('.',','):'—'}<small>/20</small></p>
-    <p class="small">${s} juste${s>1?'s':''} sur ${t} corrigée${t>1?'s':''}${pending?` · <strong style="color:var(--hard)">${pending} à corriger</strong>`:''} · ${fmtDur(EXR.attempt.ms)}</p></section>
+    <p class="small">${fmtPts(s)} point${s>1?'s':''} sur ${t} question${t>1?'s':''} corrigée${t>1?'s':''}${pending?` · <strong style="color:var(--hard)">${pending} à corriger</strong>`:''} · ${fmtDur(EXR.attempt.ms)}</p></section>
+   ${exrChapHTML()}
    ${pending?`<div class="notice">Certaines questions n'ont pas de corrigé : touche les bonnes propositions (elles seront gardées pour la prochaine fois), ou dis si ta réponse était juste.</div>`:''}
-   ${wrong.length?`<div class="row" style="flex-wrap:nowrap"><button class="btn btn-primary" style="flex:1" data-act="exr-retry">Refaire ${wrong.length>1?'mes '+wrong.length+' erreurs':'mon erreur'}</button>${cardable?`<button class="btn" style="flex:1" data-act="exr-cards">Les ajouter aux révisions</button>`:''}</div>`:''}
+   ${wrong.length?`<div class="row" style="flex-wrap:nowrap"><button class="btn btn-primary" style="flex:1" data-act="exr-retry">Refaire ${wrong.length>1?'mes '+wrong.length+' erreurs':'mon erreur'}</button>${cardable?`<button class="btn" style="flex:1" data-act="exr-cards">${e.kind==='blanc'?'Les remettre à revoir':'Les ajouter aux révisions'}</button>`:''}</div>`:''}
    ${items.map((r,k)=>{ const st=qState(k); const p=EXR.picks[k];
      return `<div class="gen-card"><div class="spread"><span class="badge">${r.num?'Q'+esc(r.num):'Q'+(EXR.idx[k]+1)}</span><span class="verdict ${st===true?'ok':st===false?'ko':'todo'}">${st===true?'Juste':st===false?'Faux':'À corriger'}</span></div>
       <div class="rt">${md(r.front)}</div>
       ${r.type==='qcm'?`<div class="qcm">${r.choices.map((x,i)=>{ const good=r.answer.includes(i), pk=p.includes(i); const cls=!r.answer.length?'':(good&&pk?'ok':(!good&&pk?'ko':(good?'ok miss':'')));
           return `<button class="${cls}" data-act="exr-key" data-q="${k}" data-j="${i}" aria-pressed="${pk}"><span class="k">${String.fromCharCode(65+i)}</span><span>${esc(x)}${pk?' <span class="small muted">· ton choix</span>':''}</span></button>`; }).join('')}</div>
           <p class="small muted">${r.answer.length?'Bonnes réponses : '+r.answer.map(i=>String.fromCharCode(65+i)).join(', ')+'. Le corrigé se trompe ? Touche une proposition pour le changer.':'Touche les bonnes réponses.'}</p>`
-        :`<p class="small"><strong>Ta réponse :</strong> ${EXR.texts[k].trim()?esc(EXR.texts[k]):'<span class="muted">(vide)</span>'}</p>
+        :`<p class="small"><strong>Ta réponse :</strong> ${EXR.texts[k].trim()?esc(EXR.texts[k]):'<span class="muted">(vide)</span>'}</p>${exrAutoHTML(k)}
           ${r.back?`<div class="hintbox"><p class="eyebrow">Réponse attendue</p><div class="rt">${md(r.back)}</div></div>`:'<p class="small muted">Pas de réponse attendue dans le sujet.</p>'}
-          <div class="row" style="flex-wrap:nowrap"><button class="btn ${st===true?'btn-primary':''}" style="flex:1" data-act="exr-self" data-q="${k}" data-v="1">J'avais juste</button><button class="btn ${st===false?'btn-primary':''}" style="flex:1" data-act="exr-self" data-q="${k}" data-v="0">J'avais faux</button></div>`}
+          <div class="row" style="flex-wrap:nowrap"><button class="btn ${EXR.self[k]===true?'btn-primary':''}" style="flex:1" data-act="exr-self" data-q="${k}" data-v="1">J'avais juste</button><button class="btn ${EXR.self[k]===false?'btn-primary':''}" style="flex:1" data-act="exr-self" data-q="${k}" data-v="0">J'avais faux</button></div>`}
       ${r.type==='qcm'&&r.back?`<div class="rt small">${md(r.back)}</div>`:''}
      </div>`; }).join('')}
    <button class="btn btn-primary btn-lg" data-act="exr-close">Terminer</button>
@@ -4148,6 +4202,7 @@ function viewLevel(lvl, sem){
   html+=`<div class="cahiers">${mods.map(m=>cahierCard(m)).join('')}<button class="cahier add" data-act="mod-add" data-l="${lvl}" data-s="${sem}">${I.plus}<span>Ajouter une matière</span></button></div>`;
   if(hid.length) html+=`<details class="peek"><summary>${plural(hid.length,'matière masquée','matières masquées')}</summary><div class="chips" style="margin-top:6px">${hid.map(m=>`<button class="chip" data-act="mod-unhide" data-id="${m.id}">Réafficher ${esc(m.short)}</button>`).join('')}</div></details>`;
   if(LV[lvl].i>=2) html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button><button class="btn btn-soft" data-act="tri-open" style="justify-content:space-between;width:100%"><span>Triades · ${TRIADES.length} triades</span>${I.chev}</button><button class="btn btn-soft" data-act="exa-open" style="justify-content:space-between;width:100%"><span>Examen clinique · ${EXAMENS.length} fiches</span>${I.chev}</button>`;
+  html+=`<button class="btn btn-soft" data-act="eng-open" style="justify-content:space-between;width:100%"><span>Anglais médical · ${ENG.reduce((a,t)=>a+t.i.length,0)} expressions</span>${I.chev}</button>`;
   return html;
 }
 function modSheet(){
@@ -4282,6 +4337,27 @@ document.addEventListener('click', async e=>{
   switch(act){
     case 'syn-open': openSheet(synSheet); break;
     case 'tri-open': openSheet(triSheet); break;
+    case 'ans-mode': { S.prefs.ans=d.m; savePrefs(); const live=SESS&&SESS.cur&&!$('#session').hidden; if(live){ if(SESS.cur.rec){ recStop(); SESS.cur.rec=false; } SESS.cur.spoke=false; paintSession(); } else rerender(); break; }
+    case 'ans-mic': { const cur=SESS&&SESS.cur; if(!cur) break; const c=S.cards[cur.id]; if(!c) break;
+      if(cur.rec){ recStop(); cur.rec=false; paintSession(); break; }
+      const pre=(cur.text||'').trim(); try{ speechSynthesis.cancel(); }catch{}
+      const ok=recStart(ansLang(c), t=>{ cur.text=(pre?pre+' ':'')+t; const el=$('#ansText'); if(el) el.value=cur.text; }, ()=>{ if(SESS&&SESS.cur===cur&&cur.rec){ cur.rec=false; paintSession(); } });
+      if(ok){ cur.rec=true; paintSession(); } else toast('La dictée ne démarre pas sur ce téléphone : utilise le micro du clavier.'); break; }
+    case 'say': if(!sayText(d.t, d.l)) toast("La lecture à voix haute n'est pas disponible ici."); break;
+    case 'bl-open': openSheet(blSheet); break;
+    case 'bl-go': blStart(); break;
+    case 'bl-resume': if(exrLive(d.id)) exrOpen(); break;
+    case 'eng-open': openSheet(engSheet); break;
+    case 'eng-theme': UI.eng.t=d.id; openSheet(engThemeSheet); break;
+    case 'eng-add': { const n=engAdd(d.id); updateDueDot(); paintSheet(true); toast(n?n+' cartes ajoutées à tes révisions':'Déjà dans tes révisions'); break; }
+    case 'eng-del': { if(!confirm('Retirer ce thème de tes révisions ? Sa progression sera effacée, tu pourras le rajouter plus tard.')) break; const n=engRemove(d.id); updateDueDot(); paintSheet(true); toast(n+' cartes retirées de tes révisions'); break; }
+    case 'engp': engpStart(d.m); break;
+    case 'engp-play': engpPlay(); break;
+    case 'engp-check': { const p=UI.engp; if(!p||p.res) break; const en=engpCur()[0]; p.res=p.m==='say'?engSaid(p.val,en):engMatch(p.val,en); if(p.res==='ok') p.ok++; paintSheet(true); sayText(engAlt(en)[0],'en-US'); break; }
+    case 'engp-mic': { const p=UI.engp; if(!p||p.res) break; if(p.rec){ recStop(); break; } const en=engpCur()[0]; try{ speechSynthesis.cancel(); }catch{}
+      const ok=recStart('en-US', t=>{ p.heard=t; const el=$('#engHeard'); if(el) el.textContent=t; }, ()=>{ p.rec=false; if(UI.engp!==p) return; if(p.heard){ p.res=engSaid(p.heard,en); if(p.res==='ok') p.ok++; } paintSheet(true); });
+      if(ok){ p.rec=true; p.heard=''; paintSheet(true); } else toast('La dictée ne démarre pas sur ce téléphone.'); break; }
+    case 'engp-next': { const p=UI.engp; if(!p) break; recStop(); p.i++; p.val=''; p.res=null; p.heard=''; p.rec=false; paintSheet(true); if(p.i<p.order.length&&p.m!=='tr') setTimeout(engpPlay,250); break; }
     case 'exa-open': if(d.ch) UI.exa={kind:'all', sys:'all', q:'', ch:d.ch}; else UI.exa.ch=''; UI.exaOpen=null; openSheet(exaSheet); break;
     case 'exa-ch': UI.exa.ch=d.id||''; UI.exaOpen=null; paintSheet(true); break;
     case 'exa-kind': UI.exa.kind=d.v; UI.exaOpen=null; paintSheet(true); break;
@@ -4434,7 +4510,7 @@ document.addEventListener('click', async e=>{
     case 'exr-self': EXR.self[+d.q]=d.v==='1'; exrUpdate(); paintSheet(true); break;
     case 'exr-close': closeSheet(); break;
     case 'exr-retry': { const w=exrWrong(); if(!w.length) break; if(UI.sheetStack[UI.sheetStack.length-1]===examResultSheet) UI.sheetStack.pop(); exrStart(EXR.examId, w); break; }
-    case 'exr-cards': examToCards(S.exams[EXR.examId], exrWrong()); break;
+    case 'exr-cards': { const e=S.exams[EXR.examId]; if(e.kind==='blanc') blRequeue(e, exrWrong()); else examToCards(e, exrWrong()); break; }
     case 'doc-add': UI.docChap=d.id; $('#fileAny').click(); break;
     case 'doc-open': { const m=S.docs[d.id]; if(m) openDoc(m, m.chap); break; }
     case 'doc-download': { const v=UI.docView; if(v.blob) downloadBlob(v.blob, v.meta.name); else toast('Fichier introuvable sur ce téléphone.'); break; }
@@ -4515,6 +4591,13 @@ document.addEventListener('change', async e=>{
   switch(k){
     case 'tri-sys': UI.tri.sys=el.value; UI.triOpen=null; paintSheet(true); break;
     case 'exa-sys': UI.exa.sys=el.value; UI.exaOpen=null; paintSheet(true); break;
+    case 'ans-text': if(SESS&&SESS.cur) SESS.cur.text=el.value; break;
+    case 'bl-scope': UI.bl.scope=el.value; paintSheet(true); break;
+    case 'bl-n': UI.bl.n=+el.value; paintSheet(true); break;
+    case 'bl-dur': UI.bl.dur=+el.value; break;
+    case 'bl-in-open': UI.bl.open=el.checked; paintSheet(true); break;
+    case 'bl-in-qcm': UI.bl.qcm=el.checked; paintSheet(true); break;
+    case 'engp-val': if(UI.engp) UI.engp.val=el.value; break;
     case 'syn-sys': UI.syn.sys=el.value; UI.synOpen=null; paintSheet(true); break;
     case 'aud-pause': AUD.pause=+el.value; paintSheet(true); break;
     case 'aud-rate': AUD.rate=+el.value; break;
@@ -6009,6 +6092,275 @@ function exaChapPanel(chap){ const ids=EXA_BYCH[chap]; if(!ids||!ids.length) ret
   return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Examen clinique</h3><span class="small muted">${plural(ids.length,'fiche')}</span></div>
     <p class="small">${ids.map(i=>esc(EXA_BY[i].n)).join(' · ')}</p>
     <button class="btn btn-soft" data-act="exa-open" data-ch="${chap}">Voir comment faire${ids.some(i=>exaMedia(EXA_BY[i]).length)?', avec photos et vidéos':''}</button></section>`; }
+
+// ---------- Anglais médical : vocabulaire et phrases ----------
+// [anglais (variantes acceptées séparées par « / »), français, abréviation éventuelle]
+const ENG = [
+ {id:"corps", n:"Le corps", en:"The body", i:[
+  ["head","la tête"],["neck","le cou"],["chest","la poitrine, le thorax"],["abdomen/belly/tummy","l'abdomen, le ventre"],["back","le dos"],
+  ["shoulder","l'épaule"],["elbow","le coude"],["wrist","le poignet"],["hip","la hanche"],["knee","le genou"],["ankle","la cheville"],
+  ["throat","la gorge"],["heart","le cœur"],["lung","le poumon"],["liver","le foie"],["kidney","le rein"],["spleen","la rate"],
+  ["bladder","la vessie"],["stomach","l'estomac"],["bowel/intestine/gut","l'intestin"],["skin","la peau"],["bone","l'os"],["blood vessel","le vaisseau sanguin"]]},
+ {id:"symptomes", n:"Les symptômes", en:"Symptoms", i:[
+  ["pain","la douleur"],["headache","le mal de tête, la céphalée"],["fever","la fièvre"],["cough","la toux"],
+  ["shortness of breath/breathlessness","l'essoufflement, la dyspnée"],["chest pain","la douleur thoracique"],["nausea","la nausée"],
+  ["vomiting","les vomissements"],["diarrhea/diarrhoea","la diarrhée"],["constipation","la constipation"],["dizziness","les vertiges, les étourdissements"],
+  ["tiredness/fatigue","la fatigue"],["weight loss","la perte de poids, l'amaigrissement"],["itching/itch","les démangeaisons, le prurit"],
+  ["swelling","le gonflement, l'œdème"],["bleeding","le saignement"],["rash","l'éruption cutanée"],["sore throat","le mal de gorge"],
+  ["loss of appetite","la perte d'appétit"],["palpitations","les palpitations"],["night sweats","les sueurs nocturnes"],["jaundice","l'ictère, la jaunisse"]]},
+ {id:"interrogatoire", n:"L'interrogatoire", en:"History taking", i:[
+  ["What brings you here today?","Qu'est-ce qui vous amène aujourd'hui ?"],["When did it start?","Quand est-ce que cela a commencé ?"],
+  ["Where does it hurt?","Où avez-vous mal ?"],["Can you describe the pain?","Pouvez-vous décrire la douleur ?"],
+  ["Does the pain go anywhere else?","La douleur va-t-elle ailleurs ? (irradiation)"],["What makes it better or worse?","Qu'est-ce qui la soulage ou l'aggrave ?"],
+  ["On a scale of 0 to 10, how bad is the pain?","Sur une échelle de 0 à 10, quelle est l'intensité de la douleur ?"],
+  ["Have you had a fever?","Avez-vous eu de la fièvre ?"],["Have you lost weight?","Avez-vous perdu du poids ?"],
+  ["Do you take any medicines?","Prenez-vous des médicaments ?"],["Are you allergic to anything?","Êtes-vous allergique à quelque chose ?"],
+  ["Have you ever had an operation?","Avez-vous déjà été opéré ?"],["Does anyone in your family have this problem?","Quelqu'un dans votre famille a-t-il ce problème ?"],
+  ["Do you smoke?","Fumez-vous ?"],["How much alcohol do you drink?","Combien d'alcool buvez-vous ?"],
+  ["When was your last period?","Quand avez-vous eu vos dernières règles ?"],["Could you be pregnant?","Pourriez-vous être enceinte ?"],
+  ["Is there anything else you would like to tell me?","Y a-t-il autre chose que vous voudriez me dire ?"]]},
+ {id:"examen", n:"L'examen clinique", en:"Physical examination", i:[
+  ["Please lie down on the bed.","Allongez-vous sur le lit, s'il vous plaît."],["Take a deep breath.","Inspirez profondément."],
+  ["Breathe out.","Expirez."],["Hold your breath.","Retenez votre respiration."],["Say ninety-nine.","Dites « trente-trois »."],
+  ["Open your mouth and say ah.","Ouvrez la bouche et dites « ah »."],["Roll up your sleeve.","Remontez votre manche."],
+  ["Tell me if this hurts.","Dites-moi si ça vous fait mal."],["Bend your knee.","Pliez le genou."],["Squeeze my fingers.","Serrez-moi les doigts."],
+  ["Follow my finger with your eyes.","Suivez mon doigt des yeux."],["Close your eyes.","Fermez les yeux."],["Stand up, please.","Levez-vous, s'il vous plaît."],
+  ["Relax your arm.","Détendez votre bras."],["I am going to check your blood pressure.","Je vais prendre votre tension."],
+  ["I am going to listen to your chest.","Je vais écouter votre poitrine."]]},
+ {id:"bilan", n:"Les examens complémentaires", en:"Tests and results", i:[
+  ["blood test","la prise de sang, l'analyse de sang"],["full blood count/complete blood count","la numération formule sanguine (NFS)"],
+  ["urine test/urinalysis","l'analyse d'urine"],["chest X-ray","la radiographie du thorax"],["ultrasound scan/ultrasound","l'échographie"],
+  ["CT scan","le scanner"],["blood sugar/blood glucose","la glycémie"],["blood pressure","la tension artérielle"],["heart rate","la fréquence cardiaque"],
+  ["lumbar puncture/spinal tap","la ponction lombaire"],["biopsy","la biopsie"],["thick blood film/thick blood smear","la goutte épaisse"],
+  ["rapid diagnostic test","le test de diagnostic rapide (TDR)"],["normal range","les valeurs normales"],["The results are normal.","Les résultats sont normaux."]]},
+ {id:"maladies", n:"Les maladies", en:"Common diseases", i:[
+  ["malaria","le paludisme"],["tuberculosis","la tuberculose"],["high blood pressure/hypertension","l'hypertension artérielle"],["diabetes","le diabète"],
+  ["stroke","l'accident vasculaire cérébral (AVC)"],["heart attack/myocardial infarction","l'infarctus du myocarde"],["heart failure","l'insuffisance cardiaque"],
+  ["kidney failure/renal failure","l'insuffisance rénale"],["anemia/anaemia","l'anémie"],["sickle cell disease","la drépanocytose"],["meningitis","la méningite"],
+  ["typhoid fever","la fièvre typhoïde"],["asthma","l'asthme"],["pneumonia","la pneumonie"],["hepatitis","l'hépatite"],["cirrhosis","la cirrhose"],
+  ["measles","la rougeole"],["schistosomiasis/bilharzia","la bilharziose"]]},
+ {id:"abrev", n:"Les abréviations", en:"Abbreviations", i:[
+  ["blood pressure","la pression artérielle","BP"],["heart rate","la fréquence cardiaque","HR"],["respiratory rate","la fréquence respiratoire","RR"],
+  ["shortness of breath","la dyspnée","SOB"],["chest X-ray","la radiographie du thorax","CXR"],["electrocardiogram","l'électrocardiogramme","ECG"],
+  ["full blood count","la numération formule sanguine","FBC"],["urea and electrolytes","l'urée et l'ionogramme","U&E"],["liver function tests","le bilan hépatique","LFT"],
+  ["nothing abnormal detected","rien d'anormal","NAD"],["as needed/when required","si besoin","PRN"],["twice a day/twice daily","deux fois par jour","BD"],
+  ["three times a day/three times daily","trois fois par jour","TDS"],["by mouth/orally","par voie orale","PO"],["intravenous/intravenously","intraveineux, en intraveineuse","IV"],
+  ["intramuscular/intramuscularly","intramusculaire","IM"],["history","l'histoire de la maladie, les antécédents","Hx"],["diagnosis","le diagnostic","Dx"],
+  ["treatment/prescription","le traitement, l'ordonnance","Rx"]]},
+ {id:"traitement", n:"Le traitement", en:"Treatment and advice", i:[
+  ["Take one tablet twice a day.","Prenez un comprimé deux fois par jour."],["after meals","après les repas"],["before meals","avant les repas"],
+  ["at bedtime","au coucher"],["side effects","les effets secondaires"],["prescription","l'ordonnance"],["injection","l'injection, la piqûre"],
+  ["dose","la dose"],["syrup","le sirop"],["ointment","la pommade"],["drip/infusion","la perfusion"],["follow-up","le suivi"],
+  ["Drink plenty of water.","Buvez beaucoup d'eau."],["You need to stay in hospital.","Vous devez rester à l'hôpital."],
+  ["Come back in two weeks.","Revenez dans deux semaines."],["Finish the whole course of antibiotics.","Terminez tout le traitement antibiotique."]]}
+];
+// ---------- Réponses écrites ou dites : correction par éléments attendus ----------
+// Les éléments attendus sont les passages en gras du verso (ou les trous d'une carte à trous, ou les lignes d'une liste).
+// Chaque élément vaut la même part des points ; un élément est trouvé si la plupart de ses mots sont dans la réponse
+// (pluriels et petites fautes de frappe acceptés, jamais un mot de sens contraire : hyper/hypo, tachy/brady…).
+const ANS_STOP = new Set(('le la les un une des du de d l au aux et ou en a dans par pour sur avec sans ce cet cette ces son sa ses leur leurs qui que qu quoi dont est sont etre il elle ils elles on se ne pas plus tres '+
+  'the of and or to in on at for with is are be an by as it its this that from').split(' '));
+function ansTokens(s){ return (fold(s).match(/[a-z0-9]+(?:[.,][0-9]+)?/g)||[]).filter(w=>!ANS_STOP.has(w) && (w.length>1 || /\d/.test(w))); }
+function lev(a,b){ if(a===b) return 0; const m=a.length, n=b.length; if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,j)=>j); for(let i=1;i<=m;i++){ const cur=[i]; for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1)); prev=cur; } return prev[n]; }
+function tokMatch(t, words){
+  if(words.has(t)) return true; if(/\d/.test(t)) return false;
+  for(const w of words){ if(/\d/.test(w)) continue;
+    if(t.length>=5 && w.length>=5){ const k=Math.max(5, Math.min(t.length,w.length)-2); if(t.slice(0,k)===w.slice(0,k)) return true; }
+    if(t.length>=6 && Math.abs(t.length-w.length)<=1 && t[0]===w[0] && lev(t,w)<=1) return true; }
+  return false;
+}
+function ansElements(c){
+  if(c.type==='cloze'){ const m=[...String(c.front||'').matchAll(/\{\{(.+?)\}\}/g)].map(x=>x[1].split('::')[0].trim()).filter(Boolean); return m.length?m:null; }
+  const back=String(c.back||'');
+  const bold=[...new Set([...back.matchAll(/\*\*([^*]+)\*\*/g)].map(x=>x[1].trim()).filter(Boolean))];
+  if(bold.length) return bold.slice(0,10);
+  const lines=back.split('\n').map(l=>l.trim()).filter(l=>/^[-•]\s/.test(l)).map(l=>l.replace(/^[-•]\s+/,''));
+  if(lines.length>=2) return lines.slice(0,10);
+  const p=back.replace(/[*_#>`]/g,'').trim(); return p?[p]:null;
+}
+function engNorm(s){ return fold(s).replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim().replace(/^(the|a|an|to) /,''); }
+function engSame(a,b){ const x=engNorm(a), y=engNorm(b); if(!x||!y) return false; if(x===y || (' '+x+' ').includes(' '+y+' ')) return true; return lev(x,y)<=Math.max(1,Math.floor(y.length/8)); }
+function gradeAnswer(c, text){
+  const t=String(text||'').trim(); if(!t) return null;
+  if(c.alt && c.alt.length){ const ok=c.alt.some(a=>engSame(t,a)); return {els:[{t:c.alt[0], v:ok?1:0}], frac:ok?1:0, g:ok?3:1, alt:true}; }
+  const els=ansElements(c); if(!els) return null;
+  const words=new Set(ansTokens(t)), raw=fold(t);
+  const res=els.map(e=>{ const tk=ansTokens(e); if(!tk.length) return {t:e, v:raw.includes(fold(e).trim())?1:0};
+    const ok=tk.filter(w=>tokMatch(w,words)), n=tk.length, r=ok.length/n;
+    const key=tk.find(w=>/\d/.test(w))||tk.reduce((a,w)=>w.length>a.length?w:a,''), hasKey=ok.includes(key); // le nombre, sinon le mot le plus précis (hypertension, et non artérielle), doit y être
+    return {t:e, v:n<=3?(ok.length===n?1:hasKey?0.5:0):(r>=0.75?1:hasKey&&r>=0.4?0.5:0)}; });
+  const frac=res.reduce((a,e)=>a+e.v,0)/res.length;
+  return {els:res, frac, g:frac>=0.85?3:frac>=0.5?2:1};
+}
+const fmtPts = x => String(Math.round(x*100)/100).replace('.',',');
+function ansElsHTML(els){ return `<ul class="ans-els">${els.map(e=>`<li class="${e.v===1?'ok':e.v?'mid':'ko'}"><span>${e.v===1?'Trouvé':e.v?'En partie':'Manquant'}</span>${esc(e.t)}</li>`).join('')}</ul>`; }
+
+// ---------- Voix : lire à voix haute et dicter une réponse ----------
+const SRX = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let REC = null;
+function sayText(txt, lang){
+  try{ if(!('speechSynthesis' in window)) return false; speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(String(txt||'').slice(0,600)); u.lang=lang||'fr-FR'; const p=u.lang.slice(0,2).toLowerCase();
+    const vs=speechSynthesis.getVoices(); const v=vs.find(v=>v.lang&&v.lang.replace('_','-')===u.lang)||vs.find(v=>v.lang&&v.lang.toLowerCase().startsWith(p)); if(v) u.voice=v;
+    u.rate=p==='en'?0.9:1; speechSynthesis.speak(u); return true; }catch{ return false; }
+}
+function recStart(lang, onText, onEnd){
+  if(!SRX) return false;
+  try{ recStop(); const r=new SRX(); r.lang=lang; r.interimResults=true; r.continuous=true; r.maxAlternatives=1; let fin='';
+    r.onresult=e=>{ let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){ const tr=e.results[i][0].transcript; if(e.results[i].isFinal) fin=(fin+' '+tr).trim(); else tmp+=tr; } onText((fin+' '+tmp).trim()); };
+    r.onerror=ev=>{ if(ev&&(ev.error==='not-allowed'||ev.error==='service-not-allowed')) toast("Le micro n'est pas autorisé pour XamXam : autorise-le dans les réglages du navigateur.", 4200); };
+    r.onend=()=>{ if(REC===r) REC=null; if(onEnd) onEnd(); };
+    REC=r; r.start(); return true; }catch{ REC=null; return false; }
+}
+function recStop(){ const r=REC; REC=null; try{ if(r) r.stop(); }catch{} }
+
+// ---------- Séance de révision : répondre dans sa tête, à l'écrit ou à l'oral ----------
+function ansMode(c, cur){ const m=S.prefs.ans||'flip'; return (m!=='flip' && cur && !cur.disc && (c.type==='qa'||c.type==='cloze'))?m:null; }
+function ansLang(c){ return c.eng?'en-US':'fr-FR'; }
+function ansQuestion(c){ return c.type==='cloze'?String(c.front).replace(/\{\{.+?\}\}/g,' … ').replace(/[*#=]/g,''):plain(c.front); }
+function ansModesHTML(){ const m=S.prefs.ans||'flip';
+  return `<div class="seg ans-modes" role="group" aria-label="Je réponds">${[['flip','Dans ma tête'],['write',"À l'écrit"],['voice',"À l'oral"]].map(([k,l])=>`<button data-act="ans-mode" data-m="${k}" aria-pressed="${m===k}">${l}</button>`).join('')}</div>`; }
+function ansBoxHTML(c, cur, am){
+  const mic=am==='voice'?(SRX?`<button class="btn ${cur.rec?'btn-primary':''}" data-act="ans-mic">${cur.rec?"J'ai fini de parler":'Parler'}</button>`
+    :`<p class="small muted">La dictée de XamXam n'est pas disponible ici : utilise le micro de ton clavier.</p>`):'';
+  return `<div class="ans-box">${am==='voice'?`<button class="btn btn-ghost" style="align-self:flex-start" data-act="say" data-l="fr-FR" data-t="${esc(ansQuestion(c))}">${I.ear} Réécouter la question</button>`:''}
+    <label class="field">Ta réponse${c.eng?' en anglais':''}<textarea id="ansText" data-input="ans-text" rows="3" ${c.eng?'lang="en" autocapitalize="off" spellcheck="false"':''} placeholder="${am==='voice'?'Touche « Parler » et réponds à voix haute…':'Écris ta réponse…'}">${esc(cur.text||'')}</textarea></label>${mic}</div>`;
+}
+function ansResHTML(c, cur){ const r=cur.res; const n=r.els.length, got=r.els.reduce((a,e)=>a+e.v,0);
+  return `<div class="ans-res"><div class="spread"><p class="eyebrow">Ta réponse</p><span class="ans-score ${r.frac>=0.85?'ok':r.frac>=0.5?'mid':'ko'}">${r.alt?(r.frac?'Juste':'À revoir'):fmtPts(got)+' / '+n+' élément'+(n>1?'s':'')}</span></div>
+    <p class="ans-you">${esc(cur.text)}</p>${r.alt?'':ansElsHTML(r.els)}
+    <p class="small muted">Note conseillée encadrée. Si ta formulation est juste mais différente, choisis toi-même.</p></div>`; }
+function ansSugg(html, cur){ const g=cur&&cur.res&&cur.res.g; return g?html.replace('class="grade g'+g+'"','class="grade g'+g+' sugg"'):html; }
+
+// ---------- Examen blanc : un sujet tiré de mes cartes, passé avec le moteur d'examen ----------
+UI.bl={scope:'all', n:20, dur:30, open:true, qcm:true};
+function blPool(){ const u=UI.bl; return liveCards(u.scope).filter(c=>(u.open && ((c.type==='qa' && String(c.back||'').trim()) || (c.type==='cloze' && /\{\{.+?\}\}/.test(c.front))))
+  || (u.qcm && c.type==='qcm' && (c.answer||[]).length && (c.choices||[]).length)); }
+function blItem(c){
+  if(c.type==='qcm') return {type:'qcm', front:c.front, choices:c.choices.slice(), answer:c.answer.slice(), back:c.back||'', chap:c.chap||'', card:c.id};
+  if(c.type==='cloze'){ const dels=[...c.front.matchAll(/\{\{(.+?)\}\}/g)].map(m=>m[1].split('::')[0].trim());
+    return {type:'qa', front:c.front.replace(/\{\{(.+?)\}\}/g,'_____')+'\n\n*Complète les blancs.*', choices:[], answer:[], back:dels.map(x=>'**'+x+'**').join(' · '), chap:c.chap||'', card:c.id}; }
+  return {type:'qa', front:c.front, choices:[], answer:[], back:c.back, chap:c.chap||'', card:c.id, alt:c.alt||undefined};
+}
+function blStart(){
+  const u=UI.bl; const pool=blPool(); if(!pool.length){ toast('Aucune question possible dans cette sélection.'); return; }
+  const hard=shuffle(pool.filter(isHard)), rest=shuffle(pool.filter(c=>!isHard(c)));
+  const nh=Math.min(hard.length, Math.round(u.n*0.4));
+  const pick=shuffle(hard.slice(0,nh).concat(rest.slice(0,u.n-nh)).concat(hard.slice(nh)).slice(0,u.n));
+  const d=new Date(); const id=uid('e');
+  S.exams[id]={id, kind:'blanc', mod:'', scope:u.scope, title:'Examen blanc · '+scopeLabel(u.scope), date:d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),
+    dur:+u.dur||0, files:[], items:pick.map(blItem), attempts:[], created:now(), t:now()};
+  saveExams(); exrStart(id);
+}
+function blSheet(){
+  const u=UI.bl; const pool=blPool(); const nOpen=pool.filter(c=>c.type!=='qcm').length, nQ=pool.length-nOpen, k=Math.min(u.n,pool.length);
+  const past=Object.values(S.exams).filter(e=>e.kind==='blanc').sort((a,b)=>(b.created||0)-(a.created||0));
+  const live=past.find(e=>exrLive(e.id));
+  return sheetTop('Examen blanc')+`
+   <p>Un sujet tiré de tes cartes, en conditions d'examen : questions à rédiger, corrigées point par point, et QCM. Ensuite, note sur 20, résultats par chapitre, et tes erreurs reviennent dans tes révisions.</p>
+   ${live?`<button class="btn btn-primary btn-lg" data-act="bl-resume" data-id="${live.id}">Reprendre l'examen en cours</button>`:''}
+   <section class="panel stack">
+    <label class="field">Sur quoi<select data-input="bl-scope">${scopeOptions(u.scope)}</select></label>
+    <div class="count-grid">
+     <label class="field">Questions<select data-input="bl-n">${[10,20,30,40,60].map(n=>`<option value="${n}" ${u.n===n?'selected':''}>${n}</option>`).join('')}</select></label>
+     <label class="field">Durée<select data-input="bl-dur">${DURS.map(([v,l])=>`<option value="${v}" ${u.dur===v?'selected':''}>${l}</option>`).join('')}</select></label>
+    </div>
+    <label class="row" style="gap:10px;flex-wrap:nowrap"><input type="checkbox" data-input="bl-in-open" ${u.open?'checked':''} style="width:20px;height:20px;accent-color:var(--fg)"><span>Questions à rédiger <span class="muted">(${nOpen} possibles)</span></span></label>
+    <label class="row" style="gap:10px;flex-wrap:nowrap"><input type="checkbox" data-input="bl-in-qcm" ${u.qcm?'checked':''} style="width:20px;height:20px;accent-color:var(--fg)"><span>QCM <span class="muted">(${nQ} possibles)</span></span></label>
+    <p class="small muted">${pool.length?plural(k,'question')+' tirée'+(k>1?'s':'')+' au hasard parmi '+pool.length+', avec plus de place pour celles que tu rates souvent. Seules les cartes de tes révisions comptent : celles des leçons pas encore apprises attendent.':'Aucune carte utilisable ici : ajoute des cartes, marque des leçons « Appris », ou choisis une autre sélection.'}</p>
+    <button class="btn btn-primary btn-lg" data-act="bl-go" ${pool.length?'':'disabled'}>Commencer l'examen blanc</button>
+   </section>
+   ${past.length?`<section class="panel"><div class="section-title"><h3>Mes examens blancs</h3></div><div class="menu">${past.slice(0,8).map(e=>{ const a=(e.attempts||[]).slice(-1)[0];
+     return `<button data-act="exam-open" data-id="${e.id}">${I.exam}<span><span class="t">${esc(e.title)}</span><span class="d">${fmtExamDate(e.date)} · ${plural(e.items.length,'question')}${exrLive(e.id)?' · en cours':a&&a.total?' · '+fmt20(a.score/a.total):''}</span></span>${I.chev}</button>`; }).join('')}</div></section>`:''}`;
+}
+function qAuto(k){ // correction automatique d'une question rédigée (examen blanc, ou corrigé avec des éléments en gras)
+  const e=S.exams[EXR.examId], r=exrItems()[k]; if(!e||r.type==='qcm') return null;
+  if(!(e.kind==='blanc' || /\*\*[^*]+\*\*/.test(r.back||''))) return null;
+  const t=EXR.texts[k]; if(!t||!t.trim()) return {els:[], frac:0, empty:true};
+  return gradeAnswer({type:'qa', back:r.back, alt:r.alt}, t);
+}
+function qPts(k){
+  const r=exrItems()[k];
+  if(r.type==='qcm'){ const st=qState(k); return st===null?null:(st?1:0); }
+  if(EXR.self[k]===true||EXR.self[k]===false) return EXR.self[k]?1:0;
+  const a=qAuto(k); return a?Math.round(a.frac*100)/100:null;
+}
+function exrAutoHTML(k){ const a=qAuto(k); if(!a||a.empty||!a.els.length) return ''; const got=a.els.reduce((x,e)=>x+e.v,0);
+  return (a.alt?'':ansElsHTML(a.els))+`<p class="small muted">Correction automatique : ${a.alt?(a.frac?'juste':'faux'):fmtPts(got)+' élément'+(got>1?'s':'')+' sur '+a.els.length}${EXR.self[k]===true||EXR.self[k]===false?' · ta propre correction compte à la place':''}. Formulation juste mais différente ? Touche « J'avais juste ».</p>`; }
+function exrByChap(){ const g={}; exrItems().forEach((r,k)=>{ const p=qPts(k); if(p===null) return; const key=r.chap||''; if(!g[key]) g[key]=[0,0]; g[key][0]+=p; g[key][1]++; }); return g; }
+function exrChapHTML(){ const e=S.exams[EXR.examId]; if(!e||e.kind!=='blanc') return '';
+  const rows=Object.entries(exrByChap()).map(([ch,[p,n]])=>({ch, p:p/n, n})).sort((a,b)=>a.p-b.p); if(rows.length<2) return '';
+  return `<section class="panel stack" style="gap:10px"><h3 style="margin:0">Par chapitre</h3>${rows.map(r=>`<div class="chbar"><span>${esc(CH[r.ch]?CH[r.ch].title:'Autres cartes')} <span class="muted">· ${r.n}</span></span><span class="track"><i style="width:${Math.round(r.p*100)}%;background:${r.p>=0.7?'var(--good)':r.p>=0.5?'var(--hard)':'var(--bad)'}"></i></span><b>${Math.round(r.p*100)} %</b></div>`).join('')}
+    <p class="small muted">Vert : 70 % et plus · ocre : 50 à 69 % · rouge : moins de 50 %.</p></section>`; }
+function blRequeue(e, idx){ let n=0; for(const i of idx){ const r=e.items[i]; const c=r&&r.card&&S.cards[r.card]; if(!c) continue; c.srs=nextSrs(c.srs,1); c.suspended=false; saveCard(c); n++; }
+  updateDueDot(); toast(n?plural(n,'carte')+' remise'+(n>1?'s':'')+' à revoir aujourd\'hui':'Ces cartes ne sont plus dans tes révisions.', 3600); }
+function blStatsHTML(){
+  const at=[]; for(const e of Object.values(S.exams)) if(e.kind==='blanc') for(const a of (e.attempts||[])) if(a.total) at.push(a);
+  if(!at.length) return `<section class="panel stack"><h3>Examens blancs</h3><p class="small">Passe un examen blanc tiré de tes cartes : note sur 20, résultats par chapitre, et tes erreurs reviennent dans tes révisions.</p><button class="btn btn-soft" data-act="bl-open">Faire un examen blanc</button></section>`;
+  at.sort((a,b)=>a.t-b.t);
+  const g={}; for(const a of at) for(const [ch,[p,n]] of Object.entries(a.byChap||{})){ if(!g[ch]) g[ch]=[0,0]; g[ch][0]+=p; g[ch][1]+=n; }
+  const weak=Object.entries(g).filter(([ch,[p,n]])=>n>=2&&CH[ch]&&p/n<0.7).map(([ch,[p,n]])=>({ch,p:p/n})).sort((a,b)=>a.p-b.p).slice(0,5);
+  return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Examens blancs</h3><button class="btn btn-ghost" data-act="bl-open">${I.plus} Nouveau</button></div>
+   <div class="fbars">${at.slice(-8).map(a=>`<span class="muted">${esc(fmtD(new Date(a.t),{day:'numeric',month:'short'}))}</span><span class="track"><i style="width:${Math.round(a.score/a.total*100)}%"></i></span><b class="mono">${fmt20(a.score/a.total)}</b>`).join('')}</div>
+   ${weak.length?`<h3 style="margin:6px 0 0;font-size:0.9375rem">Chapitres à retravailler</h3><div class="menu">${weak.map(w=>`<button data-act="chap" data-id="${w.ch}">${I.book}<span><span class="t">${esc(CH[w.ch].title)}</span><span class="d">${Math.round(w.p*100)} % de réussite en examen blanc</span></span>${I.chev}</button>`).join('')}</div>`:''}</section>`;
+}
+
+// ---------- Anglais médical ----------
+const ENG_BY = {}; ENG.forEach(t=>{ ENG_BY[t.id]=t; });
+UI.eng={t:null}; UI.engp=null;
+function engAlt(s){ return String(s).split('/').map(x=>x.trim()).filter(Boolean); }
+function engHas(id){ return Object.values(S.cards).some(c=>c.eng===id); }
+function engAdd(id){ const t=ENG_BY[id]; if(!t||engHas(id)) return 0; let n=0;
+  for(const [en,fr,ab] of t.i){ const alt=engAlt(en);
+    saveCard(newCard({type:'qa', front:ab?`Que veut dire **${ab}** ?`:`En anglais : **${fr}**`, back:'**'+alt[0]+'**'+(alt.length>1?' (ou '+alt.slice(1).join(', ')+')':'')+(ab?'\n\n'+fr:''), eng:id, say:alt[0], alt})); n++; }
+  return n; }
+function engRemove(id){ let n=0; for(const c of Object.values(S.cards)) if(c.eng===id){ deleteCard(c.id); n++; } return n; }
+function engMatch(ans, en){ const alts=engAlt(en); if(alts.some(x=>engSame(ans,x))) return 'ok'; const a=engNorm(ans); if(!a) return 'ko';
+  return Math.min(...alts.map(x=>lev(a,engNorm(x))/Math.max(1,engNorm(x).length)))<=0.34?'near':'ko'; }
+function engSaid(heard, en){ const h=new Set(engNorm(heard).split(' ')); return engAlt(en).some(x=>{ const w=engNorm(x).split(' ').filter(Boolean); return w.length && w.filter(y=>h.has(y)).length/w.length>=0.8; })?'ok':'ko'; }
+function engSheet(){
+  const n=ENG.reduce((a,t)=>a+t.i.length,0);
+  return sheetTop('Anglais médical')+`<p>${n} mots et phrases de la consultation, avec la prononciation. Dans chaque thème : écouter, traduire, prononcer, puis ajouter ses cartes à tes révisions si tu veux.</p>
+   <div class="menu">${ENG.map(t=>`<button data-act="eng-theme" data-id="${t.id}">${I.ear}<span><span class="t">${esc(t.n)} <span class="muted" lang="en">· ${esc(t.en)}</span></span><span class="d">${plural(t.i.length,'expression')}${engHas(t.id)?' · dans tes révisions':''}</span></span>${I.chev}</button>`).join('')}</div>
+   <p class="small muted">La prononciation utilise la voix anglaise de ton téléphone.${SRX?'':' Pour « Prononcer », XamXam utilisera le micro de ton clavier.'}</p>`;
+}
+function engThemeSheet(){
+  const t=ENG_BY[UI.eng.t]; if(!t) return sheetTop('Anglais médical')+'<p>Thème introuvable.</p>';
+  const has=engHas(t.id);
+  return sheetTop(t.n)+`<p class="small muted" lang="en">${esc(t.en)} · ${plural(t.i.length,'expression')}</p>
+   <div class="row" style="flex-wrap:nowrap"><button class="btn btn-primary" style="flex:1" data-act="engp" data-m="tr">Traduire</button><button class="btn" style="flex:1" data-act="engp" data-m="ear">Écouter</button><button class="btn" style="flex:1" data-act="engp" data-m="say">Prononcer</button></div>
+   ${has?`<div class="row"><span class="badge">Dans tes révisions</span><button class="btn btn-ghost" data-act="start" data-mode="cram" data-scope="eng">Me tester</button><button class="btn btn-ghost" data-act="eng-del" data-id="${t.id}">Retirer de mes révisions</button></div>`
+       :`<button class="btn btn-soft" data-act="eng-add" data-id="${t.id}">${I.plus} Ajouter à mes révisions (${plural(t.i.length,'carte')})</button>`}
+   <div class="eng-list">${t.i.map(([en,fr,ab])=>{ const a=engAlt(en); return `<div class="eng-row"><button class="icon-btn" data-act="say" data-l="en-US" data-t="${esc(a[0])}" aria-label="Écouter : ${esc(a[0])}">${I.ear}</button><span><strong lang="en">${ab?esc(ab)+' · ':''}${esc(a.join(' / '))}</strong><span class="small muted">${esc(fr)}</span></span></div>`; }).join('')}</div>`;
+}
+function engpCur(){ const p=UI.engp; return ENG_BY[p.t].i[p.order[p.i]]; }
+function engpPlay(){ const p=UI.engp; if(!p||p.i>=p.order.length) return; sayText(engAlt(engpCur()[0])[0], 'en-US'); }
+function engpStart(m){ const t=ENG_BY[UI.eng.t]; if(!t) return; recStop();
+  UI.engp={t:t.id, m, order:shuffle(t.i.map((_,j)=>j)).slice(0,10), i:0, ok:0, val:'', res:null, heard:'', rec:false};
+  if(UI.sheetStack[UI.sheetStack.length-1]===engpSheet) paintSheet(); else openSheet(engpSheet);
+  if(m!=='tr') setTimeout(engpPlay, 350); }
+function engpSheet(){
+  const p=UI.engp, t=p&&ENG_BY[p.t]; if(!t) return sheetTop('Anglais médical')+'<p>Exercice terminé.</p>';
+  const n=p.order.length, title={tr:'Traduire', ear:'Écouter', say:'Prononcer'}[p.m];
+  if(p.i>=n) return sheetTop(title+' · '+t.n)+`<section class="panel stack" style="text-align:center;gap:8px"><p class="eyebrow">${esc(t.n)}</p><p class="score">${p.ok}<small>/${n}</small></p>
+    <p>${p.ok===n?'Parfait !':p.ok>=n*0.7?'Très bien.':'Refais l\'exercice dans quelques minutes : la répétition fait la mémoire.'}</p></section>
+    <button class="btn btn-primary btn-lg" data-act="engp" data-m="${p.m}">Recommencer avec d'autres mots</button><button class="btn" data-act="sheet-back">Retour au thème</button>`;
+  const [en,fr,ab]=engpCur(), a=engAlt(en), done=!!p.res;
+  const prompt=p.m==='tr'?`<p class="eyebrow">${ab?'Abréviation':'Comment dit-on en anglais ?'}</p><p class="eng-q">${esc(ab?'Que veut dire '+ab+' ?':fr)}</p>`
+    :p.m==='ear'?`<p class="eyebrow">Écoute, puis écris ce que tu entends</p><button class="btn" style="align-self:flex-start" data-act="engp-play">${I.ear} Réécouter</button>`
+    :`<p class="eyebrow">Lis à voix haute</p><p class="eng-q" lang="en">${esc(ab?ab+' : '+a[0]:a[0])}</p><p class="small muted">${esc(fr)}</p><button class="btn btn-ghost" style="align-self:flex-start" data-act="engp-play">${I.ear} Écouter le modèle</button>`;
+  const typed=p.m!=='say'||!SRX;
+  const input=typed?`<label class="field">${p.m==='say'?'Dicte avec le micro de ton clavier':'Ta réponse en anglais'}<input type="text" id="engVal" data-input="engp-val" value="${esc(p.val)}" lang="en" autocapitalize="off" autocomplete="off" spellcheck="false" ${done?'disabled':''}></label>`
+    :`<button class="btn ${p.rec?'btn-primary':''} btn-lg" data-act="engp-mic" ${done?'disabled':''}>${p.rec?"J'ai fini":'Parler'}</button><p class="small" id="engHeard">${esc(p.heard)}</p>`;
+  const verdict=!done?'':p.res==='ok'?`<div class="eng-res ok"><strong>Juste.</strong> <span lang="en">${esc(a[0])}</span>${a.length>1?' (aussi : '+esc(a.slice(1).join(', '))+')':''}</div>`
+    :p.res==='near'?`<div class="eng-res mid"><strong>Presque : attention à l'orthographe.</strong> <span lang="en">${esc(a.join(' / '))}</span></div>`
+    :`<div class="eng-res ko"><strong>${p.m==='say'?"Ce n'était pas tout à fait ça.":'La bonne réponse :'}</strong> <span lang="en">${esc(a.join(' / '))}</span>${p.m==='say'&&p.heard?'<br><span class="small">Entendu : '+esc(p.heard)+'</span>':''}</div>`;
+  return sheetTop(title+' · '+t.n)+`<span class="eng-bar"><i style="width:${p.i/n*100}%"></i></span><p class="small muted">${p.i+1} sur ${n} · ${p.ok} juste${p.ok>1?'s':''}</p>
+   <section class="panel stack">${prompt}${input}${verdict}</section>
+   ${done?`<button class="btn btn-primary btn-lg" data-act="engp-next">${p.i+1<n?'Suivant':'Voir mon score'}</button>`:typed?`<button class="btn btn-primary btn-lg" data-act="engp-check">Vérifier</button>`:''}`;
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target && e.target.id==='engVal'){ e.preventDefault(); const b=document.querySelector('[data-act="engp-check"]'); if(b) b.click(); } });
 
 // ---------- Démarrage ----------
 loadLocal(); exrLoad(); buildIndex(); itrLoad(); applyTheme(); updateDueDot(); render();
