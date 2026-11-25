@@ -1,10 +1,12 @@
 // XamXam : fonctionnement hors ligne.
 // Changer VERSION à chaque mise à jour de l'appli pour rafraîchir le cache.
-const VERSION = 'xamxam-v42';
+const VERSION = 'xamxam-v43';
 // Ces caches-là sont gardés d'une version à l'autre : les bibliothèques (lecture des PDF et des photos, environ 10 Mo)
 // et les polices ne sont pas retéléchargées à chaque mise à jour.
 const LIB = 'xamxam-lib-1', FONTS = 'xamxam-fonts-1', SHARE = 'xamxam-share', LESSONS = 'xamxam-internat-1';
-const KEEP = [VERSION, LIB, FONTS, SHARE, LESSONS];
+// Photos de l'examen clinique : gardées sur l'appareil après la première ouverture, d'une version à l'autre.
+const MEDIA = 'xamxam-media-1';
+const KEEP = [VERSION, LIB, FONTS, SHARE, LESSONS, MEDIA];
 const SHELL = [
   './',
   'index.html',
@@ -92,6 +94,20 @@ self.addEventListener('fetch', e => {
       const net = fetch(req).then(res => { if (res.ok) cache.put(req, res.clone()); return res; });
       if (hit) { net.catch(() => {}); return hit; }
       return net;
+    })());
+    return;
+  }
+  // Examen clinique : les vidéos se lisent directement depuis le serveur (lecture par morceaux) ;
+  // les photos sont gardées dans leur propre cache, qui survit aux mises à jour de l'appli.
+  if (url.pathname.includes('/media/')) {
+    if (req.headers.has('range') || /\.(mp4|webm)$/i.test(url.pathname)) return;
+    e.respondWith((async () => {
+      const cache = await caches.open(MEDIA);
+      const hit = await cache.match(req);
+      if (hit) return hit;
+      const res = await fetch(req);
+      if (res.ok && res.status === 200) cache.put(req, res.clone());
+      return res;
     })());
     return;
   }

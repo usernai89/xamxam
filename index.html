@@ -499,6 +499,15 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 .syn-body ul{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:6px;line-height:1.5}
 .syn-key{border-left:4px solid var(--hl);padding:6px 0 6px 14px;line-height:1.5}
 .tri-ol{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:6px;line-height:1.45;font-weight:600}
+.exa-ol{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:6px;line-height:1.5}
+.badge.exa-k{margin-left:2px;font-family:var(--font-body);font-size:0.6875rem;font-weight:700;vertical-align:middle}
+.badge.exa-k.media{background:var(--hl-soft);color:var(--fg)}
+.exa-fig{margin:0;display:flex;flex-direction:column;gap:6px}
+.exa-fig img,.exa-fig video{display:block;width:100%;height:auto;max-height:min(62vh,460px);object-fit:contain;background:var(--surface2);border-radius:var(--r-sm)}
+.exa-fig figcaption{font-size:0.875rem;line-height:1.45}
+.exa-fig .credit{display:block;color:var(--muted);font-size:0.75rem;margin-top:3px;overflow-wrap:anywhere}
+.exa-fig .credit a{color:inherit}
+.exa-lnk{background:none;border:0;padding:0;font:inherit;color:var(--link);text-decoration:underline;text-underline-offset:2px;cursor:pointer;text-align:left}
 .badge.sn{margin-left:6px;font-family:var(--font-body);font-size:0.6875rem;font-weight:700;vertical-align:middle;background:var(--hl-soft);color:var(--fg)}
 .syn-sys{font-family:var(--font-display);font-size:1.125rem;margin:calc(10px*var(--sp)) 2px 0}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);-webkit-overflow-scrolling:touch}
@@ -870,7 +879,7 @@ const FONTS = {
  serif:{name:'Livre', css:"'Source Serif 4',Georgia,'Times New Roman',serif"},
  system:{name:'Système', css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"}
 };
-const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
+const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
 const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'nunito', heads:'expressive', size:17, radius:'soft', density:'normal', anim:'flip', buttons:4,
   semStart:'2026-11-19', examDate:'', newPerDay:25, maxRev:300, capExam:true, quick:10, lastExport:0,
   home:[['today',1],['exams',1],['internat',1],['syn',1],['tri',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
@@ -1212,6 +1221,7 @@ function inScope(c, scope){
   if(!scope||scope==='all') return true;
   if(scope==='syn') return !!c.syn;
   if(scope==='tri') return !!c.tri;
+  if(scope==='exa') return !!c.exa;
   if(scope==='exam') return !!c.exam;
   if(scope.startsWith('e:')) return c.exam===scope.slice(2);
   const [k,v]=scope.split(':'); const ch=CH[c.chap];
@@ -1226,6 +1236,7 @@ function scopeLabel(scope){
   if(!scope||scope==='all') return 'Tout le programme';
   if(scope==='syn') return 'Fiches syndromes';
   if(scope==='tri') return 'Triades';
+  if(scope==='exa') return 'Examen clinique';
   if(scope==='exam') return 'Annales';
   if(scope.startsWith('e:')) return annLabel(scope.slice(2));
   const [k,v]=scope.split(':');
@@ -1257,7 +1268,7 @@ function todayPlan(scope){
     rev:cards.filter(x=>x.srs.state==='review'&&x.srs.due<end).sort((a,b)=>a.srs.due-b.srs.due).slice(0,c.rev),
     nw:cards.filter(x=>x.srs.state==='new'&&x.later!==dk).sort((a,b)=>(a.created||0)-(b.created||0)).slice(0,c.nw) };
 }
-function cardGroup(c){ const ch=CH[c.chap]; if(ch) return {k:'c:'+c.chap, name:ch.title, sub:SUBS[ch.sub].name}; if(c.syn) return {k:'syn', name:'Fiches syndromes'}; if(c.tri) return {k:'tri', name:'Triades'}; if(c.exam) return {k:'exam', name:'Annales'}; return {k:'', name:'Sans chapitre'}; }
+function cardGroup(c){ const ch=CH[c.chap]; if(ch) return {k:'c:'+c.chap, name:ch.title, sub:SUBS[ch.sub].name}; if(c.syn) return {k:'syn', name:'Fiches syndromes'}; if(c.tri) return {k:'tri', name:'Triades'}; if(c.exa) return {k:'exa', name:'Examen clinique'}; if(c.exam) return {k:'exam', name:'Annales'}; return {k:'', name:'Sans chapitre'}; }
 function planGroups(p){
   const g={}; const add=(c,f)=>{ const o=cardGroup(c); const key=o.k+'|'+o.name; const x=g[key]||(g[key]={k:o.k, name:o.name, sub:o.sub||'', rev:0, lrn:0, nw:0}); x[f]++; };
   p.rev.forEach(c=>add(c,'rev')); p.lrn.forEach(c=>add(c,'lrn')); p.nw.forEach(c=>add(c,'nw'));
@@ -1345,6 +1356,7 @@ function gsResults(){
   const iq=Object.values(INTQ).filter(x=>hit(x.t)).slice(0,15); if(iq.length) out.push(['Internat', iq.map(x=>row('int-open',x.id,I.exam,x.t,(INT.find(e=>e.id===x.ep)||{}).name||''))]);
   const sy=SYNDROMES.filter(x=>hit(x.n+' '+x.s.join(' ')+' '+x.c.join(' ')+' '+x.k)).slice(0,15); if(sy.length) out.push(['Fiches syndromes', sy.map(x=>row('gs-syn',x.id,I.stetho||I.exam,x.n,SYN_SYS[x.sys]))]);
   const tr=TRIADES.filter(x=>hit(x.n+' '+x.t.join(' ')+' '+x.m)).slice(0,15); if(tr.length) out.push(['Triades', tr.map(x=>row('gs-tri',x.id,I.brain||I.exam,x.n,x.t.join(' · ')))]);
+  const ex=EXAMENS.filter(x=>hit(x.n+' '+x.v)).slice(0,15); if(ex.length) out.push(['Examen clinique', ex.map(x=>row('gs-exa',x.id,I.stetho||I.exam,x.n,EXA_KIND[x.k]+' · '+EXA_SYS[x.sys]))]);
   const cs=Object.values(S.cards).filter(c=>hit(String(c.front)+' '+String(c.back))).slice(0,20); if(cs.length) out.push(['Mes cartes', cs.map(c=>row('gs-card',c.id,I.cards,plain(c.front).slice(0,90),CH[c.chap]?CH[c.chap].title:''))]);
   return out.length?out.map(([h,items])=>`<h3 class="syn-sys">${h} <span class="small muted">· ${items.length}</span></h3><div class="menu">${items.join('')}</div>`).join(''):'<p class="muted">Rien trouvé. Essaie un autre mot.</p>';
 }
@@ -1356,7 +1368,7 @@ function weakSpot(){
 }
 function ensureHome(){
   const h=Array.isArray(S.prefs.home)?S.prefs.home:[];
-  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
+  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
   S.prefs.home=h.filter(r=>HOME_SECTIONS[r[0]]);
 }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -1412,7 +1424,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 42; // à changer avec VERSION dans sw.js
+const APP_VER = 43; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1667,6 +1679,12 @@ function homeSection(k){
       <p>Les triades de médecine à connaître, avec les plus fréquentes au Sénégal et en Afrique mises en avant. En fiches ou en tableau.</p>
       <div class="row"><button class="btn btn-soft" style="flex:1" data-act="tri-open">Ouvrir les triades</button>${mine?`<button class="btn" style="flex:1" data-act="start" data-mode="cram" data-scope="tri">Me tester</button>`:''}</div></section>`;
   }
+  if(k==='exa'){
+    const mine=Object.values(S.cards).filter(c=>c.exa).length;
+    return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Examen clinique</h3><span class="small muted">${EXAMENS.length} fiches</span></div>
+      <p>Les signes et les manœuvres de l'examen clinique, appareil par appareil : comment faire, ce qu'on trouve, ce que ça évoque.${EXAMENS.some(x=>exaMedia(x).length)?' Avec de vraies photos et de courtes vidéos.':''}</p>
+      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="exa-open">Ouvrir les fiches</button>${mine?`<button class="btn" style="flex:1" data-act="start" data-mode="cram" data-scope="exa">Me tester</button>`:''}</div></section>`;
+  }
   if(k==='countdown'){
     const st=semStart(), dSem=daysUntil(st), ex=examDate(), dEx=daysUntil(ex.date);
     const revStart=new Date(ex.date); revStart.setDate(revStart.getDate()-10);
@@ -1753,6 +1771,7 @@ function chapterSheet(id){
    <div class="seg" role="group" aria-label="Où en es-tu ?">${STATUS.map((l,i)=>`<button data-act="set-status" data-id="${id}" data-s="${i}" aria-pressed="${st===i}">${l}</button>`).join('')}</div>
    <button class="btn btn-primary btn-lg" data-act="start" data-mode="${cnt.rev+cnt.lrn+cnt.nw?'srs':'cram'}" data-scope="c:${id}" ${cards.length?'':'disabled'}>${cards.length?'Réviser ce chapitre · '+plural(cards.length,'carte'):'Pas encore de carte à réviser'}</button>
    ${readyPanel(id)}
+   ${exaChapPanel(id)}
    ${intChapPanel(id)}
    ${docsSection(id)}
    <section class="panel"><div class="section-title"><h3>Mes notes</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="imp-lesson" data-id="${id}">Importer</button><button class="btn btn-ghost" data-act="note-edit" data-id="${id}">${note?'Modifier':'Écrire'}</button></div></div>
@@ -1796,6 +1815,7 @@ function scopeOptions(sel, withNone){
   if(exams.length){ o+=`<optgroup label="Annales d'examen"><option value="exam" ${sel==='exam'?'selected':''}>Toutes les annales</option>`; for(const e of exams) o+=`<option value="e:${esc(e)}" ${sel==='e:'+e?'selected':''}>${esc(annLabel(e))}</option>`; o+='</optgroup>'; }
   if(!withNone && Object.values(S.cards).some(c=>c.syn)) o+=`<option value="syn" ${sel==='syn'?'selected':''}>Fiches syndromes (toutes)</option>`;
   if(!withNone && Object.values(S.cards).some(c=>c.tri)) o+=`<option value="tri" ${sel==='tri'?'selected':''}>Triades (toutes)</option>`;
+  if(!withNone && Object.values(S.cards).some(c=>c.exa)) o+=`<option value="exa" ${sel==='exa'?'selected':''}>Examen clinique (toutes)</option>`;
   return o;
 }
 function viewRev(){
@@ -2132,7 +2152,7 @@ function paintSession(anim){
     : gradeButtons(c);
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}${s.undo?'<button class="icon-btn" data-act="sess-undo" aria-label="Annuler la dernière note" title="Annuler la dernière note" style="font-size:1.25rem">↶</button>':''}</div>
    <article class="flash ${anim&&S.prefs.anim!=='none'?'anim-'+S.prefs.anim:''}" id="flash">
-     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):'Sans chapitre')}</p>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
+     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):c.exa&&EXA_BY[c.exa]?'Examen clinique · '+esc(EXA_SYS[EXA_BY[c.exa].sys]):'Sans chapitre')}</p>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
      ${img('front')}${front}${back}
    </article>
    ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button>${c.srs.state==='new'&&s.mode==='srs'?'<button class="btn btn-ghost" data-act="sess-later">Pas aujourd\'hui</button>':''}<button class="btn btn-ghost" data-act="sess-suspend">Retirer de mes révisions</button></div>`:''}
@@ -4127,7 +4147,7 @@ function viewLevel(lvl, sem){
     return html+(hits.length?`<p class="small muted">${plural(hits.length,'cours trouvé','cours trouvés')}</p><div class="listbox">${hits.slice(0,80).map(c=>chapRow(c,K,true)).join('')}</div>`:'<p class="muted">Aucun cours ne correspond.</p>'); }
   html+=`<div class="cahiers">${mods.map(m=>cahierCard(m)).join('')}<button class="cahier add" data-act="mod-add" data-l="${lvl}" data-s="${sem}">${I.plus}<span>Ajouter une matière</span></button></div>`;
   if(hid.length) html+=`<details class="peek"><summary>${plural(hid.length,'matière masquée','matières masquées')}</summary><div class="chips" style="margin-top:6px">${hid.map(m=>`<button class="chip" data-act="mod-unhide" data-id="${m.id}">Réafficher ${esc(m.short)}</button>`).join('')}</div></details>`;
-  if(LV[lvl].i>=2) html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button><button class="btn btn-soft" data-act="tri-open" style="justify-content:space-between;width:100%"><span>Triades · ${TRIADES.length} triades</span>${I.chev}</button>`;
+  if(LV[lvl].i>=2) html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button><button class="btn btn-soft" data-act="tri-open" style="justify-content:space-between;width:100%"><span>Triades · ${TRIADES.length} triades</span>${I.chev}</button><button class="btn btn-soft" data-act="exa-open" style="justify-content:space-between;width:100%"><span>Examen clinique · ${EXAMENS.length} fiches</span>${I.chev}</button>`;
   return html;
 }
 function modSheet(){
@@ -4262,6 +4282,14 @@ document.addEventListener('click', async e=>{
   switch(act){
     case 'syn-open': openSheet(synSheet); break;
     case 'tri-open': openSheet(triSheet); break;
+    case 'exa-open': if(d.ch) UI.exa={kind:'all', sys:'all', q:'', ch:d.ch}; else UI.exa.ch=''; UI.exaOpen=null; openSheet(exaSheet); break;
+    case 'exa-ch': UI.exa.ch=d.id||''; UI.exaOpen=null; paintSheet(true); break;
+    case 'exa-kind': UI.exa.kind=d.v; UI.exaOpen=null; paintSheet(true); break;
+    case 'exa-add': { const n=exaAdd(d.id); UI.exaOpen=d.id; updateDueDot(); paintSheet(true); toast(n?n+' cartes ajoutées à tes révisions':'Déjà dans tes révisions'); break; }
+    case 'exa-del': { const n=exaRemove(d.id); UI.exaOpen=d.id; updateDueDot(); paintSheet(true); toast(n?'Fiche retirée de tes révisions':'Elle n\'était pas dans tes révisions'); break; }
+    case 'exa-add-all': { let n=0; for(const x of EXAMENS){ if(exaMatch(x)) n+=exaAdd(x.id); } updateDueDot(); paintSheet(true); toast(n+' cartes ajoutées. Elles arriveront peu à peu dans tes révisions du jour.'); break; }
+    case 'exa-del-all': { if(!confirm('Retirer ces fiches de tes révisions ? Leur progression sera effacée, tu pourras les rajouter plus tard.')) break; let n=0; for(const x of EXAMENS){ if(exaMatch(x)) n+=exaRemove(x.id); } updateDueDot(); paintSheet(true); toast(n+' cartes retirées de tes révisions'); break; }
+    case 'gs-exa': { const x=EXA_BY[d.id]; if(!x) break; UI.exa={kind:'all', sys:'all', q:x.n, ch:''}; UI.exaOpen=d.id; openSheet(exaSheet); break; }
     case 'syn-del': { const n=synRemove(d.id); UI.synOpen=d.id; updateDueDot(); paintSheet(true); toast(n?'Fiche retirée de tes révisions':'Elle n\'était pas dans tes révisions'); break; }
     case 'tri-del': { const n=triRemove(d.id); UI.triOpen=d.id; updateDueDot(); paintSheet(true); toast(n?'Triade retirée de tes révisions':'Elle n\'était pas dans tes révisions'); break; }
     case 'syn-del-all': { if(!confirm('Retirer ces fiches syndromes de tes révisions ? Leur progression sera effacée, tu pourras les rajouter plus tard.')) break; let n=0; for(const x of SYNDROMES){ if(UI.syn.sys==='all'||x.sys===UI.syn.sys) n+=synRemove(x.id); } updateDueDot(); paintSheet(true); toast(n+' cartes retirées de tes révisions'); break; }
@@ -4331,7 +4359,7 @@ document.addEventListener('click', async e=>{
       const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//XamXam//Rappel//FR','BEGIN:VEVENT','UID:xamxam-rappel-'+Date.now()+'@xamxam','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z','DTSTART:'+dt.getFullYear()+p2(dt.getMonth()+1)+p2(dt.getDate())+'T'+p2(hh||0)+p2(mm||0)+'00','DURATION:PT20M','RRULE:FREQ=DAILY','SUMMARY:Révisions XamXam','DESCRIPTION:Tes cartes du jour t\'attendent : '+appUrl(),'URL:'+appUrl(),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:Révisions XamXam','TRIGGER:-PT0M','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
       const a2=document.createElement('a'); a2.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'})); a2.download='xamxam-rappel.ics'; document.body.appendChild(a2); a2.click(); setTimeout(()=>{ URL.revokeObjectURL(a2.href); a2.remove(); }, 1500);
       toast("Ouvre le fichier téléchargé : ton agenda ajoute le rappel de chaque jour.", 4200); break; }
-    case 'start': if(d.syn||d.tri){ const ids=Object.values(S.cards).filter(c=>d.syn?c.syn===d.syn:c.tri===d.tri).map(c=>c.id); UI.sheetStack=[]; paintSheet(); if(SESS){ $('#session').hidden=true; SESS=null; } startSession('list','all',{ids}); break; }
+    case 'start': if(d.syn||d.tri||d.exa){ const ids=Object.values(S.cards).filter(c=>d.syn?c.syn===d.syn:d.tri?c.tri===d.tri:c.exa===d.exa).map(c=>c.id); UI.sheetStack=[]; paintSheet(); if(SESS){ $('#session').hidden=true; SESS=null; } startSession('list','all',{ids}); break; }
       UI.sheetStack=[]; paintSheet(); if(SESS) { $('#session').hidden=true; SESS=null; } startSession(d.mode, d.scope, d.min?{minutes:+d.min}:null); break;
     case 'start-missed': { const ids=UI.lastMissed||[]; if(SESS){ $('#session').hidden=true; SESS=null; } startSession('list','all',{ids}); break; }
     case 'rev-mode': UI.rev.mode=d.m; rerender(); break;
@@ -4446,6 +4474,7 @@ document.addEventListener('input', e=>{
   switch(k){
     case 'progq': UI.progQuery=el.value; clearTimeout(UI.pq); UI.pq=setTimeout(()=>{ const pos=el.selectionStart; rerender(); const n=$('#progSearch'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch{} } }, 200); break;
     case 'tri-q': UI.tri.q=el.value; UI.triOpen=null; clearTimeout(UI.tq); UI.tq=setTimeout(()=>{ const l=$('#triList'); if(l) l.innerHTML=triList(); }, 150); break;
+    case 'exa-q': UI.exa.q=el.value; UI.exaOpen=null; clearTimeout(UI.eq); UI.eq=setTimeout(()=>{ const l=$('#exaList'); if(l) l.innerHTML=exaList(); }, 150); break;
     case 'gs-q': GSR.q=el.value; clearTimeout(UI.gq); UI.gq=setTimeout(()=>{ const l=$('#gsRes'); if(l) l.innerHTML=gsResults(); }, 160); break;
     case 'syn-q': UI.syn.q=el.value; UI.synOpen=null; clearTimeout(UI.sq); UI.sq=setTimeout(()=>{ const l=$('#synList'); if(l) l.innerHTML=synList(); }, 150); break;
     case 'card-q': UI.rev.q=el.value; $('#cardResults').innerHTML=cardResults(); break;
@@ -4485,6 +4514,7 @@ document.addEventListener('change', async e=>{
   if(!k) return;
   switch(k){
     case 'tri-sys': UI.tri.sys=el.value; UI.triOpen=null; paintSheet(true); break;
+    case 'exa-sys': UI.exa.sys=el.value; UI.exaOpen=null; paintSheet(true); break;
     case 'syn-sys': UI.syn.sys=el.value; UI.synOpen=null; paintSheet(true); break;
     case 'aud-pause': AUD.pause=+el.value; paintSheet(true); break;
     case 'aud-rate': AUD.rate=+el.value; break;
@@ -4502,7 +4532,7 @@ document.addEventListener('change', async e=>{
     case 'home-toggle': { const row=S.prefs.home.find(r=>r[0]===d.k); if(row) row[1]=el.checked?1:0; savePrefs(); break; }
   }
 });
-document.addEventListener('toggle', e=>{ const el=e.target; if(el.matches && el.matches('details[data-tri]')){ if(el.open) UI.triOpen=el.dataset.tri; else if(UI.triOpen===el.dataset.tri) UI.triOpen=null; return; } if(el.matches && el.matches('details.syn')){ if(el.open) UI.synOpen=el.dataset.syn; else if(UI.synOpen===el.dataset.syn) UI.synOpen=null; } if(el.matches && el.matches('details.mod')){ if(el.open) UI.open.add(el.dataset.mod); else UI.open.delete(el.dataset.mod); } }, true);
+document.addEventListener('toggle', e=>{ const el=e.target; if(el.matches && el.matches('details[data-exa]')){ if(el.open){ UI.exaOpen=el.dataset.exa; exaFill(el); } else { if(UI.exaOpen===el.dataset.exa) UI.exaOpen=null; el.querySelectorAll('video').forEach(v=>v.pause()); } return; } if(el.matches && el.matches('details[data-tri]')){ if(el.open) UI.triOpen=el.dataset.tri; else if(UI.triOpen===el.dataset.tri) UI.triOpen=null; return; } if(el.matches && el.matches('details.syn')){ if(el.open) UI.synOpen=el.dataset.syn; else if(UI.synOpen===el.dataset.syn) UI.synOpen=null; } if(el.matches && el.matches('details.mod')){ if(el.open) UI.open.add(el.dataset.mod); else UI.open.delete(el.dataset.mod); } }, true);
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape' && !e.target.closest('input,textarea,select')){ if(UI.sheetStack.length){ closeSheet(); return; } if(!$('#session').hidden){ closeSession(); return; } }
   if(!SESS||!SESS.cur||$('#session').hidden||!$('#sheet').hidden) return;
@@ -5569,6 +5599,416 @@ function triSheet(){
    </div>
    <div id="triList" class="stack">${triList()}</div>`;
 }
+
+// ---------- Examen clinique : signes et manœuvres ----------
+const EXA_SYS = {gen:'Examen général et peau', cardio:'Cœur et vaisseaux', pneumo:'Poumons et plèvre', dig:'Abdomen et foie', hemato:'Ganglions et rate', neuro:'Neurologie', endoc:'Endocrinologie', nephro:'Reins et voies urinaires', rhumato:'Appareil locomoteur'};
+// k : 'm' = manœuvre (comment faire), 's' = signe (ce qu'on voit). t : étapes. nl : résultat normal. r : résultat anormal. v : ce que ça évoque. p : à retenir. ch : leçons liées. m : photos et vidéos.
+const EXAMENS = [
+// ----- Examen général et peau -----
+{id:"pli", sys:"gen", k:"m", n:"Pli cutané", ch:["gen-3","endoc-6","endoc-4"],
+ t:["Pincer la peau entre le pouce et l'index, la soulever puis la relâcher.","Siège : abdomen, face antérieure de l'avant-bras ou des cuisses ; chez le sujet âgé, front ou face antérieure du sternum."],
+ nl:"Le pli s'efface aussitôt.",
+ r:"Le pli reste marqué : il s'efface en 3 à 5 secondes dans une déshydratation modérée, il persiste 5 secondes ou plus dans une déshydratation sévère.",
+ v:"Déshydratation extracellulaire (perte d'eau et de sel) : diarrhées, vomissements, diabète décompensé, insuffisance surrénale aiguë.",
+ p:"Difficile à interpréter : faussement négatif chez l'enfant, faussement positif chez le sujet âgé et le dénutri (peau moins élastique)."},
+{id:"paleur", sys:"gen", k:"s", n:"Pâleur cutanéo-muqueuse", ch:["hemsemio-2"],
+ t:["Examiner à la lumière du jour.","Regarder les conjonctives (abaisser la paupière inférieure), la muqueuse de la bouche, la pulpe des doigts, le lit des ongles et les paumes."],
+ r:"Muqueuses et paumes décolorées, blanchâtres.",
+ v:"Anémie. Pâleur isolée des muqueuses : anémie clinique. Pâleur avec signes neurosensoriels (vertiges, céphalées, bourdonnements d'oreilles) ou physiques (tachycardie, souffle) : syndrome anémique.",
+ p:"Sur peau noire, la pâleur se juge surtout aux conjonctives, aux lèvres, aux paumes et aux ongles."},
+{id:"ictere", sys:"gen", k:"s", n:"Ictère", ch:["dig-7"],
+ t:["Examiner à la lumière du jour : la lumière artificielle masque le jaune.","Regarder les conjonctives, le dessous de la langue et le palais, puis la peau.","Demander la couleur des urines et des selles, et s'il y a un prurit."],
+ r:"Coloration jaune des conjonctives (subictère quand seules les conjonctives sont jaunes), puis de la peau.",
+ v:"Excès de bilirubine. Urines foncées, selles décolorées et prurit : cholestase (obstacle biliaire, hépatite). Urines claires et selles normales : ictère à bilirubine libre (hémolyse).",
+ p:"Seuils de ton cours : subictère de 30 à 50 µmol/L, ictère franc au-delà de 50 µmol/L. Une peau jaune avec des conjonctives blanches n'est pas un ictère (excès de carotène)."},
+{id:"cyanose", sys:"gen", k:"s", n:"Cyanose", ch:["cardio-12","cardio-1"],
+ t:["Examiner à la lumière du jour les lèvres, la langue, les ongles et les extrémités (doigts, nez, oreilles)."],
+ r:"Coloration bleutée de la peau et des muqueuses.",
+ v:"Trop d'hémoglobine réduite dans les capillaires (plus de 5 g/dL). Cyanose centrale (lèvres et langue bleues, extrémités chaudes) : manque d'oxygène d'origine respiratoire ou cardiaque. Cyanose périphérique (extrémités froides, langue rose) : bas débit, froid, obstruction d'une artère.",
+ p:"Elle peut manquer chez l'anémique sévère : il n'y a pas assez d'hémoglobine pour la produire."},
+{id:"godet", sys:"gen", k:"m", n:"Œdème prenant le godet", ch:["cardio-1","cardio-9","nephro-4"],
+ t:["Appuyer fermement avec le pouce pendant quelques secondes sur un plan osseux : face antérieure du tibia, cheville, dos du pied ; région lombaire et sacrum chez le malade alité.","Relâcher, regarder, puis passer le doigt sur la zone."],
+ r:"Une dépression, le godet, persiste après le retrait du doigt.",
+ v:"Œdèmes blancs, mous, indolores, bilatéraux et symétriques = rétention d'eau et de sel : insuffisance cardiaque (prédominent le soir, aux parties déclives), néphropathies glomérulaires (visage et paupières le matin), cirrhose, dénutrition. Œdème d'un seul membre, douloureux, chaud : penser à une phlébite.",
+ p:"Chez le malade couché, l'œdème descend vers les lombes et le sacrum : y appuyer aussi. Mesurer les mollets et les chevilles pour le suivi (différence significative au-delà de 2 cm)."},
+{id:"hippocratisme", sys:"gen", k:"s", n:"Hippocratisme digital", ch:["dig-6"],
+ t:["Regarder les doigts de profil : angle entre l'ongle et la peau à sa base.","Signe de Schamroth : accoler les faces dorsales des dernières phalanges des deux index ; normalement, une petite fenêtre en losange apparaît entre les ongles."],
+ r:"Ongles bombés « en verre de montre », bout des doigts élargi « en baguette de tambour », angle de l'ongle effacé, fenêtre de Schamroth disparue.",
+ v:"Surtout pulmonaire : cancer bronchique, suppurations (dilatation des bronches, abcès), fibrose. Aussi cardiopathies cyanogènes, endocardite, cirrhose, maladies inflammatoires de l'intestin. Parfois familial, sans maladie."},
+{id:"purpura", sys:"gen", k:"m", n:"Purpura et vitropression", ch:["gen-1","nephro-7"],
+ t:["Appuyer sur la tache rouge avec une lame de verre transparente (ou un verre) : c'est la vitropression.","Chercher aussi des bulles de sang dans la bouche et un saignement des gencives ou du nez ; prendre la température."],
+ r:"La tache ne s'efface pas sous le verre : c'est un purpura (du sang sorti des vaisseaux). Un érythème, lui, s'efface.",
+ v:"Purpura plat en points (pétéchies) et en ecchymoses : thrombopénie. Purpura en relief, palpable : vascularite. Purpura avec fièvre : purpura fulminans possible (méningocoque), urgence absolue.",
+ p:"Des bulles de sang dans la bouche sont un signe de gravité : risque d'hémorragie grave."},
+{id:"angiome", sys:"gen", k:"s", n:"Angiomes stellaires", ch:["dig-5","dig-7"],
+ t:["Regarder le visage, le cou, le haut du thorax, les épaules et les bras.","Appuyer sur le point central avec une pointe mousse : l'angiome s'efface, puis se recolore du centre vers la périphérie quand on relâche."],
+ r:"Petit point rouge central (une artériole, parfois battante) d'où partent de fins vaisseaux en « pattes d'araignée ».",
+ v:"Insuffisance hépatocellulaire (cirrhose surtout), avec l'érythrose palmaire et les ongles blancs. Quelques angiomes isolés sont possibles pendant la grossesse."},
+{id:"erythrose", sys:"gen", k:"s", n:"Érythrose palmaire", ch:["dig-5","dig-7"],
+ t:["Regarder la paume des deux mains, à la lumière du jour."],
+ r:"Rougeur des éminences thénar et hypothénar (les bords de la paume), le centre restant plus clair.",
+ v:"Insuffisance hépatocellulaire (cirrhose). Aussi grossesse, hyperthyroïdie."},
+{id:"cvc", sys:"gen", k:"m", n:"Circulation veineuse collatérale", ch:["dig-4","cardio-1"],
+ t:["Regarder l'abdomen et le thorax en position demi-assise, puis après un effort de toux : les veines se voient mieux.","Sens du courant : vider un segment de veine entre deux index, lever un seul doigt et regarder de quel côté la veine se remplit."],
+ r:"Veines sous la peau anormalement visibles et dilatées.",
+ v:"Type porte : au-dessus et autour de l'ombilic, le sang va de l'ombilic vers le thorax : hypertension portale (cirrhose) ; « tête de méduse » autour de l'ombilic (syndrome de Cruveilhier-Baumgarten). Type cave inférieure : sur les flancs, le sang monte : obstruction de la veine cave inférieure. Type cave supérieure : sur le thorax, le sang descend : obstruction de la veine cave supérieure."},
+{id:"xanthelasma", sys:"gen", k:"s", n:"Xanthélasma", ch:[],
+ t:["Regarder l'angle interne des paupières."],
+ r:"Plaques jaunâtres, molles, planes ou un peu en relief, à l'angle interne des paupières.",
+ v:"Dépôts de cholestérol : rechercher une hypercholestérolémie, facteur de risque cardiovasculaire. Il existe aussi avec un bilan lipidique normal."},
+{id:"koilonychie", sys:"gen", k:"s", n:"Koïlonychie", ch:["hemsemio-2"],
+ t:["Regarder les ongles de profil ; on peut poser une goutte d'eau sur l'ongle."],
+ r:"Ongles minces, cassants, aplatis puis creusés « en cuillère » (la goutte d'eau reste dans le creux).",
+ v:"Carence en fer ancienne (anémie ferriprive)."},
+// ----- Cœur et vaisseaux -----
+{id:"pa", sys:"cardio", k:"m", n:"Mesure de la pression artérielle", ch:["cardio-7","cardio-1"],
+ t:["Endroit calme, malade couché ou assis, au repos depuis au moins 10 minutes, à distance d'un effort, d'un repas ou d'un excitant.","Bras nu, soutenu à hauteur du cœur ; brassard adapté, couvrant les 2/3 de la longueur du bras.","Gonfler au-delà de la disparition du pouls, poser le stéthoscope sur l'artère humérale au pli du coude, puis dégonfler lentement.","Première fois : aux deux bras, couché puis assis puis debout ; au moins 2 mesures à 1 ou 2 minutes d'intervalle."],
+ nl:"Moins de 140/90 mmHg (optimale : moins de 120/80).",
+ r:"Pression systolique de 140 mmHg ou plus et/ou diastolique de 90 mmHg ou plus, confirmée à plusieurs reprises.",
+ v:"Hypertension artérielle : grade 1 de 140-159/90-99, grade 2 de 160-179/100-109, grade 3 à partir de 180/110. Éliminer un effet « blouse blanche » par l'automesure ou la MAPA.",
+ p:"Systolique : apparition des bruits au dégonflage. Diastolique : disparition des bruits. La méthode palpatoire ne donne qu'une valeur approximative de la systolique."},
+{id:"orthostatique", sys:"cardio", k:"m", n:"Recherche d'une hypotension orthostatique", ch:["cardio-7"],
+ t:["Mesurer la pression artérielle et le pouls après le repos en position couchée.","Faire lever le malade, puis mesurer à nouveau debout, à 1 minute et à 3 minutes."],
+ r:"Baisse de la pression systolique d'au moins 20 mmHg et/ou de la diastolique d'au moins 10 mmHg en position debout.",
+ v:"Hypotension orthostatique : médicaments (antihypertenseurs, diurétiques), déshydratation, atteinte nerveuse (diabète), sujet âgé. Cause de malaises et de chutes."},
+{id:"pouls", sys:"cardio", k:"m", n:"Palpation des pouls", ch:["cardio-1"],
+ t:["Palper avec la pulpe des 2e, 3e et 4e doigts, jamais avec le pouce, en appuyant juste assez pour ne pas sentir son propre pouls ni écraser l'artère.","Toujours comparer les deux côtés : carotidien (un côté à la fois), huméral, radial, fémoral, poplité, tibial postérieur (derrière la malléole interne), pédieux (dos du pied).","Noter la fréquence, la régularité et l'amplitude ; ausculter le trajet des artères."],
+ r:"Pouls diminué ou aboli d'un côté ; souffle ou frémissement (thrill) sur le trajet.",
+ v:"Pouls aboli : obstruction artérielle en amont (artériopathie des membres inférieurs, embolie). Pouls paradoxal de Kussmaul (diminue ou disparaît à l'inspiration) : tamponnade. Souffle avec thrill : rétrécissement de l'artère ou fistule."},
+{id:"ips", sys:"cardio", k:"m", n:"Index de pression systolique (IPS)", ch:["cardio-1"],
+ t:["Mesurer la pression systolique au bras (humérale) de façon classique.","Placer un brassard au-dessus de la malléole et une sonde Doppler sur l'artère pédieuse ou tibiale postérieure ; gonfler jusqu'à la disparition du flux, puis dégonfler : la réapparition du flux donne la pression systolique de cheville.","IPS = pression systolique de cheville ÷ pression systolique humérale du même côté."],
+ nl:"IPS entre 0,9 et 1,3.",
+ r:"IPS inférieur à 0,9, ou supérieur à 1,3.",
+ v:"Moins de 0,9 : artériopathie oblitérante des membres inférieurs. Moins de 0,5 : ischémie sévère (critique). Plus de 1,3 : artères incompressibles, calcifiées (médiacalcose : diabète, insuffisance rénale)."},
+{id:"turgescence", sys:"cardio", k:"s", n:"Turgescence jugulaire", ch:["cardio-9","cardio-5","cardio-1"],
+ t:["Malade en position demi-assise (30 à 45°), tête un peu tournée vers la gauche, cou détendu.","Regarder la veine jugulaire externe droite au-dessus de la clavicule, de préférence en lumière rasante."],
+ r:"Veine jugulaire gonflée en permanence, visible au-dessus de la clavicule en position demi-assise.",
+ v:"Pression veineuse élevée : insuffisance cardiaque droite, tamponnade, péricardite constrictive, compression de la veine cave supérieure."},
+{id:"rhj", sys:"cardio", k:"m", n:"Reflux hépato-jugulaire", ch:["cardio-9","dig-5","dig-7"],
+ t:["Malade en position demi-assise à 30-45°, respirant calmement, sans bloquer sa respiration.","Comprimer fermement l'hypochondre droit (ou la région péri-ombilicale droite) avec la paume de la main, pendant une dizaine de secondes.","Regarder la veine jugulaire pendant la compression."],
+ r:"La compression fait apparaître ou augmente la turgescence jugulaire ; elle persiste pendant la compression et disparaît quand on relâche.",
+ v:"Insuffisance ventriculaire droite (foie cardiaque, foie de stase).",
+ p:"Si le malade pousse ou bloque sa respiration, le résultat est faussement positif."},
+{id:"harzer", sys:"cardio", k:"m", n:"Signe de Harzer", ch:["cardio-9"],
+ t:["Malade couché sur le dos.","Glisser le pouce sous l'appendice xiphoïde, dirigé vers le haut, et faire inspirer profondément."],
+ r:"Le pouce sent une impulsion systolique : les battements du ventricule droit.",
+ v:"Ventricule droit dilaté : insuffisance ventriculaire droite, hypertension pulmonaire."},
+{id:"chocpointe", sys:"cardio", k:"m", n:"Choc de pointe", ch:["cardio-11","cardio-5"],
+ t:["Inspection à jour frisant (lumière rasante) : on cherche un soulèvement intermittent et localisé.","Palpation : main droite à plat sur le thorax, puis la pulpe des doigts à l'endroit du choc ; en décubitus latéral gauche si on le sent mal."],
+ nl:"Petit choc bref « en chiquenaude », au 4e ou 5e espace intercostal gauche, en dedans de la ligne médio-claviculaire.",
+ r:"Choc dévié en bas et en dehors, étalé ; ou choc mal perçu, absent.",
+ v:"Dévié en bas et en dehors : gros ventricule gauche (dilatation, hypertrophie). Mal perçu : épanchement péricardique, obésité, emphysème."},
+{id:"auscultcoeur", sys:"cardio", k:"m", n:"Auscultation cardiaque : les 4 foyers", ch:["cardio-11","cardio-4"],
+ t:["Salle calme, stéthoscope adapté, malade torse nu ; prendre le pouls en même temps pour situer les bruits dans le cycle.","Foyer mitral : à la pointe (choc de pointe). Foyer aortique : 2e espace intercostal droit, au bord du sternum. Foyer pulmonaire : 2e espace intercostal gauche, au bord du sternum. Foyer tricuspide : à la base de l'appendice xiphoïde.","Ausculter dans plusieurs positions : couché sur le dos, en décubitus latéral gauche (foyer mitral), assis penché en avant (foyer aortique)."],
+ nl:"Deux bruits, B1 (début de la systole) puis B2 (fin de la systole), sans souffle.",
+ r:"Souffle, roulement, bruit surajouté (galop, claquement), bruits assourdis ou éclatants.",
+ v:"Souffle systolique au foyer aortique, irradiant vers le cou : rétrécissement aortique. Souffle systolique à la pointe, irradiant vers l'aisselle : insuffisance mitrale. Roulement diastolique à la pointe : rétrécissement mitral. Souffle diastolique le long du bord gauche du sternum : insuffisance aortique."},
+{id:"homans", sys:"cardio", k:"m", n:"Signe de Homans", ch:["cardio-1"],
+ t:["Malade couché, jambe tendue : faire une flexion dorsale passive du pied (relever la pointe du pied vers la jambe).","Palper aussi les mollets et chercher une diminution du ballottement du mollet par rapport à l'autre côté."],
+ r:"Douleur du mollet lors de la flexion dorsale du pied.",
+ v:"Thrombose veineuse profonde du membre inférieur (phlébite), surtout avec fièvre modérée, pouls accéléré (pouls grimpant de Mahler) et chaleur locale.",
+ p:"Signe peu fiable : son absence n'élimine pas une phlébite. C'est l'échodoppler veineux qui confirme."},
+// ----- Poumons et plèvre -----
+{id:"vv", sys:"pneumo", k:"m", n:"Vibrations vocales", ch:[],
+ t:["Poser la paume de la main à plat sur le thorax.","Faire dire « trente-trois » au malade, d'une voix forte et régulière.","Comparer les deux côtés, de haut en bas, en arrière, sur les côtés et en avant."],
+ nl:"Vibration perçue de la même façon des deux côtés.",
+ r:"Vibrations augmentées, ou diminuées voire abolies d'un côté.",
+ v:"Augmentées : condensation pulmonaire (pneumonie). Diminuées ou abolies : épanchement pleural liquidien (pleurésie) ou gazeux (pneumothorax), atélectasie."},
+{id:"percussion", sys:"pneumo", k:"m", n:"Percussion du thorax", ch:[],
+ t:["Poser le majeur de la main gauche bien à plat dans un espace intercostal, les autres doigts soulevés.","Frapper sa 2e phalange avec le bout du majeur droit replié, par un mouvement souple du poignet : deux coups secs.","Comparer les deux côtés, de haut en bas."],
+ nl:"Sonorité.",
+ r:"Matité (son mat, comme sur la cuisse) ou tympanisme (son creux, plus sonore que la normale).",
+ v:"Matité franche et déclive : épanchement pleural liquidien. Matité localisée : condensation pulmonaire. Tympanisme : pneumothorax, emphysème."},
+{id:"auscultpoumon", sys:"pneumo", k:"m", n:"Auscultation pulmonaire", ch:[],
+ t:["Malade assis, torse nu, respirant bouche ouverte, un peu plus profondément que d'habitude.","Ausculter avec la membrane du stéthoscope, de haut en bas, en comparant à chaque niveau la droite et la gauche, en arrière, sur les côtés et en avant.","Faire tousser pour voir si un bruit anormal change."],
+ nl:"Murmure vésiculaire doux, surtout inspiratoire, identique des deux côtés.",
+ r:"Murmure diminué ou aboli, souffle, râles (crépitants, ronchi, sibilants), frottement pleural.",
+ v:"Crépitants (fins, en fin d'inspiration, comme des cheveux froissés près de l'oreille) : atteinte alvéolaire, pneumonie, œdème pulmonaire. Ronchi (graves, modifiés par la toux) : encombrement des bronches. Sibilants (aigus, sifflants, à l'expiration) : bronches rétrécies, asthme. Frottement (aux deux temps, non modifié par la toux) : atteinte de la plèvre. Murmure aboli : épanchement pleural, pneumothorax."},
+// ----- Abdomen et foie -----
+{id:"palpabdo", sys:"dig", k:"m", n:"Palpation de l'abdomen", ch:["dig-3","dig-5"],
+ t:["Malade couché sur le dos, à plat, bras le long du corps, jambes un peu fléchies pour relâcher la paroi.","Mains réchauffées, posées bien à plat : palper doucement d'abord, puis plus profondément.","Commencer loin de la zone douloureuse et finir par elle, en regardant le visage du malade.","Explorer les 9 régions : hypochondres, flancs, fosses iliaques, épigastre, région ombilicale, hypogastre."],
+ nl:"Abdomen souple, indolore, sans masse.",
+ r:"Douleur provoquée, défense, contracture, masse, gros foie, grosse rate.",
+ v:"Défense : contraction localisée que l'on peut vaincre doucement (irritation péritonéale localisée, par exemple une appendicite). Contracture : ventre dur « de bois », permanent, douloureux, impossible à vaincre : péritonite."},
+{id:"murphy", sys:"dig", k:"m", n:"Signe de Murphy", ch:[],
+ t:["Malade couché sur le dos. Placer les doigts sous le rebord costal droit, au point vésiculaire (croisement du rebord costal et du bord externe du muscle grand droit).","Appuyer doucement puis demander une inspiration profonde."],
+ r:"La douleur bloque brutalement l'inspiration : le malade s'arrête net de respirer.",
+ v:"Cholécystite aiguë (inflammation de la vésicule biliaire)."},
+{id:"courvoisier", sys:"dig", k:"m", n:"Signe de Courvoisier-Terrier", ch:["dig-7"],
+ t:["Placer la main à plat sous le rebord costal droit, à son croisement avec le bord latéral du muscle grand droit.","Demander au malade de respirer profondément."],
+ r:"On perçoit une grosse vésicule : une saillie oblongue, mobile avec la respiration, habituellement indolore.",
+ v:"Obstacle sur la voie biliaire principale, en aval du canal cystique. Loi de Courvoisier-Terrier : ictère cholestatique + grosse vésicule = cancer de la tête du pancréas, du bas cholédoque ou de l'ampoule de Vater, plutôt qu'un calcul.",
+ p:"Signe rare (environ 5 % des cas) mais très évocateur."},
+{id:"foie", sys:"dig", k:"m", n:"Palpation du foie et flèche hépatique", ch:["dig-5"],
+ t:["Méthode de Chauffard (une main) : examinateur à droite du malade, face à lui, main gauche sous la région lombaire droite, main droite à plat sur l'abdomen, doigts vers le haut. Le malade respire profondément : le bord inférieur du foie vient buter contre la pulpe des doigts.","Méthode de Mathieu (deux mains) : examinateur à la tête du malade, regardant vers ses pieds ; les doigts en crochet sous le rebord costal accrochent le bord inférieur du foie à l'inspiration.","Percussion de haut en bas, de la sonorité du poumon vers la matité du foie, doigts parallèles aux espaces intercostaux : elle situe le bord supérieur. Mesurer la flèche hépatique sur la ligne médio-claviculaire droite."],
+ r:"Hépatomégalie : flèche hépatique supérieure à 12 cm. Décrire la surface (régulière ou non), la consistance (molle, ferme, dure), le bord inférieur (mousse ou tranchant), la sensibilité, un reflux hépato-jugulaire, une expansion systolique.",
+ v:"Foie ferme à bord tranchant : cirrhose. Foie dur, irrégulier, nodulaire : cancer (primitif ou métastases). Foie ferme, lisse, à bord mousse, sensible, avec reflux hépato-jugulaire : foie cardiaque. Foie lisse et douloureux à la palpation et à l'ébranlement, avec fièvre : abcès (amibien ou à pyogène)."},
+{id:"flot", sys:"dig", k:"m", n:"Signe du flot", ch:["dig-3"],
+ t:["Malade couché sur le dos.","Un aide applique le bord cubital de sa main sur la ligne médiane de l'abdomen : il bloque la vibration transmise par la paroi.","Donner une chiquenaude sur un flanc, l'autre main posée bien à plat sur le flanc opposé."],
+ r:"La main posée sur le flanc opposé perçoit l'onde transmise par le liquide.",
+ v:"Ascite libre de moyenne abondance.",
+ p:"Il ne peut pas être perçu dans l'ascite de grande abondance : l'abdomen est trop tendu."},
+{id:"glacon", sys:"dig", k:"m", n:"Signe du glaçon", ch:["dig-3","dig-5"],
+ t:["En cas d'ascite, déprimer brusquement la paroi avec les doigts en regard du foie, de la rate ou d'une masse."],
+ r:"L'organe refoulé revient buter contre les doigts, comme un glaçon que l'on enfonce dans l'eau et qui remonte.",
+ v:"Ascite avec gros foie, grosse rate ou tumeur mobile. Absent dans l'ascite de grande abondance."},
+{id:"matite", sys:"dig", k:"m", n:"Matité déclive et mobile des flancs", ch:["dig-3"],
+ t:["Malade couché sur le dos : percuter de l'ombilic vers les flancs.","Puis le tourner sur le côté (décubitus latéral), attendre un peu que le liquide se déplace, et percuter de nouveau."],
+ r:"Matité des flancs et de l'hypogastre, à limite supérieure concave vers le haut, encadrant une sonorité autour de l'ombilic. En décubitus latéral, la matité augmente dans le flanc du dessous et le flanc du dessus devient sonore.",
+ v:"Ascite libre (matité déclive et mobile). Petite ascite : seule une percussion patiente en décubitus latéral la montre. Grande ascite : matité de tout l'abdomen, ni déclive ni mobile."},
+{id:"tr", sys:"dig", k:"m", n:"Toucher rectal", ch:["dig-2","dig-3","gen-6"],
+ t:["Expliquer le geste et obtenir l'accord du malade.","Position : couché sur le dos, cuisses fléchies et écartées (ou couché sur le côté, ou à genoux penché en avant).","Inspecter la marge anale, puis introduire doucement l'index ganté et lubrifié ; explorer le canal anal, l'ampoule rectale, la prostate chez l'homme, et le cul-de-sac de Douglas.","Au retrait, regarder le doigtier : sang, glaires, selles noires (méléna)."],
+ r:"Masse, induration, douleur ou bombement du cul-de-sac de Douglas, sang ou méléna sur le doigtier.",
+ v:"Cancer du rectum, hémorragie digestive (méléna), irritation péritonéale (péritonite, appendicite), ascite (Douglas bombé), anomalie de la prostate.",
+ p:"Les touchers pelviens sont systématiques devant un amaigrissement, une hémorragie digestive, une diarrhée ou une ascite : « leur omission est un crime commis contre le malade »."},
+// ----- Ganglions et rate -----
+{id:"ganglions", sys:"hemato", k:"m", n:"Palpation des aires ganglionnaires", ch:["hemsemio-1","dig-1"],
+ t:["Examiner toutes les aires, des deux côtés, en comparant : cervicales (sous-mentale, sous-mandibulaires, jugulo-carotidiennes, spinales), sus-claviculaires, axillaires, épitrochléennes, inguinales, poplitées.","Palper avec la pulpe des doigts, par petits mouvements circulaires ; pour le cou et les creux sus-claviculaires, se placer derrière le malade assis, tête légèrement fléchie."],
+ r:"Adénopathie : ganglion augmenté de volume (plus de 1 cm en général). Préciser le siège, la taille, la consistance (molle, ferme, dure), la sensibilité, la mobilité, la répartition, la tendance à la fistulisation.",
+ v:"Ganglion douloureux, inflammatoire : infection. Ganglion dur, indolore, fixé : métastase d'un cancer. Plusieurs aires touchées : lymphome, leucémie, VIH, tuberculose (ganglions qui peuvent se fistuliser).",
+ p:"Ganglion de Troisier (creux sus-claviculaire gauche) : penser à un cancer abdominal, de l'estomac surtout."},
+{id:"troisier", sys:"hemato", k:"s", n:"Ganglion de Troisier", ch:["dig-1","dig-5","hemsemio-1"],
+ t:["Malade assis, examinateur derrière lui : palper le creux sus-claviculaire gauche, derrière la clavicule."],
+ r:"Ganglion dur, indolore, parfois fixé, dans le creux sus-claviculaire gauche.",
+ v:"Métastase d'un cancer abdominal : estomac surtout, aussi pancréas, foie, côlon. Le canal thoracique se jette à gauche, à la base du cou."},
+{id:"rate", sys:"hemato", k:"m", n:"Palpation de la rate et classification de Hackett", ch:["hemsemio-3","dig-4"],
+ t:["Malade couché sur le dos, ou en décubitus latéral droit.","Main à plat, remonter de la fosse iliaque gauche vers le rebord costal gauche.","Faire inspirer profondément : en fin d'inspiration, le pôle inférieur de la rate vient au contact des doigts."],
+ nl:"La rate n'est pas palpable.",
+ r:"Splénomégalie : masse de l'hypochondre gauche, superficielle, mobile avec la respiration, à bord antéro-interne crénelé, dirigée en bas et en dedans, sans contact lombaire.",
+ v:"Hackett d'après ton cours : 1 sous le grill costal ; 2 n'atteint pas la ligne passant par l'ombilic ; 3 atteint l'ombilic ; 4 atteint la ligne passant par les épines iliaques ; 5 plonge dans la fosse iliaque. Causes : paludisme, hypertension portale, hémolyse, hémopathies, infections.",
+ p:"Un gros rein gauche donne le contact lombaire et le ballottement ; la rate, non."},
+// ----- Neurologie -----
+{id:"rot", sys:"neuro", k:"m", n:"Réflexes ostéo-tendineux", ch:["neuro-1","neuro-2","neuro-7"],
+ t:["Malade détendu, membre relâché ; percuter le tendon d'un coup bref de marteau, toujours des deux côtés pour comparer.","Bicipital (C5) au pli du coude ; stylo-radial (C6) à l'extrémité inférieure du radius ; tricipital (C7) au-dessus du coude ; ulnaire (C8) sur la styloïde ulnaire.","Rotulien (L4) : malade assis jambes pendantes, ou couché genou demi-fléchi soutenu sous le creux poplité ; percuter le tendon entre la rotule et la tubérosité tibiale.","Achilléen (S1) : malade à genoux sur une chaise, ou couché, cheville soutenue en demi-flexion ; percuter le tendon d'Achille."],
+ nl:"Une seule contraction, la même des deux côtés.",
+ r:"Réflexe aboli ou diminué ; ou exagéré : vif (par rapport à l'autre côté), polycinétique (plusieurs réponses), diffusé (contraction d'autres muscles), avec clonus.",
+ v:"Aboli ou diminué : lésion de l'arc réflexe (nerf, racine) = syndrome neurogène périphérique. Exagéré : lésion centrale = syndrome pyramidal.",
+ p:"À la phase flasque d'une lésion pyramidale brutale, les ROT peuvent être abolis."},
+{id:"babinski", sys:"neuro", k:"m", n:"Signe de Babinski", ch:["neuro-1","neuro-2","neuro-7"],
+ t:["Malade couché, genoux et chevilles demi-fléchis.","Gratter avec une pointe mousse le bord externe de la plante du pied, d'arrière en avant, du talon vers la base du gros orteil."],
+ nl:"Flexion plantaire du gros orteil, avec ou sans flexion des autres orteils.",
+ r:"Extension lente et majestueuse du gros orteil, avec ou sans écartement des autres orteils (signe de l'éventail).",
+ v:"Lésion de la voie pyramidale en un point quelconque de son trajet : excellente valeur localisatrice.",
+ p:"Normal chez le nourrisson avant l'âge de la marche. Au membre supérieur, l'équivalent est le signe de Hoffmann : on relâche brusquement la dernière phalange du majeur fléchie de force, et les autres doigts se fléchissent."},
+{id:"clonus", sys:"neuro", k:"m", n:"Clonus et trépidation épileptoïde", ch:["neuro-1","neuro-2","neuro-7"],
+ t:["Trépidation épileptoïde du pied : genou un peu fléchi, relever brusquement la pointe du pied (flexion dorsale) et la maintenir.","Clonus de la rotule : jambe tendue et relâchée, saisir la rotule et la basculer brusquement vers le bas."],
+ r:"Série de contractions rythmiques qui se répètent tant qu'on maintient l'étirement.",
+ v:"Réflexes exagérés : syndrome pyramidal.",
+ p:"Quelques secousses qui s'épuisent vite peuvent se voir chez un sujet anxieux ; c'est le clonus inépuisable qui est pathologique."},
+{id:"barre", sys:"neuro", k:"m", n:"Manœuvres de Barré et de Mingazzini", ch:["neuro-2"],
+ t:["Barré aux membres supérieurs : malade couché sur le dos, bras et avant-bras maintenus au-dessus du plan du lit, doigts écartés, pendant au moins 10 secondes.","Mingazzini aux membres inférieurs : malade couché sur le dos, genoux fléchis maintenus au-dessus du plan du lit pendant au moins 5 secondes.","Toujours comparer les deux côtés."],
+ r:"Manœuvre impossible, ou chute brutale ou progressive d'un membre par rapport à l'autre.",
+ v:"Déficit moteur du membre qui chute. Préciser la topographie : un membre (monoplégie), les deux membres inférieurs (paraplégie), un hémicorps (hémiplégie), les quatre membres (tétraplégie)."},
+{id:"romberg", sys:"neuro", k:"m", n:"Signe de Romberg", ch:["neuro-3","neuro-7"],
+ t:["Malade debout, pieds joints, bras le long du corps, regard droit devant.","Observer, puis lui demander de fermer les yeux ; rester prêt à le retenir."],
+ r:"Le malade oscille et tombe, ou doit écarter les pieds, quand il ferme les yeux.",
+ v:"Romberg vestibulaire : déviation latéralisée du corps, aggravée par la fermeture des yeux, du côté de l'oreille atteinte (avec déviation lente et retardée des index). Romberg proprioceptif : chute dans tous les sens dès la fermeture des yeux, par atteinte de la sensibilité profonde (cordons postérieurs de la moelle, neuropathie).",
+ p:"Dans le syndrome cérébelleux, l'instabilité existe déjà les yeux ouverts et n'est pas aggravée par leur fermeture."},
+{id:"cervelet", sys:"neuro", k:"m", n:"Épreuves doigt-nez et talon-genou", ch:["neuro-9"],
+ t:["Doigt-nez : bras tendu sur le côté, le malade vient toucher le bout de son nez avec l'index, lentement puis vite.","Talon-genou : malade couché, il pose le talon sur le genou opposé puis le fait glisser le long du tibia.","Marionnettes : il fait tourner rapidement ses mains (pronation-supination)."],
+ r:"Le geste dépasse le but (dysmétrie), se décompose, tremble en approchant du but ; les marionnettes sont lentes et maladroites (adiadococinésie).",
+ v:"Syndrome cérébelleux, du même côté que la lésion du cervelet."},
+{id:"meninge", sys:"neuro", k:"m", n:"Raideur de nuque, signes de Kernig et de Brudzinski", ch:["neuro-5"],
+ t:["Raideur de nuque : malade couché sur le dos, essayer de fléchir doucement la tête vers le thorax.","Kernig : membres inférieurs tendus ; l'examinateur empaume les deux talons d'une main et s'oppose de l'autre à la flexion des genoux, en essayant de ramener les membres inférieurs à la verticale.","Brudzinski : faire une flexion forcée de la nuque en regardant les membres inférieurs."],
+ r:"Raideur : flexion de la nuque impossible, limitée par une contracture douloureuse invincible. Kernig : douleur lombaire vive et flexion des genoux. Brudzinski : la flexion de la nuque réveille la douleur et fait fléchir les jambes sur les cuisses.",
+ v:"Syndrome méningé : méningite, hémorragie méningée. Urgence : chercher une fièvre et un purpura ; la ponction lombaire confirme.",
+ p:"Autres signes : hyperesthésie cutanée, raie méningitique (une pointe mousse passée sur l'abdomen laisse une raie rouge longue à disparaître)."},
+{id:"tonus", sys:"neuro", k:"m", n:"Hypertonie pyramidale ou extrapyramidale", ch:["neuro-2","neuro-9"],
+ t:["Mobiliser passivement, lentement puis vite, le coude, le poignet et le genou du malade détendu, en comparant les deux côtés.","Manœuvre de Froment (pour une hypertonie discrète) : pendant qu'on mobilise le poignet du malade, il fait un geste volontaire avec l'autre main (saisir un objet, faire les marionnettes)."],
+ r:"Pyramidale (spastique) : résistance qui augmente avec la vitesse et l'amplitude, ne cède pas ; lâché, le membre revient à sa position de repos (élastique). Extrapyramidale (plastique) : résistance d'emblée maximale, qui cède par à-coups (roue dentée), « tuyau de plomb » ; le membre garde la position donnée. Avec la manœuvre de Froment, la rigidité augmente.",
+ v:"Spastique : syndrome pyramidal (prédomine sur les fléchisseurs aux membres supérieurs et les extenseurs aux membres inférieurs). Plastique : syndrome extrapyramidal (maladie de Parkinson)."},
+{id:"flapping", sys:"neuro", k:"m", n:"Flapping tremor (astérixis)", ch:["neuro-9"],
+ t:["Demander au malade de tendre les bras devant lui, poignets relevés (mains en extension), doigts écartés, et de garder la position."],
+ r:"Chute lente et brusque de la main, puis retour rapide vers le haut, de façon irrégulière : comme un battement d'ailes.",
+ v:"Encéphalopathie hépatique (insuffisance hépatique grave). Aussi insuffisance respiratoire avec hypercapnie, insuffisance rénale sévère."},
+{id:"bell", sys:"neuro", k:"s", n:"Signe de Charles Bell", ch:["neuro-3"],
+ t:["Demander au malade de fermer les yeux."],
+ r:"Du côté paralysé, les paupières ne se ferment pas et le globe oculaire part en haut et en dehors : on voit le blanc de l'œil. Forme discrète : signe des cils de Souques (yeux fermés très fort, les cils restent plus visibles du côté atteint).",
+ v:"Paralysie faciale périphérique (nerf facial, VII) : elle touche le haut et le bas du visage. La paralysie faciale centrale ne touche que le bas du visage."},
+// ----- Endocrinologie -----
+{id:"tabouret", sys:"endoc", k:"m", n:"Signe du tabouret", ch:["endoc-1","endoc-3"],
+ t:["Demander au malade, assis sur un tabouret bas (ou accroupi), de se relever sans s'aider de ses mains."],
+ r:"Il ne peut pas se relever sans prendre appui avec les mains.",
+ v:"Faiblesse des muscles de la racine des cuisses (amyotrophie proximale) : hyperthyroïdie, hypercorticisme (Cushing), hypokaliémie, myopathies."},
+{id:"serment", sys:"endoc", k:"m", n:"Épreuve du serment", ch:["endoc-1"],
+ t:["Le malade tend les bras en avant, doigts écartés ; on peut poser une feuille de papier sur le dos de ses mains pour mieux voir."],
+ r:"Tremblement fin, rapide et régulier des extrémités, exagéré par l'émotion.",
+ v:"Thyrotoxicose (hyperthyroïdie, maladie de Basedow)."},
+{id:"thyroide", sys:"endoc", k:"m", n:"Examen de la thyroïde", ch:["endoc-1","endoc-2"],
+ t:["Inspection de face et de profil ; faire avaler une gorgée d'eau : un goitre monte avec la déglutition.","Palpation : examinateur derrière le malade assis, cou en légère extension ; les doigts de part et d'autre de la trachée, sous le cartilage cricoïde ; refaire avaler.","En cas de goitre : ausculter avec la cloche du stéthoscope à la recherche d'un souffle."],
+ nl:"Thyroïde à peine visible, souple.",
+ r:"Goitre (augmentation diffuse) ou nodule (tuméfaction localisée). Préciser la taille, la consistance, la sensibilité, la mobilité, un souffle, des ganglions du cou.",
+ v:"Goitre diffus avec souffle et signes de thyrotoxicose : maladie de Basedow. Nodule dur, fixé, avec ganglions : craindre un cancer. Goitre douloureux et fièvre : thyroïdite."},
+{id:"exophtalmie", sys:"endoc", k:"s", n:"Exophtalmie", ch:["endoc-1"],
+ t:["Regarder le malade de face, de profil, et d'en haut (debout derrière lui, en regardant par-dessus son front)."],
+ r:"Œil qui fait saillie hors de l'orbite, souvent avec une rétraction de la paupière supérieure (blanc visible au-dessus de l'iris).",
+ v:"Bilatérale : orbitopathie de la maladie de Basedow. Unilatérale : penser aussi à une tumeur de l'orbite."},
+{id:"chvostek", sys:"endoc", k:"m", n:"Signe de Chvostek", ch:["endoc-3","gen-5"],
+ t:["Percuter avec le marteau à réflexes (ou le doigt) la joue, au milieu de la ligne qui va du lobe de l'oreille à la commissure des lèvres (trajet du nerf facial)."],
+ r:"Contraction brève de la lèvre supérieure, parfois de l'aile du nez et de la paupière, du même côté.",
+ v:"Hyperexcitabilité neuromusculaire (tétanie) : hypocalcémie, hypomagnésémie, alcalose.",
+ p:"Il existe chez une partie des sujets normaux : il a moins de valeur que le signe de Trousseau."},
+{id:"trousseau", sys:"endoc", k:"m", n:"Signe de Trousseau", ch:["endoc-3","gen-5"],
+ t:["Gonfler le brassard du tensiomètre au bras au-dessus de la pression systolique et le laisser 2 à 3 minutes."],
+ r:"Contracture de la main « en main d'accoucheur » : doigts tendus et serrés, pouce collé, poignet fléchi.",
+ v:"Tétanie : hypocalcémie surtout, hypomagnésémie, alcalose."},
+{id:"vergetures", sys:"endoc", k:"s", n:"Vergetures pourpres", ch:["endoc-3"],
+ t:["Regarder l'abdomen, les flancs, la racine des cuisses, les seins, les aisselles."],
+ r:"Vergetures larges (plus de 5 mm), de couleur pourpre.",
+ v:"Hypercorticisme (syndrome de Cushing), avec obésité du visage et du tronc, peau fine, ecchymoses, amyotrophie."},
+{id:"melanodermie", sys:"endoc", k:"s", n:"Mélanodermie", ch:["endoc-4"],
+ t:["Regarder les zones découvertes et de frottement (visage, mains, coudes, genoux, cicatrices), les plis de la paume, et l'intérieur de la bouche (gencives, face interne des joues)."],
+ r:"Peau anormalement foncée, surtout aux plis et aux zones de frottement, avec des taches ardoisées sur la muqueuse de la bouche.",
+ v:"Insuffisance surrénale primitive (maladie d'Addison) : l'excès d'ACTH et de MSH fonce la peau.",
+ p:"Sur peau noire, comparer avec la couleur habituelle (demander au malade et à sa famille) et chercher surtout les taches de la bouche."},
+{id:"monofilament", sys:"endoc", k:"m", n:"Test au monofilament", ch:[],
+ t:["Malade couché, yeux fermés ; montrer d'abord le test sur sa main.","Appuyer le monofilament de 10 g perpendiculairement à la peau jusqu'à ce qu'il se courbe, 1 à 2 secondes, sur 3 points de chaque pied : pulpe du gros orteil, têtes du 1er et du 5e métatarsien (pas sur une callosité).","Demander à chaque fois : « Sentez-vous ? »."],
+ r:"Le malade ne sent pas le monofilament sur un ou plusieurs points.",
+ v:"Neuropathie diabétique avec perte de la sensibilité de protection : pied à risque d'ulcère (mal perforant plantaire). Examiner les pieds et les chaussures à chaque consultation."},
+// ----- Reins et voies urinaires -----
+{id:"contactlombaire", sys:"nephro", k:"m", n:"Contact lombaire et ballottement rénal", ch:["nephro-4","hemsemio-3"],
+ t:["Malade couché sur le dos, jambes un peu fléchies. Une main à plat sous la fosse lombaire, l'autre à plat sur l'abdomen, sous le rebord costal.","Contact lombaire : la main de devant déprime la paroi ; la main de derrière sent la masse venir au contact de la région lombaire.","Ballottement : la main de derrière donne de petites impulsions brèves vers l'avant ; la main de devant sent la masse venir la frapper puis repartir."],
+ r:"Une masse donne le contact lombaire et le ballottement.",
+ v:"Gros rein : tumeur, polykystose, hydronéphrose. Distingue un gros rein gauche d'une grosse rate (la rate est superficielle, a un bord crénelé et ne donne pas de contact lombaire)."},
+{id:"globe", sys:"nephro", k:"s", n:"Globe vésical", ch:["nephro-2","nephro-4"],
+ t:["Regarder, palper et percuter l'hypogastre, au-dessus du pubis."],
+ r:"Masse médiane au-dessus du pubis, arrondie, convexe vers le haut, mate à la percussion, souvent douloureuse avec un besoin pressant d'uriner. Elle peut être indolore et énorme (2 à 3 litres) dans une rétention chronique.",
+ v:"Rétention d'urine : obstacle (adénome ou cancer de la prostate, rétrécissement de l'urètre) ou cause neurologique. En cas de doute (obésité) : échographie."},
+{id:"ebranlement", sys:"nephro", k:"m", n:"Douleur à l'ébranlement lombaire", ch:["nephro-4","nephro-6"],
+ t:["Malade assis ou couché sur le côté : poser une main à plat sur la fosse lombaire et frapper doucement dessus avec le bord du poing de l'autre main.","Comparer les deux côtés."],
+ r:"Douleur vive provoquée d'un côté.",
+ v:"Pyélonéphrite aiguë (avec fièvre et signes urinaires), colique néphrétique, abcès du rein."},
+// ----- Appareil locomoteur -----
+{id:"schober", sys:"rhumato", k:"m", n:"Indice de Schöber", ch:["rhumato-2"],
+ t:["Malade debout. Marquer un point A sur l'épineuse de L5 (ou L4), et un point B 10 cm au-dessus.","Lui demander de se pencher en avant au maximum, genoux tendus, puis mesurer la distance entre A et B."],
+ nl:"La distance dépasse 10 + 4 cm (plus de 14 cm).",
+ r:"Distance de 14 cm ou moins.",
+ v:"Raideur du rachis lombaire : spondyloarthrite (spondylarthrite ankylosante), lombalgie aiguë, syndrome rachidien.",
+ p:"À compléter par la distance doigts-sol (normale : moins de 20 cm) et, au thorax, l'ampliation thoracique au ruban sous les seins (normale : plus de 5 cm)."},
+{id:"lasegue", sys:"rhumato", k:"m", n:"Signe de Lasègue", ch:["rhumato-2"],
+ t:["Malade couché sur le dos, membres inférieurs tendus.","Soulever doucement le membre inférieur, jambe tendue, en fléchissant la hanche."],
+ r:"La douleur radiculaire du membre inférieur est reproduite. Mesurer l'angle entre le membre et le plan du lit au moment où elle apparaît.",
+ v:"Conflit disco-radiculaire : sciatique L5 ou S1 (hernie discale le plus souvent).",
+ p:"Une simple douleur lombaire ou une tension derrière la cuisse ne suffit pas : il faut reproduire la douleur radiculaire. Lasègue croisé (douleur du côté malade quand on lève la jambe saine) : très évocateur de hernie discale."},
+{id:"leri", sys:"rhumato", k:"m", n:"Signe de Léri", ch:["rhumato-2"],
+ t:["Malade couché sur le ventre, genou fléchi à 90°.","Soulever la cuisse (extension de la hanche)."],
+ r:"La douleur radiculaire est reproduite à la face antérieure de la cuisse.",
+ v:"Conflit disco-radiculaire L3 ou L4 : cruralgie."},
+{id:"sonnette", sys:"rhumato", k:"m", n:"Signe de la sonnette", ch:["rhumato-2"],
+ t:["Appuyer avec le pouce sur l'espace para-épineux (à côté des épineuses lombaires), du côté douloureux, étage par étage."],
+ r:"La pression déclenche la douleur radiculaire le long du membre inférieur.",
+ v:"Conflit disco-radiculaire (sciatique ou cruralgie), à l'étage où l'on appuie."},
+{id:"sacroiliaques", sys:"rhumato", k:"m", n:"Tests des sacro-iliaques", ch:["rhumato-2"],
+ t:["Écartement : malade couché sur le dos, appuyer sur les deux épines iliaques antéro-supérieures.","Rapprochement : malade couché sur le côté, appuyer sur l'aile iliaque.","Appui sur le sacrum : malade couché sur le ventre.","Test de Patrick : malade sur le dos, jambe fléchie, talon posé sur le genou opposé ; appuyer sur le genou fléchi en maintenant de l'autre main l'épine iliaque antéro-supérieure opposée."],
+ r:"Le test reproduit la douleur de la fesse (fessalgie).",
+ v:"Atteinte des articulations sacro-iliaques : spondyloarthrites, infection."},
+{id:"cle", sys:"rhumato", k:"m", n:"Signe de la clé (roulé de la hanche)", ch:["rhumato-2"],
+ t:["Malade couché sur le dos.","L'examinateur empaume le membre inférieur à deux mains et lui imprime des mouvements de rotation interne et externe, comme on tourne une clé."],
+ r:"La manœuvre reproduit la douleur habituelle du malade (souvent dans l'aine).",
+ v:"Atteinte articulaire de la hanche."},
+{id:"salutcoxal", sys:"rhumato", k:"m", n:"Manœuvre du salut coxal", ch:["rhumato-2"],
+ t:["Malade couché sur le dos : il lève la jambe tendue (flexion de la hanche à 30°).","L'examinateur s'oppose au mouvement en appuyant sur le membre vers le bas."],
+ r:"Apparition d'une douleur dans l'aine.",
+ v:"Atteinte articulaire de la hanche."},
+{id:"clinostatisme", sys:"rhumato", k:"s", n:"Clinostatisme", ch:["rhumato-2"],
+ t:["Malade couché sur le dos : lui demander de décoller le talon du lit, jambe tendue."],
+ r:"Il ne peut pas décoller le talon, sans aucun déficit neurologique.",
+ v:"Atteinte osseuse de la hanche : fracture du col du fémur, ostéolyse du fond du cotyle."},
+{id:"chocrotulien", sys:"rhumato", k:"m", n:"Choc rotulien", ch:["rhumato-2"],
+ t:["Malade couché sur le dos, genou tendu, quadriceps relâché.","Empaumer les culs-de-sac au-dessus et au-dessous de la rotule pour chasser le liquide sous la rotule.","Avec l'index, appuyer d'un coup sec sur la face antérieure de la rotule."],
+ r:"La rotule s'enfonce et vient heurter la trochlée : on sent un choc, puis elle remonte.",
+ v:"Épanchement dans le genou (hydarthrose, hémarthrose). La ponction précise la nature du liquide."},
+{id:"rabot", sys:"rhumato", k:"m", n:"Signe du rabot", ch:["rhumato-2"],
+ t:["Genou tendu, quadriceps relâché : faire glisser la rotule sur la trochlée, transversalement et de haut en bas, en appuyant un peu."],
+ r:"Crissement, souvent douloureux.",
+ v:"Atteinte fémoro-patellaire (chondropathie, arthrose fémoro-patellaire)."},
+{id:"boitier", sys:"rhumato", k:"m", n:"Technique du boîtier (IPP et IPD)", ch:["rhumato-2"],
+ t:["Avec le pouce et l'index d'une main, pincer latéralement l'articulation interphalangienne.","En même temps, le pouce de l'autre main palpe le dos de l'articulation."],
+ r:"Le pouce posé sur le dos de l'articulation perçoit un flot de liquide.",
+ v:"Épanchement, synovite des interphalangiennes (polyarthrite rhumatoïde notamment).",
+ p:"Des tuméfactions dures sont des nodosités d'arthrose : Bouchard aux IPP, Heberden aux IPD."},
+{id:"squeeze", sys:"rhumato", k:"m", n:"Squeeze test", ch:["rhumato-2","rhumato-3"],
+ t:["Presser transversalement l'avant-pied en appuyant de part et d'autre des métatarso-phalangiennes, du 1er au 5e orteil (ou des métacarpo-phalangiennes à la main)."],
+ r:"La pression provoque une douleur.",
+ v:"Souffrance des MTP ou des MCP : rhumatisme inflammatoire, surtout polyarthrite rhumatoïde."}
+];
+const EXA_BY = {}; EXAMENS.forEach(x=>{ EXA_BY[x.id]=x; });
+const EXA_BYCH = {}; EXAMENS.forEach(x=>(x.ch||[]).forEach(c=>{ (EXA_BYCH[c]=EXA_BYCH[c]||[]).push(x.id); }));
+const EXA_KIND = {m:'Manœuvre', s:'Signe'}, EXA_DIR = 'media/exam/';
+UI.exa={kind:'all', sys:'all', q:'', ch:''};
+function exaMedia(x){ return x.m||[]; }
+function exaMatch(x){ const u=UI.exa;
+  if(u.ch && !(x.ch||[]).includes(u.ch)) return false;
+  if(u.sys!=='all' && x.sys!==u.sys) return false;
+  if(u.kind==='media'){ if(!exaMedia(x).length) return false; } else if(u.kind!=='all' && x.k!==u.kind) return false;
+  const q=fold(u.q.trim()); if(!q) return true;
+  return fold([x.n, x.t.join(' '), x.nl||'', x.r, x.v, x.p||''].join(' ')).includes(q); }
+function exaHas(id){ return Object.values(S.cards).some(c=>c.exa===id); }
+// 2 cartes par fiche (comment faire ; ce qu'on trouve et ce que ça évoque), plus une carte image s'il y a une photo.
+function exaCardsOf(x){
+  const cards=[
+    {front:(x.k==='m'?'Comment fait-on : ':'Comment cherche-t-on : ')+'**'+x.n+'** ?', back:x.t.map(s=>'- '+s).join('\n')+(x.nl?'\n\n**Normal :** '+x.nl:'')},
+    {front:'**'+x.n+'**\n'+(x.k==='m'?'Que trouve-t-on quand c\'est anormal, et qu\'est-ce que ça évoque ?':'À quoi ressemble-t-il, et qu\'est-ce qu\'il évoque ?'), back:x.r+'\n\n**Évoque :** '+x.v, hint:x.p||''}
+  ];
+  const ph=exaMedia(x).find(m=>!m.vid);
+  if(ph) cards.push({front:x.k==='m'?'Quel geste ou quel résultat d\'examen montre cette image ?':'Quel signe montre cette image ?', back:'**'+x.n+'**\n\n'+(ph.cap?ph.cap+'\n\n':'')+'**Évoque :** '+x.v, img:EXA_DIR+ph.f, imgSide:'front'});
+  return cards;
+}
+function exaAdd(id){ const x=EXA_BY[id]; if(!x||exaHas(id)) return 0; const cs=exaCardsOf(x); cs.forEach(f=>saveCard(newCard({...f, type:'qa', exa:id}))); return cs.length; }
+function exaRemove(id){ let n=0; for(const c of Object.values(S.cards)){ if(c.exa===id){ deleteCard(c.id); n++; } } return n; }
+function exaSize(kb){ return kb>=1000?(kb/1000).toFixed(1).replace('.',',')+' Mo':kb+' Ko'; }
+function exaFig(m){
+  const credit=(m.vid?'Vidéo':'Image')+' : '+esc(m.by)+' · <a href="https://commons.wikimedia.org/wiki/'+encodeURI(m.src.replace(/ /g,'_'))+'" target="_blank" rel="noopener">'+esc(m.lic)+'</a>'+(m.mod?' · '+esc(m.mod):'');
+  const el=m.vid?`<video controls preload="none" playsinline${m.poster?` poster="${EXA_DIR+m.poster}"`:''} src="${EXA_DIR+m.f}"></video>`
+    :`<img src="${EXA_DIR+m.f}" alt="${esc(m.cap)}" loading="lazy" decoding="async"${m.w?` width="${m.w}" height="${m.h}"`:''}>`;
+  return `<figure class="exa-fig">${el}<figcaption>${esc(m.cap)}${m.vid?` <span class="muted">(vidéo de ${m.dur} s, ${exaSize(m.kb)}, il faut internet)</span>`:''}<span class="credit">${credit}</span></figcaption></figure>`;
+}
+function exaFiche(x){
+  const has=exaHas(x.id), md=exaMedia(x), n=exaCardsOf(x).length, chs=(x.ch||[]).filter(c=>CH[c]);
+  const tag=md.some(m=>m.vid)?'Vidéo':md.length?'Photo':'';
+  return `<details class="syn" data-exa="${x.id}" ${UI.exaOpen===x.id?'open':''}><summary><span>${esc(x.n)} <span class="badge exa-k">${EXA_KIND[x.k]}</span>${tag?` <span class="badge exa-k media">${tag}</span>`:''}</span>${I.chev}</summary><div class="syn-body">
+    ${UI.exaOpen===x.id?md.map(exaFig).join(''):md.length?'<div class="exa-media" data-exa-media="'+x.id+'"></div>':''}
+    <div><h4>${x.k==='m'?'Comment faire':'Comment le chercher'}</h4><ol class="exa-ol">${x.t.map(s=>'<li>'+esc(s)+'</li>').join('')}</ol></div>
+    ${x.nl?`<p><strong>Normal :</strong> ${esc(x.nl)}</p>`:''}
+    <p><strong>${x.k==='m'?'Anormal :':'Ce qu\'on voit :'}</strong> ${esc(x.r)}</p>
+    <p><strong>Évoque :</strong> ${esc(x.v)}</p>
+    ${x.p?`<p class="syn-key"><strong>À retenir.</strong> ${esc(x.p)}</p>`:''}
+    ${chs.length?`<p class="small">Dans tes cours : ${chs.map(c=>`<button class="exa-lnk" data-act="chap" data-id="${c}">${esc(CH[c].title)}</button>`).join(' · ')}</p>`:''}
+    ${has?`<div class="row"><span class="badge">Dans tes révisions</span><button class="btn btn-ghost" data-act="start" data-mode="cram" data-scope="exa" data-exa="${x.id}">Me tester sur cette fiche</button><button class="btn btn-ghost" data-act="exa-del" data-id="${x.id}">Retirer de mes révisions</button></div>`
+        :`<button class="btn btn-soft" data-act="exa-add" data-id="${x.id}">${I.plus} Ajouter à mes révisions (${n} cartes)</button>`}
+  </div></details>`;
+}
+// Les images et vidéos ne sont chargées qu'à l'ouverture de la fiche (économie de données).
+function exaFill(el){ const box=el.querySelector('[data-exa-media]'); const x=EXA_BY[el.dataset.exa]; if(box && x){ box.outerHTML=exaMedia(x).map(exaFig).join(''); } }
+function exaList(){
+  const ord=Object.keys(EXA_SYS); const list=EXAMENS.filter(exaMatch).sort((a,b)=>ord.indexOf(a.sys)-ord.indexOf(b.sys));
+  if(!list.length) return '<p class="muted">Aucune fiche ne correspond à cette recherche.</p>';
+  let html='', cur='';
+  for(const x of list){ if(x.sys!==cur){ cur=x.sys; const n=list.filter(y=>y.sys===cur).length; html+=`<h3 class="syn-sys">${esc(EXA_SYS[cur])} <span class="small muted">· ${n}</span></h3>`; } html+=exaFiche(x); }
+  return html;
+}
+function exaSheet(){
+  const u=UI.exa; const mine=new Set(Object.values(S.cards).filter(c=>c.exa).map(c=>c.exa)).size;
+  const nTest=liveCards('exa').length, nm=EXAMENS.filter(x=>x.k==='m').length, nMed=EXAMENS.filter(x=>exaMedia(x).length).length;
+  const todo=EXAMENS.filter(x=>exaMatch(x)&&!exaHas(x.id)), nCards=todo.reduce((a,x)=>a+exaCardsOf(x).length,0);
+  return sheetTop('Examen clinique')+`
+   <p>${EXAMENS.length} fiches : ${nm} manœuvres et ${EXAMENS.length-nm} signes, classés par appareil. Chaque fiche dit comment faire, ce qu'on trouve quand c'est anormal et ce que ça évoque${nMed?`. ${nMed} fiches ont une vraie photo ou une courte vidéo`:''}.</p>
+   <div class="syn-tools">
+    ${u.ch&&CH[u.ch]?`<div class="row"><span class="badge">Leçon : ${esc(CH[u.ch].title)}</span><button class="btn btn-ghost" data-act="exa-ch" data-id="">Voir toutes les fiches</button></div>`:''}
+    <div class="seg" role="group" aria-label="Lesquelles">${[['all','Toutes'],['m','Manœuvres'],['s','Signes']].concat(nMed?[['media','En images']]:[]).map(([k,l])=>`<button data-act="exa-kind" data-v="${k}" aria-pressed="${u.kind===k}">${l}</button>`).join('')}</div>
+    <label class="field">Appareil<select data-input="exa-sys"><option value="all" ${u.sys==='all'?'selected':''}>Tous les appareils</option>${Object.entries(EXA_SYS).map(([k,l])=>`<option value="${k}" ${u.sys===k?'selected':''}>${esc(l)} (${EXAMENS.filter(x=>x.sys===k).length})</option>`).join('')}</select></label>
+    <div class="search">${I.search}<input type="search" placeholder="Chercher : Lasègue, ascite…" value="${esc(u.q)}" data-input="exa-q" aria-label="Chercher un signe ou une manœuvre"></div>
+    <div class="stack">${nTest?`<button class="btn btn-primary" data-act="start" data-mode="cram" data-scope="exa">Me tester (${nTest} cartes)</button>`:''}
+      ${todo.length?`<button class="btn btn-soft" data-act="exa-add-all">Ajouter ${todo.length>1?'ces '+todo.length+' fiches':'cette fiche'} à mes révisions (${nCards} cartes)</button>`:''}
+      ${mine?`<button class="btn btn-ghost" data-act="exa-del-all">Retirer les fiches affichées de mes révisions</button>`:''}</div>
+    <p class="small muted">Rien n'entre dans tes révisions sans ton accord. ${mine} fiche${mine>1?'s':''} dans tes révisions.${nMed?' Les photos et vidéos viennent de Wikimedia Commons, sous licence libre : l\'auteur est cité sous chacune.':''} En cas de différence, c'est le cours de ton professeur qui fait foi.</p>
+   </div>
+   <div id="exaList" class="stack">${exaList()}</div>`;
+}
+function exaChapPanel(chap){ const ids=EXA_BYCH[chap]; if(!ids||!ids.length) return '';
+  return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Examen clinique</h3><span class="small muted">${plural(ids.length,'fiche')}</span></div>
+    <p class="small">${ids.map(i=>esc(EXA_BY[i].n)).join(' · ')}</p>
+    <button class="btn btn-soft" data-act="exa-open" data-ch="${chap}">Voir comment faire${ids.some(i=>exaMedia(EXA_BY[i]).length)?', avec photos et vidéos':''}</button></section>`; }
 
 // ---------- Démarrage ----------
 loadLocal(); exrLoad(); buildIndex(); itrLoad(); applyTheme(); updateDueDot(); render();
