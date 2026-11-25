@@ -540,6 +540,31 @@ details.syn[open]>summary .chev{transform:rotate(90deg)}
 .eng-res.ok{background:var(--good);color:var(--bg)}
 .eng-res.mid{background:var(--hl);color:var(--hl-ink)}
 .eng-res.ko{background:var(--surface2)}
+.cas-steps{list-style:none;margin:0;padding:0;display:flex;gap:6px}
+.cas-steps li{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:5px;font-size:0.75rem;font-weight:700;color:var(--muted)}
+.cas-steps li span{display:block;height:6px;border-radius:999px;background:var(--surface2)}
+.cas-steps li.done span{background:var(--good)}
+.cas-steps li.cur{color:var(--fg)}
+.cas-steps li.cur span{background:var(--fg)}
+.cas-d{margin:0;line-height:1.55;font-size:1.0625rem}
+.cas-hint{margin:0;padding:8px 12px;border-radius:var(--r-sm);background:var(--hl-soft);color:var(--fg)}
+.sch-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sch-tile{display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--fg);text-align:left;font:inherit;cursor:pointer}
+.sch-tile img{width:100%;aspect-ratio:4/3;border-radius:var(--r-sm);display:block}
+.sch-tile>span{display:flex;flex-direction:column;gap:2px;line-height:1.3}
+.sch-img{position:relative;width:100%;aspect-ratio:4/3}
+.sch-img img{position:absolute;inset:0;width:100%;height:100%;border-radius:var(--r);display:block}
+.sch-mk{position:absolute;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;border:2px solid #1E1C18;background:#FFFCF6;color:#1E1C18;font:inherit;font-weight:700;font-size:0.9375rem;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.sch-mk.cur{background:#FFD84D;width:40px;height:40px;border-width:3px}
+.sch-mk.ok{background:#1E6B3A;color:#fff;border-color:#fff}
+.sch-mk.ko{background:#B3261E;color:#fff;border-color:#fff}
+.sch-row{display:flex;align-items:center;gap:10px;padding:4px;border-radius:var(--r-sm)}
+.sch-row.cur{background:var(--hl-soft)}
+.sch-row select{flex:1 1 auto;min-width:0;height:42px;padding:0 8px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--surface);color:var(--fg);font:inherit}
+.sch-n{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--accent-ink);font-weight:700}
+.sch-row .ok{color:var(--good);font-weight:700}
+.sch-row .ko{color:var(--bad)}
+.sch-row .ko strong{color:var(--fg)}
 .badge.sn{margin-left:6px;font-family:var(--font-body);font-size:0.6875rem;font-weight:700;vertical-align:middle;background:var(--hl-soft);color:var(--fg)}
 .syn-sys{font-family:var(--font-display);font-size:1.125rem;margin:calc(10px*var(--sp)) 2px 0}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);-webkit-overflow-scrolling:touch}
@@ -911,7 +936,7 @@ const FONTS = {
  serif:{name:'Livre', css:"'Source Serif 4',Georgia,'Times New Roman',serif"},
  system:{name:'Système', css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"}
 };
-const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
+const HOME_SECTIONS = {today:'Révisions du jour', exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', cas:'Cas cliniques', img:"Analyse d'images", countdown:'Compte à rebours', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité", plan:'Rythme conseillé'};
 const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'nunito', heads:'expressive', size:17, radius:'soft', density:'normal', anim:'flip', buttons:4,
   semStart:'2026-11-19', examDate:'', newPerDay:25, maxRev:300, capExam:true, quick:10, lastExport:0,
   home:[['today',1],['exams',1],['internat',1],['syn',1],['tri',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
@@ -1255,6 +1280,7 @@ function inScope(c, scope){
   if(scope==='tri') return !!c.tri;
   if(scope==='exa') return !!c.exa;
   if(scope==='eng') return !!c.eng;
+  if(scope==='sch') return !!c.sch;
   if(scope==='exam') return !!c.exam;
   if(scope.startsWith('e:')) return c.exam===scope.slice(2);
   const [k,v]=scope.split(':'); const ch=CH[c.chap];
@@ -1271,6 +1297,7 @@ function scopeLabel(scope){
   if(scope==='tri') return 'Triades';
   if(scope==='exa') return 'Examen clinique';
   if(scope==='eng') return 'Anglais médical';
+  if(scope==='sch') return "Analyse d'images";
   if(scope==='exam') return 'Annales';
   if(scope.startsWith('e:')) return annLabel(scope.slice(2));
   const [k,v]=scope.split(':');
@@ -1302,7 +1329,7 @@ function todayPlan(scope){
     rev:cards.filter(x=>x.srs.state==='review'&&x.srs.due<end).sort((a,b)=>a.srs.due-b.srs.due).slice(0,c.rev),
     nw:cards.filter(x=>x.srs.state==='new'&&x.later!==dk).sort((a,b)=>(a.created||0)-(b.created||0)).slice(0,c.nw) };
 }
-function cardGroup(c){ const ch=CH[c.chap]; if(ch) return {k:'c:'+c.chap, name:ch.title, sub:SUBS[ch.sub].name}; if(c.syn) return {k:'syn', name:'Fiches syndromes'}; if(c.tri) return {k:'tri', name:'Triades'}; if(c.exa) return {k:'exa', name:'Examen clinique'}; if(c.eng) return {k:'eng', name:'Anglais médical'}; if(c.exam) return {k:'exam', name:'Annales'}; return {k:'', name:'Sans chapitre'}; }
+function cardGroup(c){ const ch=CH[c.chap]; if(ch) return {k:'c:'+c.chap, name:ch.title, sub:SUBS[ch.sub].name}; if(c.syn) return {k:'syn', name:'Fiches syndromes'}; if(c.tri) return {k:'tri', name:'Triades'}; if(c.exa) return {k:'exa', name:'Examen clinique'}; if(c.eng) return {k:'eng', name:'Anglais médical'}; if(c.sch) return {k:'sch', name:"Analyse d'images"}; if(c.exam) return {k:'exam', name:'Annales'}; return {k:'', name:'Sans chapitre'}; }
 function planGroups(p){
   const g={}; const add=(c,f)=>{ const o=cardGroup(c); const key=o.k+'|'+o.name; const x=g[key]||(g[key]={k:o.k, name:o.name, sub:o.sub||'', rev:0, lrn:0, nw:0}); x[f]++; };
   p.rev.forEach(c=>add(c,'rev')); p.lrn.forEach(c=>add(c,'lrn')); p.nw.forEach(c=>add(c,'nw'));
@@ -1393,6 +1420,8 @@ function gsResults(){
   const ex=EXAMENS.filter(x=>hit(x.n+' '+x.v)).slice(0,15); if(ex.length) out.push(['Examen clinique', ex.map(x=>row('gs-exa',x.id,I.stetho||I.exam,x.n,EXA_KIND[x.k]+' · '+EXA_SYS[x.sys]))]);
   const en=[]; for(const t of ENG) for(const it of t.i) if(hit(it[0]+' '+it[1]+' '+(it[2]||''))) en.push([t,it]);
   if(en.length) out.push(['Anglais médical', en.slice(0,15).map(([t,it])=>row('eng-theme',t.id,I.ear,(it[2]?it[2]+' · ':'')+engAlt(it[0])[0],it[1]+' · '+t.n))]);
+  const cz=CASES.filter(x=>hit(x.n+' '+x.sys+' '+x.s.map(st=>st.d+' '+st.a).join(' '))).slice(0,10); if(cz.length) out.push(['Cas cliniques', cz.map(x=>row('cas-start',x.id,I.stetho||I.exam,x.n,x.sys))]);
+  const sz=SCHEMAS.filter(x=>hit(x.n+' '+x.m.map(m=>m[2]).join(' '))); if(sz.length) out.push(["Analyse d'images", sz.map(x=>row('sch-start',x.id,I.img||I.exam,x.n,x.m.map(m=>m[2]).join(' · ')))]);
   const cs=Object.values(S.cards).filter(c=>hit(String(c.front)+' '+String(c.back))).slice(0,20); if(cs.length) out.push(['Mes cartes', cs.map(c=>row('gs-card',c.id,I.cards,plain(c.front).slice(0,90),CH[c.chap]?CH[c.chap].title:''))]);
   return out.length?out.map(([h,items])=>`<h3 class="syn-sys">${h} <span class="small muted">· ${items.length}</span></h3><div class="menu">${items.join('')}</div>`).join(''):'<p class="muted">Rien trouvé. Essaie un autre mot.</p>';
 }
@@ -1404,7 +1433,7 @@ function weakSpot(){
 }
 function ensureHome(){
   const h=Array.isArray(S.prefs.home)?S.prefs.home:[];
-  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='eng'?Math.max(i,h.findIndex(r=>r[0]==='exa'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
+  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='eng'?Math.max(i,h.findIndex(r=>r[0]==='exa'))+1:k==='cas'?Math.max(i,h.findIndex(r=>r[0]==='eng'))+1:k==='img'?Math.max(i,h.findIndex(r=>r[0]==='cas'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
   S.prefs.home=h.filter(r=>HOME_SECTIONS[r[0]]);
 }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -1460,7 +1489,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 44; // à changer avec VERSION dans sw.js
+const APP_VER = 45; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1691,7 +1720,7 @@ function homeSection(k){
   }
   if(k==='internat') return intHomeBlock();
   if(k==='exams'){
-    const all=Object.values(S.exams);
+    const all=Object.values(S.exams).filter(e=>e.kind!=='cas');
     if(!all.length) return `<section class="panel stack"><h3 style="margin:0">Mes examens</h3>
       <p>Ajoute une épreuve des années passées, en fichier ou en photo, ou passe un examen blanc tiré de tes cartes : chronomètre, correction et note sur 20.</p>
       <div class="row"><button class="btn btn-soft" style="flex:1" data-act="exam-pick">Ajouter un examen</button><button class="btn" style="flex:1" data-act="bl-open">Examen blanc</button></div></section>`;
@@ -1726,6 +1755,18 @@ function homeSection(k){
     return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Anglais médical</h3><span class="small muted">${n} expressions</span></div>
       <p>Les mots et les phrases de la consultation en anglais, avec la prononciation : écouter, traduire, prononcer.</p>
       <div class="row"><button class="btn btn-soft" style="flex:1" data-act="eng-open">Ouvrir</button>${mine?`<button class="btn" style="flex:1" data-act="start" data-mode="cram" data-scope="eng">Me tester</button>`:''}</div></section>`;
+  }
+  if(k==='cas'){
+    const done=CASES.filter(x=>casBest(x.id)>=0).length;
+    return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Cas cliniques</h3><span class="small muted">${CASES.length} cas${done?' · '+done+' faits':''}</span></div>
+      <p>Des malades à examiner étape par étape : les données arrivent au fur et à mesure, tu réponds, puis tu vois la correction et l'explication.</p>
+      <button class="btn btn-soft" data-act="cas-open">Ouvrir les cas</button></section>`;
+  }
+  if(k==='img'){
+    const mine=Object.values(S.cards).filter(c=>c.sch).length;
+    return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>Analyse d'images</h3><span class="small muted">${SCHEMAS.length} schémas</span></div>
+      <p>Radiographie du thorax, cœur, ECG, cellule, neurone, frottis de paludisme : des repères à légender.</p>
+      <div class="row"><button class="btn btn-soft" style="flex:1" data-act="sch-open">Ouvrir</button>${mine?`<button class="btn" style="flex:1" data-act="start" data-mode="cram" data-scope="sch">Me tester</button>`:''}</div></section>`;
   }
   if(k==='countdown'){
     const st=semStart(), dSem=daysUntil(st), ex=examDate(), dEx=daysUntil(ex.date);
@@ -1814,6 +1855,7 @@ function chapterSheet(id){
    <button class="btn btn-primary btn-lg" data-act="start" data-mode="${cnt.rev+cnt.lrn+cnt.nw?'srs':'cram'}" data-scope="c:${id}" ${cards.length?'':'disabled'}>${cards.length?'Réviser ce chapitre · '+plural(cards.length,'carte'):'Pas encore de carte à réviser'}</button>
    ${readyPanel(id)}
    ${exaChapPanel(id)}
+   ${trainChapPanel(id)}
    ${intChapPanel(id)}
    ${docsSection(id)}
    <section class="panel"><div class="section-title"><h3>Mes notes</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="imp-lesson" data-id="${id}">Importer</button><button class="btn btn-ghost" data-act="note-edit" data-id="${id}">${note?'Modifier':'Écrire'}</button></div></div>
@@ -1859,6 +1901,7 @@ function scopeOptions(sel, withNone){
   if(!withNone && Object.values(S.cards).some(c=>c.tri)) o+=`<option value="tri" ${sel==='tri'?'selected':''}>Triades (toutes)</option>`;
   if(!withNone && Object.values(S.cards).some(c=>c.exa)) o+=`<option value="exa" ${sel==='exa'?'selected':''}>Examen clinique (toutes)</option>`;
   if(!withNone && Object.values(S.cards).some(c=>c.eng)) o+=`<option value="eng" ${sel==='eng'?'selected':''}>Anglais médical (toutes)</option>`;
+  if(!withNone && Object.values(S.cards).some(c=>c.sch)) o+=`<option value="sch" ${sel==='sch'?'selected':''}>Analyse d'images (toutes)</option>`;
   return o;
 }
 function viewRev(){
@@ -2200,7 +2243,7 @@ function paintSession(anim){
     : ansSugg(gradeButtons(c), cur);
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Quitter la révision">${I.x}</button><div class="sess-bar"><i style="width:${prog}%"></i></div>${counter}${s.undo?'<button class="icon-btn" data-act="sess-undo" aria-label="Annuler la dernière note" title="Annuler la dernière note" style="font-size:1.25rem">↶</button>':''}</div>
    <article class="flash ${anim&&S.prefs.anim!=='none'?'anim-'+S.prefs.anim:''}" id="flash">
-     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):c.exa&&EXA_BY[c.exa]?'Examen clinique · '+esc(EXA_SYS[EXA_BY[c.exa].sys]):c.eng&&ENG_BY[c.eng]?'Anglais médical · '+esc(ENG_BY[c.eng].n):'Sans chapitre')}</p>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
+     <div class="spread"><p class="eyebrow">${ch?esc(SUBS[ch.sub].name)+' · '+esc(ch.title):(c.syn&&SYN_BY[c.syn]?'Syndromes · '+esc(SYN_SYS[SYN_BY[c.syn].sys]):c.tri&&TRI_BY[c.tri]?'Triades · '+esc(TRI_SYS[TRI_BY[c.tri].sys]):c.exa&&EXA_BY[c.exa]?'Examen clinique · '+esc(EXA_SYS[EXA_BY[c.exa].sys]):c.eng&&ENG_BY[c.eng]?'Anglais médical · '+esc(ENG_BY[c.eng].n):c.sch&&SCH_BY[c.sch]?"Analyse d'images · "+esc(SCH_BY[c.sch].n):'Sans chapitre')}</p>${cur.disc?'<span class="badge new">Nouvelle · à découvrir</span>':''}${c.example?'<span class="badge ex">Exemple</span>':''}${c.exam?'<span class="badge">'+esc(annLabel(c.exam))+'</span>':''}</div>
      ${img('front')}${front}${back}
    </article>
    ${cur.revealed?`<div class="tools">${AI.sample?`<button class="btn btn-ghost" data-act="explain">${I.spark} Expliquer</button>`:''}<button class="btn btn-ghost" data-act="sess-edit">${I.pen} Modifier</button>${c.srs.state==='new'&&s.mode==='srs'?'<button class="btn btn-ghost" data-act="sess-later">Pas aujourd\'hui</button>':''}<button class="btn btn-ghost" data-act="sess-suspend">Retirer de mes révisions</button></div>`:''}
@@ -4203,6 +4246,7 @@ function viewLevel(lvl, sem){
   if(hid.length) html+=`<details class="peek"><summary>${plural(hid.length,'matière masquée','matières masquées')}</summary><div class="chips" style="margin-top:6px">${hid.map(m=>`<button class="chip" data-act="mod-unhide" data-id="${m.id}">Réafficher ${esc(m.short)}</button>`).join('')}</div></details>`;
   if(LV[lvl].i>=2) html+=`<button class="btn btn-soft" data-act="syn-open" style="justify-content:space-between;width:100%"><span>Fiches syndromes · ${SYNDROMES.length} fiches</span>${I.chev}</button><button class="btn btn-soft" data-act="tri-open" style="justify-content:space-between;width:100%"><span>Triades · ${TRIADES.length} triades</span>${I.chev}</button><button class="btn btn-soft" data-act="exa-open" style="justify-content:space-between;width:100%"><span>Examen clinique · ${EXAMENS.length} fiches</span>${I.chev}</button>`;
   html+=`<button class="btn btn-soft" data-act="eng-open" style="justify-content:space-between;width:100%"><span>Anglais médical · ${ENG.reduce((a,t)=>a+t.i.length,0)} expressions</span>${I.chev}</button>`;
+  html+=`<button class="btn btn-soft" data-act="cas-open" style="justify-content:space-between;width:100%"><span>Cas cliniques · ${CASES.length} cas</span>${I.chev}</button><button class="btn btn-soft" data-act="sch-open" style="justify-content:space-between;width:100%"><span>Analyse d'images · ${SCHEMAS.length} schémas</span>${I.chev}</button>`;
   return html;
 }
 function modSheet(){
@@ -4352,6 +4396,23 @@ document.addEventListener('click', async e=>{
     case 'eng-add': { const n=engAdd(d.id); updateDueDot(); paintSheet(true); toast(n?n+' cartes ajoutées à tes révisions':'Déjà dans tes révisions'); break; }
     case 'eng-del': { if(!confirm('Retirer ce thème de tes révisions ? Sa progression sera effacée, tu pourras le rajouter plus tard.')) break; const n=engRemove(d.id); updateDueDot(); paintSheet(true); toast(n+' cartes retirées de tes révisions'); break; }
     case 'engp': engpStart(d.m); break;
+    case 'cas-open': openSheet(casSheet); break;
+    case 'cas-start': casStart(d.id); break;
+    case 'cas-other': { const st=UI.sheetStack; if(st[st.length-1]===casRunSheet) st.pop(); if(st[st.length-1]!==casSheet) st.push(casSheet); paintSheet(); break; }
+    case 'cas-hint': { const u=UI.cas; if(!u) break; u.hint[u.i]=true; paintSheet(true); break; }
+    case 'cas-check': { const u=UI.cas; if(!u) break; if(u.rec){ recStop(); u.rec=false; } const st=CAS_BY[u.id].s[u.i]; u.res[u.i]=gradeAnswer({type:'qa', back:st.a}, u.texts[u.i])||{els:[], frac:0, empty:true}; paintSheet(true); break; }
+    case 'cas-next': { const u=UI.cas; if(!u) break; u.i++; if(u.i>=CAS_BY[u.id].s.length) casSave(); paintSheet(true); break; }
+    case 'cas-self': { const u=UI.cas; if(!u) break; u.self[+d.k]=d.v==='1'; if(u.saved) casSave(); paintSheet(true); break; }
+    case 'cas-mic': { const u=UI.cas; if(!u) break; if(u.rec){ recStop(); u.rec=false; paintSheet(true); break; } const i=u.i, pre=(u.texts[i]||'').trim();
+      const ok=recStart('fr-FR', t=>{ u.texts[i]=(pre?pre+' ':'')+t; const el=$('#casText'); if(el) el.value=u.texts[i]; }, ()=>{ if(UI.cas===u&&u.rec){ u.rec=false; paintSheet(true); } });
+      if(ok){ u.rec=true; paintSheet(true); } else toast('La dictée ne démarre pas sur ce téléphone : utilise le micro du clavier.'); break; }
+    case 'sch-open': openSheet(schSheet); break;
+    case 'sch-start': schStart(d.id); break;
+    case 'sch-mk': { const u=UI.sch; if(!u||u.done) break; u.cur=+d.i; paintSheet(true); const sel=document.querySelector('[data-input="sch-pick"][data-i="'+u.cur+'"]'); if(sel) sel.focus(); break; }
+    case 'sch-check': { const u=UI.sch; if(!u) break; if(u.pick.some(p=>!p) && !confirm('Certains repères n\'ont pas de légende. Valider quand même ?')) break; u.done=true; paintSheet(true); break; }
+    case 'sch-add': (async()=>{ const n=await schAdd(d.id); updateDueDot(); paintSheet(true); if(n) toast(n+' cartes ajoutées à tes révisions'); })(); break;
+    case 'sch-del': { if(!confirm('Retirer les cartes de ce schéma de tes révisions ?')) break; const n=schRemove(d.id); updateDueDot(); paintSheet(true); toast(n+' cartes retirées'); break; }
+    case 'gen-qcm': genQcmFor(d.id); break;
     case 'engp-play': engpPlay(); break;
     case 'engp-check': { const p=UI.engp; if(!p||p.res) break; const en=engpCur()[0]; p.res=p.m==='say'?engSaid(p.val,en):engMatch(p.val,en); if(p.res==='ok') p.ok++; paintSheet(true); sayText(engAlt(en)[0],'en-US'); break; }
     case 'engp-mic': { const p=UI.engp; if(!p||p.res) break; if(p.rec){ recStop(); break; } const en=engpCur()[0]; try{ speechSynthesis.cancel(); }catch{}
@@ -4598,6 +4659,8 @@ document.addEventListener('change', async e=>{
     case 'bl-in-open': UI.bl.open=el.checked; paintSheet(true); break;
     case 'bl-in-qcm': UI.bl.qcm=el.checked; paintSheet(true); break;
     case 'engp-val': if(UI.engp) UI.engp.val=el.value; break;
+    case 'cas-text': if(UI.cas) UI.cas.texts[UI.cas.i]=el.value; break;
+    case 'sch-pick': { const u=UI.sch; if(!u) break; const i=+el.dataset.i; u.pick[i]=el.value; const nx=u.pick.findIndex(p=>!p); u.cur=nx<0?i:nx; paintSheet(true); break; }
     case 'syn-sys': UI.syn.sys=el.value; UI.synOpen=null; paintSheet(true); break;
     case 'aud-pause': AUD.pause=+el.value; paintSheet(true); break;
     case 'aud-rate': AUD.rate=+el.value; break;
@@ -6361,6 +6424,169 @@ function engpSheet(){
    ${done?`<button class="btn btn-primary btn-lg" data-act="engp-next">${p.i+1<n?'Suivant':'Voir mon score'}</button>`:typed?`<button class="btn btn-primary btn-lg" data-act="engp-check">Vérifier</button>`:''}`;
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target && e.target.id==='engVal'){ e.preventDefault(); const b=document.querySelector('[data-act="engp-check"]'); if(b) b.click(); } });
+
+// ---------- Cas cliniques, analyse d'images, entraînement par leçon ----------
+// Cas cliniques progressifs : chaque étape dévoile de nouvelles données (d), pose une question (q),
+// donne la réponse attendue avec ses éléments en gras (a) et une explication (x).
+const CASES = [
+ {id:'nephrotique', n:'Œdèmes chez un diabétique', sys:'Néphrologie', ch:['nephro-5','nephro-4'], s:[
+  {d:"M. D., 58 ans, diabétique de type 2 depuis 12 ans, consulte pour des œdèmes des deux jambes apparus il y a 3 semaines.", q:"Quels caractères des œdèmes recherches-tu à l'examen ?", a:"Des œdèmes **blancs**, **mous**, **indolores**, **prenant le godet**, **bilatéraux et symétriques**.", x:"Ce sont les caractères de l'œdème par rétention d'eau et de sel (origine rénale, cardiaque ou hépatique)."},
+  {d:"Les œdèmes sont blancs, mous, indolores et prennent le godet. Pression artérielle 150/95 mmHg. La bandelette urinaire montre des protéines +++.", q:"Quel examen demandes-tu pour quantifier l'atteinte rénale ?", a:"Une **protéinurie des 24 heures**, avec **albuminémie** et créatininémie.", x:"La bandelette dépiste ; la protéinurie des 24 heures mesure."},
+  {d:"Protéinurie : 4,2 g/24 h. Albuminémie : 22 g/L. Protidémie : 50 g/L. Créatininémie : 98 µmol/L.", q:"Quel syndrome retiens-tu ? Justifie avec les chiffres.", a:"Un **syndrome néphrotique** : **protéinurie supérieure à 3 g/24 h** et **albuminémie inférieure à 30 g/L**.", x:"La protidémie basse (moins de 60 g/L) va dans le même sens."},
+  {d:"Le fond d'œil montre une rétinopathie diabétique. Il n'y a pas d'hématurie.", q:"Quelle cause évoques-tu en priorité ?", a:"Une **néphropathie diabétique**, devant un diabète ancien avec **rétinopathie**.", x:"La rétinopathie traduit l'atteinte des petits vaisseaux par le diabète ; l'absence d'hématurie va dans le même sens."}]},
+ {id:'icd', n:'Douleur du foie à l\'effort', sys:'Cardiologie', ch:['cardio-9'], s:[
+  {d:"Mme S., 64 ans, hypertendue mal suivie, a une douleur de l'hypochondre droit à l'effort, qui cède au repos, et les chevilles gonflées le soir.", q:"Comment s'appelle cette douleur et que suggère-t-elle ?", a:"Une **hépatalgie d'effort**, signe d'**insuffisance ventriculaire droite** (foie de stase).", x:"Le foie se gorge de sang quand le cœur droit ne suit plus à l'effort."},
+  {d:"Turgescence jugulaire en position demi-assise. Foie à 4 cm sous le rebord costal, ferme, régulier, à bord mousse, sensible.", q:"Quelle manœuvre fais-tu pour confirmer l'origine cardiaque du gros foie, et comment ?", a:"Le **reflux hépato-jugulaire** : malade en **position demi-assise à 30-45°**, **compression de l'hypochondre droit**, la **turgescence jugulaire apparaît ou augmente**.", x:"Le malade ne doit pas bloquer sa respiration, sinon le résultat est faussement positif."},
+  {d:"Le reflux hépato-jugulaire est présent. Le pouce placé sous l'appendice xiphoïde perçoit une impulsion systolique.", q:"Comment s'appelle ce signe et que traduit-il ?", a:"Le **signe de Harzer** : les battements du **ventricule droit dilaté**.", x:"C'est un signe de palpation de l'insuffisance ventriculaire droite."},
+  {d:"Auscultation : bruit de galop droit et souffle systolique d'insuffisance tricuspide.", q:"Quel syndrome retiens-tu ?", a:"Un **syndrome d'insuffisance ventriculaire droite** (insuffisance cardiaque droite).", x:"Hépatalgie d'effort, turgescence, reflux hépato-jugulaire, Harzer, galop droit : c'est le tableau du cours."}]},
+ {id:'meninge', n:'Fièvre et céphalées', sys:'Neurologie', ch:['neuro-5'], s:[
+  {d:"Un étudiant de 20 ans arrive aux urgences : céphalées intenses depuis la veille, vomissements, fièvre à 39,5 °C. La lumière le gêne.", q:"Quel syndrome suspectes-tu ?", a:"Un **syndrome méningé** fébrile.", x:"Céphalées, vomissements et photophobie forment le syndrome méningé fonctionnel."},
+  {d:"Il est couché en chien de fusil.", q:"Quels signes physiques recherches-tu pour le confirmer ?", a:"La **raideur de nuque**, le **signe de Kernig** et le **signe de Brudzinski**.", x:"Kernig : douleur et flexion des genoux quand on relève les membres inférieurs tendus. Brudzinski : la flexion de la nuque fait fléchir les jambes."},
+  {d:"La flexion de la nuque est limitée par une contracture douloureuse et entraîne une flexion des jambes sur les cuisses.", q:"Quel signe cutané dois-tu chercher en urgence, et pourquoi ?", a:"Un **purpura** : un purpura fulminans impose une **antibiothérapie immédiate**.", x:"Le méningocoque peut tuer en quelques heures : on n'attend pas la ponction lombaire."},
+  {d:"Pas de purpura, pas de signe de localisation, conscience normale.", q:"Quel examen confirme le diagnostic ?", a:"La **ponction lombaire**, avec analyse du **liquide céphalo-rachidien**.", x:"Sans signe de localisation ni trouble de la conscience, elle se fait sans attendre l'imagerie."},
+  {d:"LCR trouble : 1 200 éléments/mm³, surtout des polynucléaires ; glucose bas, protéines élevées.", q:"Quel diagnostic retiens-tu ?", a:"Une **méningite bactérienne** (purulente).", x:"Liquide trouble à polynucléaires, glucose bas et protéines élevées : profil purulent."}]},
+ {id:'ascite', n:'Gros ventre et hépatite B', sys:'Hépato-gastro-entérologie', ch:['dig-3','dig-4'], s:[
+  {d:"M. N., 52 ans, porteur d'une hépatite B chronique, voit son ventre augmenter de volume depuis 2 mois.", q:"Quel geste de l'examen montre une ascite de petite abondance ?", a:"La **percussion** : **matité déclive et mobile** des flancs, cherchée en **décubitus latéral**.", x:"Dans une petite ascite, l'inspection et la palpation n'apportent rien : la percussion est le geste capital."},
+  {d:"Abdomen distendu, matité déclive et mobile, signe du flot présent.", q:"Que montre le signe du flot ?", a:"Une **ascite libre** de **moyenne abondance**.", x:"Dans la grande ascite, le ventre est trop tendu pour percevoir le flot."},
+  {d:"Circulation veineuse collatérale autour de l'ombilic, le sang allant de l'ombilic vers le thorax. La rate est palpable.", q:"Quel syndrome associé retiens-tu ?", a:"Une **hypertension portale** : circulation veineuse collatérale de **type porte** et **splénomégalie**.", x:"La splénomégalie est souvent le premier signe de l'hypertension portale."},
+  {d:"Angiomes stellaires sur le thorax, érythrose palmaire.", q:"Que traduisent ces signes ?", a:"Une **insuffisance hépatocellulaire**.", x:"Ascite, hypertension portale et insuffisance hépatocellulaire chez un porteur d'hépatite B : cirrhose à évoquer."},
+  {d:"Tu fais une ponction d'ascite.", q:"Quels examens demandes-tu sur le liquide ?", a:"L'**aspect**, le **taux de protides**, la **numération des cellules** (polynucléaires) et la **bactériologie**.", x:"Une infection du liquide se cache souvent : on la cherche systématiquement."}]},
+ {id:'courvoisier', n:'Ictère sans douleur', sys:'Hépato-gastro-entérologie', ch:['dig-7'], s:[
+  {d:"M. F., 67 ans, a les yeux jaunes depuis 3 semaines, de plus en plus, avec des démangeaisons.", q:"Que demandes-tu sur les urines et les selles, et que cherches-tu ?", a:"Des **urines foncées** et des **selles décolorées** : signes de **cholestase**.", x:"Le prurit va aussi avec la cholestase."},
+  {d:"Urines foncées, selles décolorées, 6 kg perdus. Pas de fièvre, pas de douleur.", q:"Quel signe recherches-tu sous le rebord costal droit, et comment ?", a:"Le **signe de Courvoisier-Terrier** : main à plat sous le rebord costal droit, au bord externe du grand droit, **inspiration profonde** : on cherche une **grosse vésicule**.", x:"Une vésicule lithiasique est petite et scléreuse ; une grosse vésicule évoque un obstacle tumoral."},
+  {d:"Tu palpes une masse oblongue, indolore, mobile avec la respiration.", q:"Que dit la loi de Courvoisier-Terrier ?", a:"**Ictère cholestatique** + **grosse vésicule** : obstacle en aval du cystique, surtout un **cancer de la tête du pancréas**.", x:"Aussi : cancer du bas cholédoque ou de l'ampoule de Vater."},
+  {d:"Tu veux confirmer l'obstacle.", q:"Quel examen d'imagerie demandes-tu en premier ?", a:"Une **échographie abdominale** : **dilatation des voies biliaires**, recherche d'une masse.", x:"Le scanner vient ensuite pour le bilan de la tumeur."}]},
+ {id:'anemie', n:'Fatigue et règles abondantes', sys:'Hématologie', ch:['hemsemio-2'], s:[
+  {d:"Mme K., 32 ans, mère de 5 enfants, est fatiguée et essoufflée à l'effort depuis 4 mois. Ses règles sont abondantes.", q:"Où recherches-tu la pâleur ?", a:"Aux **conjonctives**, à la **muqueuse buccale** et à la **pulpe des doigts**.", x:"Sur peau noire, la pâleur se juge surtout aux muqueuses et aux paumes."},
+  {d:"Conjonctives pâles, pouls à 104/min, souffle systolique doux. Ongles plats, cassants, creusés en cuillère.", q:"Comment s'appelle cet aspect des ongles et qu'évoque-t-il ?", a:"Une **koïlonychie** : **carence en fer** ancienne.", x:"Les ongles en cuillère sont un signe de carence martiale chronique."},
+  {d:"Hémoglobine 7,8 g/dL ; VGM 68 fL ; CCMH 28 g/dL.", q:"Comment qualifies-tu cette anémie ?", a:"Une anémie **microcytaire** (VGM inférieur à 80 fL) et **hypochrome** (CCMH inférieure à 32 g/dL).", x:"Microcytose et hypochromie orientent d'abord vers la carence en fer."},
+  {d:"Tu veux confirmer la cause.", q:"Quel dosage demandes-tu, et quel résultat attends-tu ?", a:"La **ferritine**, qui sera **basse**.", x:"Ferritine basse = carence en fer, ici par saignements des règles."}]},
+ {id:'basedow', n:'Amaigrissement et palpitations', sys:'Endocrinologie', ch:['endoc-1'], s:[
+  {d:"Mlle B., 26 ans, a perdu 7 kg en 2 mois alors qu'elle mange bien. Elle a toujours chaud, transpire et dort mal.", q:"Quel syndrome évoques-tu ?", a:"Une **thyrotoxicose** (hyperthyroïdie).", x:"Amaigrissement avec appétit conservé, thermophobie, sueurs, insomnie."},
+  {d:"Pouls à 112/min, régulier. Tremblement des extrémités.", q:"Quelle épreuve montre ce tremblement, et comment est-il ?", a:"L'**épreuve du serment** : bras tendus, doigts écartés ; tremblement **fin**, **rapide** et **régulier**.", x:"Il est exagéré par l'émotion."},
+  {d:"Elle ne peut pas se relever d'un tabouret bas sans s'aider de ses mains.", q:"Comment s'appelle ce signe et que traduit-il ?", a:"Le **signe du tabouret** : faiblesse des **muscles de la racine** des cuisses (amyotrophie proximale).", x:"On le retrouve aussi dans l'hypercorticisme et l'hypokaliémie."},
+  {d:"Goitre diffus, souple, avec un souffle. Les yeux font saillie.", q:"Quelle cause retiens-tu ?", a:"La **maladie de Basedow** : goitre diffus avec souffle et **exophtalmie**.", x:"L'orbitopathie est propre à la maladie de Basedow."}]},
+ {id:'sciatique', n:'Douleur de la jambe', sys:'Rhumatologie', ch:['rhumato-2'], s:[
+  {d:"M. T., 41 ans, manutentionnaire, a mal au bas du dos depuis 10 jours ; la douleur descend derrière la cuisse et le mollet jusqu'au talon.", q:"Quel type de douleur est-ce ?", a:"Une **douleur radiculaire** : une **sciatique**, ici de trajet **S1**.", x:"S1 : face postérieure de la cuisse et de la jambe, talon, plante. L5 : face externe de la jambe, dos du pied, gros orteil."},
+  {d:"Tu l'examines couché.", q:"Quelle manœuvre fais-tu en premier, et comment ?", a:"Le **signe de Lasègue** : on **lève la jambe tendue** ; il est positif s'il reproduit la **douleur radiculaire** ; on note l'**angle**.", x:"Une simple douleur lombaire ne suffit pas : il faut la douleur dans la jambe."},
+  {d:"Lasègue positif à 40°. La pression à côté des épineuses lombaires déclenche la douleur dans la jambe.", q:"Comment s'appelle ce dernier signe ?", a:"Le **signe de la sonnette**.", x:"Il signe, lui aussi, un conflit disco-radiculaire."},
+  {d:"Le réflexe achilléen droit est diminué.", q:"Quel diagnostic retiens-tu ?", a:"Une **sciatique S1** par **conflit disco-radiculaire** (hernie discale le plus souvent).", x:"Le réflexe achilléen dépend de la racine S1."}]},
+ {id:'avc', n:'Faiblesse brutale d\'un côté', sys:'Neurologie', ch:['neuro-2','neuro-1'], s:[
+  {d:"M. A., 70 ans, hypertendu, a eu ce matin une faiblesse brutale du bras et de la jambe droits.", q:"Quelles manœuvres fais-tu pour objectiver le déficit ?", a:"La **manœuvre de Barré** aux membres supérieurs et la **manœuvre de Mingazzini** aux membres inférieurs.", x:"On cherche une chute ou une impossibilité, en comparant les deux côtés."},
+  {d:"Le bras et la jambe droits chutent. Les réflexes ostéo-tendineux sont vifs à droite.", q:"Quel signe cherches-tu au réflexe cutané plantaire, et que montre-t-il ?", a:"Le **signe de Babinski** : **extension lente du gros orteil**, signe d'atteinte de la **voie pyramidale**.", x:"Il a une excellente valeur localisatrice."},
+  {d:"Signe de Babinski à droite. La paralysie faciale droite ne touche que le bas du visage.", q:"Quel syndrome retiens-tu, et où est la lésion ?", a:"Un **syndrome pyramidal** droit (hémiplégie droite), par lésion de l'**hémisphère gauche**.", x:"La voie pyramidale croise ; la paralysie faciale centrale épargne le haut du visage."},
+  {d:"Le début a été brutal, chez un hypertendu.", q:"Quelle cause évoques-tu, et quel examen fais-tu en urgence ?", a:"Un **accident vasculaire cérébral** ; **scanner cérébral** (ou IRM) en urgence.", x:"L'imagerie distingue l'infarctus de l'hémorragie, ce qui change le traitement."}]},
+ {id:'deshydratation', n:'Diarrhée abondante', sys:'Médecine générale', ch:['gen-3','gen-5'], s:[
+  {d:"Une femme de 45 ans a une diarrhée aqueuse abondante depuis 2 jours. Elle se sent faible et a des vertiges en se levant.", q:"Quels signes de déshydratation extracellulaire recherches-tu ?", a:"Le **pli cutané**, l'**hypotension** (orthostatique), la **tachycardie** et la **perte de poids**.", x:"Les vertiges au lever évoquent déjà l'hypotension orthostatique."},
+  {d:"Le pli cutané persiste 5 secondes. PA 85/50 mmHg, pouls 120/min, extrémités froides.", q:"Comment juges-tu la gravité ?", a:"Une déshydratation **sévère** : pli **persistant 5 secondes ou plus**, **hypotension**, pouls rapide, **extrémités froides** (début de **choc**).", x:"C'est une urgence : réhydratation rapide."},
+  {d:"Natrémie 136 mmol/L ; kaliémie 2,9 mmol/L ; créatininémie 160 µmol/L.", q:"Quelle anomalie ionique signales-tu, et quel examen fais-tu en urgence ?", a:"Une **hypokaliémie** (potassium inférieur à 3,5 mmol/L) : **ECG** en urgence.", x:"L'hypokaliémie expose aux troubles du rythme."},
+  {d:"La créatinine reviendra à la normale après réhydratation.", q:"Comment expliques-tu la créatinine élevée ?", a:"Une **insuffisance rénale fonctionnelle**, due à la **déshydratation**.", x:"Le rein manque de sang : il n'est pas lésé, d'où la récupération."}]}
+];
+// Schémas à légender : repères [x, y, légende] dans le repère 240 × 180 de chaque dessin.
+const SCHEMAS = [
+ {id:'thorax', n:'Radiographie du thorax de face', sys:'Imagerie', f:'media/schemas/thorax.svg', note:"Schéma. De face, le côté droit du malade est à gauche de l'image.", m:[[130,128,'Silhouette cardiaque'],[84,96,'Champ pulmonaire droit'],[160,78,'Champ pulmonaire gauche'],[92,37,'Clavicule droite'],[87,141,'Coupole diaphragmatique droite'],[120,58,'Rachis']]},
+ {id:'coeur', n:'Le cœur et les gros vaisseaux', sys:'Cardiologie', f:'media/schemas/coeur.svg', note:'Vue de face (schéma).', m:[[92,44,'Veine cave supérieure'],[152,25,"Crosse de l'aorte"],[167,61,'Tronc pulmonaire'],[78,92,'Oreillette droite'],[110,142,'Ventricule droit'],[168,128,'Ventricule gauche']]},
+ {id:'ecg', n:"L'électrocardiogramme", sys:'Cardiologie', f:'media/schemas/ecg.svg', note:'Dérivation DII, 25 mm/s (schéma).', m:[[92,85,'Onde P'],[116,29,'Complexe QRS'],[131,111,'Segment ST'],[146,80,'Onde T']]},
+ {id:'cellule', n:'La cellule', sys:'Biologie', f:'media/schemas/cellule.svg', note:'Cellule eucaryote (schéma).', m:[[26,69,'Membrane plasmique'],[100,102,'Noyau'],[120,88,'Nucléole'],[172,66,'Mitochondrie'],[166,102,'Réticulum endoplasmique'],[72,66,'Appareil de Golgi']]},
+ {id:'neurone', n:'Le neurone', sys:'Neurologie', f:'media/schemas/neurone.svg', note:"La flèche bleue montre le sens de l'influx nerveux.", m:[[30,58,'Dendrite'],[46,104,'Corps cellulaire'],[60,90,'Noyau'],[88,92,'Axone'],[138,95,'Gaine de myéline'],[225,92,'Terminaisons axonales']]},
+ {id:'palu', n:'Frottis sanguin : paludisme', sys:'Parasitologie', f:'media/schemas/palu.svg', note:'Plasmodium falciparum (schéma).', m:[[40,40,'Hématie saine'],[192,76,'Trophozoïte jeune en anneau'],[60,72,'Hématie polyparasitée'],[226,90,'Gamétocyte en banane']]}
+];
+// ---------- Cas cliniques progressifs ----------
+const CAS_BY = {}; CASES.forEach(x=>{ CAS_BY[x.id]=x; });
+UI.cas=null;
+function casBest(id){ const e=S.exams['cas-'+id]; return e?bestScore(e):-1; }
+function casSheet(){
+  const groups={}; CASES.forEach(x=>{ (groups[x.sys]=groups[x.sys]||[]).push(x); });
+  return sheetTop('Cas cliniques')+`<p>${CASES.length} cas tirés de tes cours de sémiologie. Les données arrivent étape par étape, comme au lit du malade : tu réponds à l'écrit ou à voix haute, puis tu vois la correction point par point et l'explication.</p>
+   ${Object.entries(groups).map(([sys,list])=>`<h3 class="syn-sys">${esc(sys)} <span class="small muted">· ${list.length}</span></h3><div class="menu">${list.map(x=>{ const b=casBest(x.id);
+     return `<button data-act="cas-start" data-id="${x.id}">${I.stetho||I.exam}<span><span class="t">${esc(x.n)}</span><span class="d">${plural(x.s.length,'étape')}${b>=0?' · meilleure note : '+fmt20(b):''}</span></span>${I.chev}</button>`; }).join('')}</div>`).join('')}`;
+}
+function casStart(id){ const x=CAS_BY[id]; if(!x) return; recStop();
+  UI.cas={id, i:0, texts:x.s.map(()=>''), res:x.s.map(()=>null), self:x.s.map(()=>null), hint:x.s.map(()=>false), t0:now(), saved:false, rec:false};
+  if(UI.sheetStack[UI.sheetStack.length-1]===casRunSheet) paintSheet(); else openSheet(casRunSheet); }
+function casPts(k){ const u=UI.cas; if(u.self[k]===true) return 1; if(u.self[k]===false) return 0; const r=u.res[k]; if(!r) return null; return Math.max(0, (r.frac||0)-(u.hint[k]?0.25:0)); }
+function casScore(){ const u=UI.cas, x=CAS_BY[u.id]; let s=0; x.s.forEach((_,k)=>{ s+=casPts(k)||0; }); return {s:Math.round(s*100)/100, t:x.s.length}; }
+function casSave(){ const u=UI.cas, x=CAS_BY[u.id]; const {s,t}=casScore(); const key='cas-'+u.id;
+  const e=S.exams[key]||(S.exams[key]={id:key, kind:'cas', mod:'', title:'Cas clinique · '+x.n, date:'', dur:0, files:[], items:[], attempts:[], created:now(), t:now()});
+  if(!u.saved){ u.att={t:now(), score:s, total:t, ms:now()-u.t0}; e.attempts.push(u.att); u.saved=true; }
+  else { const a=e.attempts.find(a=>a.t===u.att.t); if(a) a.score=s; u.att.score=s; }
+  e.t=now(); saveExams(); }
+function casHintText(st){ const els=ansElements({type:'qa', back:st.a})||[]; const f=els[0]||''; const w=f.split(/\s+/)[0]||'';
+  return `Pense à ${plural(els.length,'élément')}. Le premier commence par « ${esc(w.slice(0,Math.min(3,w.length)))}… ».`; }
+function casRunSheet(){
+  const u=UI.cas, x=u&&CAS_BY[u.id]; if(!x) return sheetTop('Cas clinique')+'<p>Cas introuvable.</p>';
+  const n=x.s.length, end=u.i>=n;
+  let h=sheetTop('Cas clinique')+`<div class="stack" style="gap:4px"><p class="eyebrow">${esc(x.sys)}</p><h2>${esc(x.n)}</h2></div>
+   <ol class="cas-steps" aria-label="Étapes du cas">${x.s.map((_,k)=>`<li class="${k<u.i||end?'done':k===u.i?'cur':''}"><span></span>Étape ${k+1}</li>`).join('')}</ol>`;
+  x.s.forEach((st,k)=>{ if(k>u.i) return;
+    const r=u.res[k];
+    h+=`<section class="panel stack cas-step"><p class="eyebrow">Étape ${k+1}</p><p class="cas-d">${esc(st.d)}</p><p style="margin:0"><strong>${esc(st.q)}</strong></p>`;
+    if(k===u.i && !end && !r){
+      h+=`<label class="field">Ta réponse<textarea id="casText" data-input="cas-text" rows="4" placeholder="Écris ta réponse, ou touche « Parler »…">${esc(u.texts[k])}</textarea></label>
+       <div class="row">${SRX?`<button class="btn ${u.rec?'btn-primary':''}" data-act="cas-mic">${u.rec?"J'ai fini de parler":'Parler'}</button>`:''}<button class="btn btn-ghost" data-act="cas-hint" ${u.hint[k]?'disabled':''}>${u.hint[k]?'Indice donné':'Indice (−0,25 point)'}</button></div>
+       ${u.hint[k]?`<p class="small cas-hint">${casHintText(st)}</p>`:''}
+       <button class="btn btn-primary btn-lg" data-act="cas-check">Valider cette étape</button>`;
+    } else if(r){
+      h+=`<p class="small" style="margin:0"><strong>Ta réponse :</strong> ${u.texts[k].trim()?esc(u.texts[k]):'<span class="muted">(vide)</span>'}</p>
+       ${r.els&&r.els.length?ansElsHTML(r.els):''}
+       <div class="hintbox"><p class="eyebrow">Réponse attendue</p><div class="rt">${md(st.a)}</div>${st.x?`<p class="small" style="margin:6px 0 0">${esc(st.x)}</p>`:''}</div>
+       <div class="spread" style="flex-wrap:wrap;gap:6px"><span class="small"><strong>${fmtPts(casPts(k)||0)} / 1</strong>${u.hint[k]?' · indice utilisé':''}</span><span class="row" style="gap:6px"><button class="btn ${u.self[k]===true?'btn-primary':'btn-ghost'}" data-act="cas-self" data-k="${k}" data-v="1">J'avais juste</button><button class="btn ${u.self[k]===false?'btn-primary':'btn-ghost'}" data-act="cas-self" data-k="${k}" data-v="0">J'avais faux</button></span></div>
+       ${k===u.i&&!end?`<button class="btn btn-primary btn-lg" data-act="cas-next">${k+1<n?'Étape suivante':'Voir mon résultat'}</button>`:''}`;
+    }
+    h+=`</section>`;
+  });
+  if(end){ const {s,t}=casScore();
+    h+=`<section class="panel stack" style="text-align:center;gap:8px"><p class="eyebrow">Résultat</p><p class="score">${String(Math.round(s/t*200)/10).replace('.',',')}<small>/20</small></p><p class="small">${fmtPts(s)} point${s>1?'s':''} sur ${t} étapes · ${fmtDur(now()-u.t0)}</p></section>
+     <div class="row"><button class="btn btn-primary" style="flex:1" data-act="cas-start" data-id="${x.id}">Refaire ce cas</button><button class="btn" style="flex:1" data-act="cas-other">Un autre cas</button></div>
+     ${x.ch.filter(c=>CH[c]).map(c=>`<button class="btn btn-ghost" data-act="chap" data-id="${c}">Revoir la leçon : ${esc(CH[c].title)}</button>`).join('')}`;
+  }
+  return h;
+}
+
+// ---------- Analyse d'images : schémas à légender ----------
+const SCH_BY = {}; SCHEMAS.forEach(x=>{ SCH_BY[x.id]=x; });
+UI.sch=null;
+function schHas(id){ return Object.values(S.cards).some(c=>c.sch===id); }
+function schSheet(){
+  return sheetTop("Analyse d'images")+`<p>Des schémas à légender : touche un repère, choisis sa légende, puis valide. Ensuite, tu peux ajouter une carte par repère à tes révisions.</p>
+   <div class="sch-grid">${SCHEMAS.map(x=>`<button class="sch-tile" data-act="sch-start" data-id="${x.id}"><img src="${x.f}" alt="" loading="lazy"><span><strong>${esc(x.n)}</strong><span class="small muted">${esc(x.sys)} · ${plural(x.m.length,'repère')}${schHas(x.id)?' · dans tes révisions':''}</span></span></button>`).join('')}</div>`;
+}
+function schStart(id){ const x=SCH_BY[id]; if(!x) return; UI.sch={id, pick:x.m.map(()=>''), cur:0, done:false, labels:shuffle(x.m.map(m=>m[2]))};
+  if(UI.sheetStack[UI.sheetStack.length-1]===schRunSheet) paintSheet(); else openSheet(schRunSheet); }
+function schRunSheet(){
+  const u=UI.sch, x=u&&SCH_BY[u.id]; if(!x) return sheetTop("Analyse d'images")+'<p>Schéma introuvable.</p>';
+  const ok=u.done?x.m.filter((m,i)=>u.pick[i]===m[2]).length:0;
+  return sheetTop(x.n)+`<p class="small muted">${esc(x.note)}</p>
+   <div class="sch-img"><img src="${x.f}" alt="${esc(x.n)}, avec ${x.m.length} repères numérotés">${x.m.map((m,i)=>{ const st=u.done?(u.pick[i]===m[2]?'ok':'ko'):(i===u.cur?'cur':'');
+     return `<button class="sch-mk ${st}" style="left:${(m[0]/240*100).toFixed(2)}%;top:${(m[1]/180*100).toFixed(2)}%" data-act="sch-mk" data-i="${i}" aria-label="Repère ${i+1}">${i+1}</button>`; }).join('')}</div>
+   <section class="panel stack" style="gap:6px">${x.m.map((m,i)=>`<div class="sch-row ${i===u.cur&&!u.done?'cur':''}"><span class="sch-n">${i+1}</span>${u.done
+     ?(u.pick[i]===m[2]?`<span class="ok">${esc(m[2])}</span>`:`<span class="ko">${u.pick[i]?'<s>'+esc(u.pick[i])+'</s> · ':''}<strong>${esc(m[2])}</strong></span>`)
+     :`<select data-input="sch-pick" data-i="${i}" aria-label="Légende du repère ${i+1}"><option value="">Choisir…</option>${u.labels.map(l=>`<option ${u.pick[i]===l?'selected':''}>${esc(l)}</option>`).join('')}</select>`}</div>`).join('')}</section>
+   ${u.done?`<section class="panel" style="text-align:center"><p class="score">${ok}<small>/${x.m.length}</small></p></section>
+     <div class="row"><button class="btn btn-primary" style="flex:1" data-act="sch-start" data-id="${x.id}">Recommencer</button>${schHas(x.id)?`<button class="btn" style="flex:1" data-act="sch-del" data-id="${x.id}">Retirer des révisions</button>`:`<button class="btn" style="flex:1" data-act="sch-add" data-id="${x.id}">Ajouter aux révisions</button>`}</div>`
+     :`<button class="btn btn-primary btn-lg" data-act="sch-check">Valider mes légendes</button>`}`;
+}
+async function schAdd(id){ const x=SCH_BY[id]; if(!x||schHas(id)) return 0; let svg='';
+  try{ const r=await fetch(x.f); if(!r.ok) throw 0; svg=await r.text(); }catch{ toast("Le schéma n'a pas pu être chargé : vérifie ta connexion."); return 0; }
+  x.m.forEach(([cx,cy,label])=>{ const mk=`<circle cx="${cx}" cy="${cy}" r="11" fill="#FFD84D" stroke="#1E1C18" stroke-width="2.5"/><text x="${cx}" y="${cy+4.5}" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1E1C18">?</text>`;
+    saveCard(newCard({type:'qa', front:`**${x.n}**\nQue montre le repère jaune ?`, back:`**${label}**`, img:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg.replace('</svg>', mk+'</svg>')), imgSide:'front', sch:id})); });
+  return x.m.length; }
+function schRemove(id){ let n=0; for(const c of Object.values(S.cards)) if(c.sch===id){ deleteCard(c.id); n++; } return n; }
+
+// ---------- S'entraîner sur une leçon : cas cliniques liés et QCM préparés par Claude ----------
+function trainChapPanel(id){ const cs=CASES.filter(x=>x.ch.includes(id));
+  return `<section class="panel stack"><div class="section-title" style="margin-bottom:0"><h3>S'entraîner sur cette leçon</h3></div>
+   ${cs.map(x=>`<button class="btn btn-soft" data-act="cas-start" data-id="${x.id}" style="justify-content:space-between;width:100%"><span>Cas clinique · ${esc(x.n)}</span>${I.chev}</button>`).join('')}
+   <button class="btn btn-soft" data-act="gen-qcm" data-id="${id}" style="justify-content:space-between;width:100%"><span>QCM sur cette leçon, préparés par Claude</span>${I.chev}</button>
+   <p class="small muted">${AI.sample?'Claude prépare les QCM à partir du contenu de la leçon ; tu gardes ceux que tu veux.':'Ici, XamXam prépare un texte à copier dans Claude ; tu colles ensuite sa réponse pour créer les QCM.'}</p></section>`; }
+async function genQcmFor(id){
+  let txt=''; try{ if(READY[id]){ const r=await readyLoad(id);
+    txt=(r.obj||[]).map(o=>'Objectif : '+o).join('\n')+'\n\n'+(r.cards||[]).map(([t,f,b])=>t==='c'?String(f).replace(/\{\{(.+?)\}\}/g,'$1'):'Q : '+f+'\nR : '+b).join('\n\n'); } }catch{}
+  const note=(S.notes[id]||{}).text||''; if(note) txt=note+'\n\n'+txt; txt=txt.trim();
+  Object.assign(UI.gen, {chap:id, source:txt?'text':'focus', text:txt, focus:'', types:['qcm'], n:10, results:null, err:''});
+  UI.newTab='ai'; UI.tab='new'; UI.sheetStack=[]; paintSheet(); window.scrollTo(0,0); render();
+  toast(txt?'Le contenu de la leçon est prêt : lance la création des QCM en bas de la page.':'Pas de contenu pour cette leçon : précise la notion, puis lance la création.', 3800);
+}
 
 // ---------- Démarrage ----------
 loadLocal(); exrLoad(); buildIndex(); itrLoad(); applyTheme(); updateDueDot(); render();

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Schéma de radiographie du thorax de face">
+<rect width="240" height="180" rx="18" fill="#15171A"/>
+<path d="M40 172C34 120 42 60 70 34C90 18 150 18 170 34C198 60 206 120 200 172Z" fill="#2B2F35"/>
+<path d="M112 44C90 40 64 62 58 100C54 126 60 150 70 156C86 152 100 148 108 140C112 110 114 70 112 44Z" fill="#0E1013"/>
+<path d="M128 44C150 40 176 62 182 100C186 126 180 150 170 156C156 150 142 142 132 134C126 110 124 70 128 44Z" fill="#0E1013"/>
+<g stroke="#8A8F98" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.85">
+<path d="M118 52C96 46 74 54 62 72M122 52C144 46 166 54 178 72M118 68C96 62 72 70 60 88M122 68C144 62 168 70 180 88M118 84C96 78 70 86 58 104M122 84C144 78 170 86 182 104M118 100C96 94 70 102 58 120M122 100C144 94 170 102 182 120M118 116C98 110 74 118 62 134M122 116C142 110 166 118 178 134"/>
+</g>
+<rect x="114" y="30" width="12" height="132" rx="3" fill="#6E737C" opacity="0.75"/>
+<path d="M70 40C90 34 104 38 116 42M170 40C150 34 136 38 124 42" stroke="#B5BAC2" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<path d="M116 96C104 100 96 120 100 140C106 154 140 158 156 148C166 140 164 118 150 104C140 96 126 92 116 96Z" fill="#C9CDD3" opacity="0.88"/>
+<path d="M60 150C80 136 100 140 114 150M126 154C144 142 164 142 182 152" stroke="#D9DDE2" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>

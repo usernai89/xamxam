@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Cœur et gros vaisseaux">
+<rect width="240" height="180" rx="18" fill="#FBF6EA"/>
+<path d="M92 76V28" stroke="#1E1C18" stroke-width="20" stroke-linecap="round" fill="none"/>
+<path d="M92 76V28" stroke="#6F8BE0" stroke-width="14" stroke-linecap="round" fill="none"/>
+<path d="M140 30V14M155 27V12M168 31V17" stroke="#1E1C18" stroke-width="10" stroke-linecap="round"/>
+<path d="M140 30V14M155 27V12M168 31V17" stroke="#E9806A" stroke-width="5" stroke-linecap="round"/>
+<path d="M126 78C124 46 132 28 152 26C170 24 180 34 182 52" stroke="#1E1C18" stroke-width="22" stroke-linecap="round" fill="none"/>
+<path d="M126 78C124 46 132 28 152 26C170 24 180 34 182 52" stroke="#E9806A" stroke-width="16" stroke-linecap="round" fill="none"/>
+<path d="M138 88C144 68 156 60 176 60" stroke="#1E1C18" stroke-width="20" stroke-linecap="round" fill="none"/>
+<path d="M138 88C144 68 156 60 176 60" stroke="#6F8BE0" stroke-width="14" stroke-linecap="round" fill="none"/>
+<ellipse cx="88" cy="90" rx="24" ry="22" fill="#E9806A" stroke="#1E1C18" stroke-width="3"/>
+<path d="M72 104C66 134 88 166 128 172C156 176 178 152 182 122C186 96 172 80 148 80C130 80 116 90 100 90C86 90 76 94 72 104Z" fill="#D4563F" stroke="#1E1C18" stroke-width="3" stroke-linejoin="round"/>
+<path d="M170 84C184 80 193 90 187 100C181 106 173 102 169 96" fill="#E9806A" stroke="#1E1C18" stroke-width="3" stroke-linejoin="round"/>
+<path d="M150 86C140 114 136 142 142 168" stroke="#FFD84D" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="M146 112L160 120M141 138L128 146" stroke="#FFD84D" stroke-width="3" stroke-linecap="round"/>
+<path d="M90 114C92 130 100 142 112 150" stroke="#F2A08E" stroke-width="5" stroke-linecap="round" fill="none"/>
+</svg>
