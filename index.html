@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="XamXam : révisions de médecine L3. Cartes, cours, annales d'examen corrigées, hors ligne.">
 <meta name="theme-color" content="#F5F0E6">
+<meta name="color-scheme" content="light dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="XamXam">
@@ -467,6 +468,29 @@ button.kpi:disabled{opacity:1;cursor:default}
 .ans-els li.ko>.el-tg{background:var(--bad);color:var(--bg);box-shadow:none}
 .ans-els .el-t{min-width:0}
 .ans-score.unk{background:var(--surface);color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line2)}
+/* Examen en cours, comme la maquette */
+.exr-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.exr-timer{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--line)}
+.exr-timer svg{width:22px;height:22px;flex:none}
+.exr-timer>span{display:flex;flex-direction:column;line-height:1.15}
+.exr-timer .clock{font-size:1.125rem}
+.exr-timer.low{border-color:var(--bad)}
+.exr-grid{display:flex;flex-direction:column;gap:16px;min-width:0}
+.exr-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.exr-aside{display:none}
+.exr-btns .btn-line{flex:none;padding:0 14px}
+.qnav .ans{background:var(--easy-soft);border-color:var(--easy-soft);color:var(--easy)}
+.qnav .cur{background:var(--fg);border-color:var(--fg);color:var(--surface)}
+.qnav .flag{box-shadow:inset 0 0 0 2.5px var(--hl)}
+.qnav .cur.flag{box-shadow:inset 0 0 0 2.5px var(--hl)}
+@media (min-width:1100px){
+  #sheet .layer-in:has(.exr-grid){max-width:1060px}
+  .exr-grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:24px;align-items:start}
+  .exr-aside{display:flex;position:sticky;top:72px}
+  .exr-aside .qnav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));overflow:visible}
+  .exr-aside .qnav button{min-width:0}
+  .exr-grid-m{display:none}
+}
 /* Internat */
 .plan{display:flex;flex-direction:column}
 .pl{padding:3px 0;line-height:1.4}
@@ -1706,7 +1730,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 56; // à changer avec VERSION dans sw.js
+const APP_VER = 57; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -2294,7 +2318,10 @@ function appearancePanel(){
   const p=S.prefs;
   const sw=Object.entries(THEMES).map(([k,t])=>`<button class="swatch" data-act="theme" data-k="${k}" aria-pressed="${p.theme===k}"><span class="dots"><i style="background:${t.light.accent}"></i><i style="background:${t.light.accent2}"></i><i style="background:${t.dark.bg}"></i></span><span>${esc(t.name)}</span></button>`).join('');
   const seg=(key, opts)=>`<div class="seg" role="group">${opts.map(([v,l])=>`<button data-act="pref-set" data-k="${key}" data-v="${v}" aria-pressed="${String(p[key])===String(v)}">${l}</button>`).join('')}</div>`;
+  const std=(p.theme||'cahier')==='cahier' && !p.accent && p.mode==='light';
   return `<section class="panel stack"><h3>Apparence</h3>
+   <div class="notice small" style="margin:0">Le fond de XamXam dépend de trois réglages : le <strong>thème</strong>, le <strong>mode</strong> (« Auto » suit ton téléphone : s'il est en mode sombre, XamXam devient sombre) et la <strong>couleur principale</strong>. Les captures et les maquettes sont en thème Cahier, mode clair.</div>
+   ${std?'<p class="small muted" style="margin:0">Tu as les couleurs des captures : thème Cahier, mode clair.</p>':'<button class="btn btn-soft" data-act="theme-std">Remettre les couleurs des captures (Cahier, clair)</button>'}
    <div class="field"><span>Thème</span><div class="swatches">${sw}</div></div>
    <div class="field"><span>Mode</span>${seg('mode',[['auto','Auto'],['light','Clair'],['dark','Sombre']])}</div>
    <div class="field"><span>Couleur principale</span><div class="colors"><button data-act="accent" data-v="" aria-pressed="${!p.accent}" aria-label="Couleur du thème" style="background:conic-gradient(${(THEMES[p.theme]||THEMES.cahier).light.accent} 0 50%, ${(THEMES[p.theme]||THEMES.cahier).light.accent2} 0)"></button>${ACCENTS.map(a=>`<button data-act="accent" data-v="${a}" aria-pressed="${p.accent===a}" aria-label="${a}" style="background:${a}"></button>`).join('')}<input type="color" id="pAccent" data-input="accent" value="${esc(p.accent||(THEMES[p.theme]||THEMES.cahier).light.accent)}" aria-label="Couleur personnalisée"></div></div>
@@ -3132,17 +3159,26 @@ function exrRun(){ // le temps ne compte que lorsque l'examen est à l'écran
 function exrAnswered(j){ return EXR.picks[j].length>0 || !!EXR.texts[j].trim(); }
 function examRunSheet(){
   const e=S.exams[EXR.examId], items=exrItems(), n=items.length, i=EXR.i, r=items[i];
-  const done=items.filter((_,j)=>exrAnswered(j)).length;
-  return `<div class="layer-top"><button class="icon-btn" data-act="sheet-back" aria-label="Quitter l'examen">${I.x}</button><div class="sess-bar"><i style="width:${done/n*100}%"></i></div><span class="clock${exrLow()?' low':''}" id="exrClock" aria-label="${EXR.limit?'Temps restant':'Temps écoulé'}">${exrClock()}</span></div>
-   <article class="flash"><div class="spread"><p class="eyebrow">${esc(e.title)}${EXR.partial?' · mes erreurs':''}</p><span class="badge">${r.num?'Q'+esc(r.num):'Q'+(EXR.idx[i]+1)} · ${r.type==='qcm'?'QCM':'Question'}</span></div>
+  const done=items.filter((_,j)=>exrAnswered(j)).length, fl=EXR.flag||[], nfl=items.filter((_,j)=>fl[j]).length;
+  const lim=EXR.limit?(EXR.limit>=60?Math.floor(EXR.limit/60)+' h'+(EXR.limit%60?' '+pad(EXR.limit%60):''):EXR.limit+' min'):'';
+  const grid=id=>`<div class="qnav"${id?' id="qnav"':''} role="group" aria-label="Aller à une question">${items.map((_,j)=>`<button data-act="exr-go" data-j="${j}" class="${j===i?'cur':exrAnswered(j)?'ans':''}${fl[j]?' flag':''}" aria-label="Question ${j+1}${exrAnswered(j)?', répondue':''}${fl[j]?', marquée':''}">${j+1}</button>`).join('')}</div>
+    <p class="small muted" style="margin:0">${plural(done,'répondue','répondues')}${nfl?' · '+plural(nfl,'marquée','marquées')+' (cadre jaune)':''} · ${n-done} sans réponse</p>`;
+  return `<div class="layer-top"><button class="icon-btn" data-act="sheet-back" aria-label="Quitter l'examen">${I.x}</button><div class="sess-bar"><i style="width:${done/n*100}%"></i></div></div>
+   <div class="exr-head"><div class="stack" style="gap:2px;min-width:0"><p class="eyebrow">${esc(e.title)}${EXR.partial?' · mes erreurs':''} · mode examen</p><h2 style="margin:0">Question ${i+1} sur ${n}</h2></div>
+    <div class="exr-timer${exrLow()?' low':''}" role="timer">${I.clock}<span><strong class="clock${exrLow()?' low':''}" id="exrClock" aria-label="${EXR.limit?'Temps restant':'Temps écoulé'}">${exrClock()}</strong><span class="small muted">${EXR.limit?'restantes sur '+lim:'écoulées'}</span></span></div></div>
+   <div class="exr-grid"><div class="exr-main">
+   <article class="flash"><div class="spread"><span class="fl-kind">${r.num?'Q'+esc(r.num)+' · ':''}${r.type==='qcm'?'QCM · une ou plusieurs réponses':'Question à rédiger'}</span>${fl[i]?'<span class="badge new">Marquée</span>':''}</div>
     <div class="front rt">${md(r.front)}</div>
     ${r.type==='qcm'?`<div class="qcm">${r.choices.map((x,j)=>`<button data-act="exr-pick" data-j="${j}" aria-pressed="${EXR.picks[i].includes(j)}"><span class="k">${String.fromCharCode(65+j)}</span><span>${esc(x)}</span></button>`).join('')}</div>`
       :`<label class="field">Ta réponse<textarea data-input="exr-text" placeholder="Écris ta réponse…">${esc(EXR.texts[i])}</textarea></label>`}
    </article>
-   <div class="qnav" id="qnav" role="group" aria-label="Aller à une question">${items.map((_,j)=>`<button data-act="exr-go" data-j="${j}" class="${j===i?'cur':exrAnswered(j)?'ans':''}" aria-label="Question ${j+1}${exrAnswered(j)?', répondue':''}">${j+1}</button>`).join('')}</div>
-   <div class="row" style="flex-wrap:nowrap"><button class="btn" style="flex:1" data-act="exr-nav" data-d="-1" ${i?'':'disabled'}>Précédente</button>
+   <div class="row exr-btns" style="flex-wrap:nowrap"><button class="btn" style="flex:1" data-act="exr-nav" data-d="-1" ${i?'':'disabled'}>Précédente</button>
+    <button class="btn ${fl[i]?'btn-soft':'btn-line'}" data-act="exr-flag" aria-pressed="${!!fl[i]}">${fl[i]?'Marquée':'Marquer'}</button>
     ${i<n-1?`<button class="btn btn-primary" style="flex:1" data-act="exr-nav" data-d="1">Suivante</button>`:`<button class="btn btn-primary" style="flex:1" data-act="exr-finish">Terminer et corriger</button>`}</div>
-   ${i<n-1?`<button class="btn btn-ghost" data-act="exr-finish">Terminer maintenant · ${done}/${n} répondue${done>1?'s':''}</button>`:`<p class="small muted" style="text-align:center">${done}/${n} répondue${done>1?'s':''}</p>`}`;
+   ${i<n-1?`<button class="btn btn-ghost" data-act="exr-finish">Terminer l'épreuve maintenant</button>`:''}
+   <div class="exr-grid-m">${grid(true)}</div>
+   </div><aside class="exr-aside panel stack"><h3 style="margin:0">Les ${n} questions</h3>${grid(false)}
+    <p class="small muted" style="margin:0">Mode examen : aucune correction avant la fin.${EXR.limit?' À zéro, tes réponses sont envoyées.':''}</p></aside></div>`;
 }
 function qState(k){ // juste / faux / null (pas encore de corrigé)
   const r=exrItems()[k];
@@ -4819,6 +4855,7 @@ document.addEventListener('click', async e=>{
     case 'exr-pick': { const p=EXR.picks[EXR.i], j=+d.j; EXR.picks[EXR.i]=p.includes(j)?p.filter(x=>x!==j):p.concat(j).sort((x,y)=>x-y); exrSave(); paintSheet(true); break; }
     case 'exr-nav': EXR.i=Math.max(0, Math.min(EXR.idx.length-1, EXR.i+(+d.d))); exrSave(); paintSheet(); break;
     case 'exr-go': EXR.i=Math.max(0, Math.min(EXR.idx.length-1, +d.j)); exrSave(); paintSheet(); break;
+    case 'exr-flag': { EXR.flag=EXR.flag||[]; EXR.flag[EXR.i]=!EXR.flag[EXR.i]; exrSave(); paintSheet(true); break; }
     case 'exr-finish': { const left=EXR.idx.filter((_,j)=>!exrAnswered(j)).length;
       if(left) armConfirm(a, left+' sans réponse · terminer quand même ?', exrFinish); else exrFinish(); break; }
     case 'exr-key': { const r=exrItems()[+d.q], j=+d.j; r.answer=r.answer.includes(j)?r.answer.filter(x=>x!==j):r.answer.concat(j).sort((x,y)=>x-y); exrUpdate(); paintSheet(true); break; }
@@ -4846,6 +4883,7 @@ document.addEventListener('click', async e=>{
     case 'drive-del': armConfirm(a,'Confirmer : retirer les liens',()=>{ DRV={removed:true, at:now()}; lsSet('xamxam.drive', JSON.stringify(DRV)); if(typeof gsSchedule==='function') gsSchedule(); rerender(); toast('Liens du Drive retirés'); }); break;
     case 'del-examples': armConfirm(a,'Confirmer : supprimer les exemples',()=>{ Object.values(S.cards).filter(c=>c.example).forEach(c=>deleteCard(c.id)); updateDueDot(); rerender(); toast('Exemples supprimés'); }); break;
     case 'theme': S.prefs.theme=d.k; savePrefs(); applyTheme(); rerender(); break;
+    case 'theme-std': S.prefs.theme='cahier'; S.prefs.accent=''; S.prefs.mode='light'; savePrefs(); applyTheme(); rerender(); toast('Couleurs des captures remises : thème Cahier, mode clair.'); break;
     case 'accent': S.prefs.accent=d.v; savePrefs(); applyTheme(); rerender(); break;
     case 'pref-set': { const k=d.k; let v=d.v; if(k==='buttons') v=+v; S.prefs[k]=v; savePrefs(); applyTheme(); rerender(); break; }
     case 'home-move': { const h=S.prefs.home, i=+d.i, j=i+(+d.d); if(j<0||j>=h.length) break; [h[i],h[j]]=[h[j],h[i]]; savePrefs(); rerender(); break; }
