@@ -460,6 +460,13 @@ button.kpi:disabled{opacity:1;cursor:default}
   .flash .front{font-size:1.4375rem}
 }
 .gen-saved{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px;font-size:.9375rem}
+.ans-els li{align-items:center}
+.el-tg{flex:none;min-width:86px;min-height:30px;padding:2px 10px;border:0;border-radius:999px;font:inherit;font-size:0.75rem;font-weight:700;text-align:center;cursor:pointer;background:var(--surface);color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line2)}
+.ans-els li.ok>.el-tg{background:var(--good);color:var(--bg);box-shadow:none}
+.ans-els li.mid>.el-tg{background:var(--hl);color:var(--hl-ink);box-shadow:none}
+.ans-els li.ko>.el-tg{background:var(--bad);color:var(--bg);box-shadow:none}
+.ans-els .el-t{min-width:0}
+.ans-score.unk{background:var(--surface);color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line2)}
 /* Internat */
 .plan{display:flex;flex-direction:column}
 .pl{padding:3px 0;line-height:1.4}
@@ -1699,7 +1706,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 55; // à changer avec VERSION dans sw.js
+const APP_VER = 56; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -2491,7 +2498,7 @@ function gradeButtons(c){
 function reveal(){
   const cur=SESS.cur; if(cur.revealed) return; const c=S.cards[cur.id];
   if(cur.rec){ recStop(); cur.rec=false; }
-  if(c && ansMode(c,cur) && (cur.text||'').trim()) cur.res=gradeAnswer(c, cur.text);
+  if(c && ansMode(c,cur) && (cur.text||'').trim()){ cur.base=gradeAnswer(c, cur.text); cur.res=combineEls(cur.base, null, null); if(cur.res && AI.sample) sessAiGrade(cur, c); }
   cur.revealed=true; paintSession(true);
 }
 function grade(g){
@@ -3141,7 +3148,7 @@ function qState(k){ // juste / faux / null (pas encore de corrigé)
   const r=exrItems()[k];
   if(r.type==='qcm'){ if(!r.answer.length) return null; const p=EXR.picks[k]; return p.length===r.answer.length && p.every(x=>r.answer.includes(x)); }
   if(EXR.self[k]===true||EXR.self[k]===false) return EXR.self[k];
-  const a=qAuto(k); return a?a.frac>=0.5:null;
+  const a=qAuto(k); return a&&a.frac!=null?a.frac>=0.5:null;
 }
 function exrScore(){ let s=0, t=0; EXR.idx.forEach((_,k)=>{ const p=qPts(k); if(p===null) return; t++; s+=p; }); return {s:Math.round(s*100)/100,t}; }
 function exrWrong(){ return EXR.idx.filter((_,k)=>qState(k)===false); }
@@ -3152,6 +3159,7 @@ function exrFinish(){
   exrUpdate(); exrSave();
   const top=UI.sheetStack.length-1; if(UI.sheetStack[top]===examRunSheet) UI.sheetStack[top]=examResultSheet; else UI.sheetStack.push(examResultSheet);
   paintSheet();
+  if(AI.sample) exrAiGrade();
 }
 function exrUpdate(){ const e=S.exams[EXR.examId]; const {s,t}=exrScore(); EXR.attempt.score=s; EXR.attempt.total=t; if(e.kind==='blanc') EXR.attempt.byChap=exrByChap(); e.t=now(); saveExams(); }
 function examResultSheet(){
@@ -3160,13 +3168,15 @@ function examResultSheet(){
   const cardable=wrong.filter(i=>{ const r=e.items[i]; return r.type==='qcm'?r.answer.length:r.back.trim(); }).length;
   return sheetTop(EXR.partial?'Correction · mes erreurs':'Correction')+`
    <section class="panel stack" style="text-align:center;gap:8px"><p class="eyebrow">${esc(e.title)}</p>
+    ${pending&&t?'<p class="small" style="margin:0;color:var(--hard)"><strong>Note provisoire</strong> : elle ne compte que les questions déjà corrigées.</p>':''}
     <p class="score">${t?String(Math.round(s/t*200)/10).replace('.',','):'—'}<small>/20</small></p>
-    <p class="small">${fmtPts(s)} point${s>1?'s':''} sur ${t} question${t>1?'s':''} corrigée${t>1?'s':''}${pending?` · <strong style="color:var(--hard)">${pending} à corriger</strong>`:''} · ${fmtDur(EXR.attempt.ms)}</p></section>
+    <p class="small">${fmtPts(s)} point${s>1?'s':''} sur ${t} question${t>1?'s':''} corrigée${t>1?'s':''}${pending?` · <strong style="color:var(--hard)">${pending} à vérifier</strong>`:''} · ${fmtDur(EXR.attempt.ms)}</p></section>
    ${exrChapHTML()}
-   ${pending?`<div class="notice">Certaines questions n'ont pas de corrigé : touche les bonnes propositions (elles seront gardées pour la prochaine fois), ou dis si ta réponse était juste.</div>`:''}
+   ${exrAiPanelHTML()}
+   ${pending?`<div class="notice">${plural(pending,'question')} à vérifier : touche chaque élément pour dire si tu l'avais${exrAiItems().items.length?', ou fais corriger par Claude':''}. Pour un QCM sans corrigé, touche les bonnes propositions.</div>`:''}
    ${wrong.length?`<div class="row" style="flex-wrap:nowrap"><button class="btn btn-primary" style="flex:1" data-act="exr-retry">Refaire ${wrong.length>1?'mes '+wrong.length+' erreurs':'mon erreur'}</button>${cardable?`<button class="btn" style="flex:1" data-act="exr-cards">${e.kind==='blanc'?'Les remettre à revoir':'Les ajouter aux révisions'}</button>`:''}</div>`:''}
    ${items.map((r,k)=>{ const st=qState(k); const p=EXR.picks[k];
-     return `<div class="gen-card"><div class="spread"><span class="badge">${r.num?'Q'+esc(r.num):'Q'+(EXR.idx[k]+1)}</span><span class="verdict ${st===true?'ok':st===false?'ko':'todo'}">${st===true?'Juste':st===false?'Faux':'À corriger'}</span></div>
+     return `<div class="gen-card"><div class="spread"><span class="badge">${r.num?'Q'+esc(r.num):'Q'+(EXR.idx[k]+1)}</span><span class="verdict ${st===true?'ok':st===false?'ko':'todo'}">${st===true?'Juste':st===false?'Faux':'À vérifier'}</span></div>
       <div class="rt">${md(r.front)}</div>
       ${r.type==='qcm'?`<div class="qcm">${r.choices.map((x,i)=>{ const good=r.answer.includes(i), pk=p.includes(i); const cls=!r.answer.length?'':(good&&pk?'ok':(!good&&pk?'ko':(good?'ok miss':'')));
           return `<button class="${cls}" data-act="exr-key" data-q="${k}" data-j="${i}" aria-pressed="${pk}"><span class="k">${String.fromCharCode(65+i)}</span><span>${esc(x)}${pk?' <span class="small muted">· ton choix</span>':''}</span></button>`; }).join('')}</div>
@@ -4605,6 +4615,7 @@ document.addEventListener('click', async e=>{
   switch(act){
     case 'syn-open': openSheet(synSheet); break;
     case 'tri-open': openSheet(triSheet); break;
+    case 'ans-el': { const cur=SESS&&SESS.cur; if(!cur||!cur.res||!cur.res.els[+d.i]) break; (cur.own=cur.own||[])[+d.i]=elNext(cur.res.els[+d.i].v); cur.res=combineEls(cur.base, cur.ai, cur.own); paintSession(); break; }
     case 'ans-mode': { S.prefs.ans=d.m; savePrefs(); const live=SESS&&SESS.cur&&!$('#session').hidden; if(live){ if(SESS.cur.rec){ recStop(); SESS.cur.rec=false; } SESS.cur.spoke=false; paintSession(); } else rerender(); break; }
     case 'ans-mic': { const cur=SESS&&SESS.cur; if(!cur) break; const c=S.cards[cur.id]; if(!c) break;
       if(cur.rec){ recStop(); cur.rec=false; paintSession(); break; }
@@ -4642,8 +4653,10 @@ document.addEventListener('click', async e=>{
     case 'cas-start': casStart(d.id); break;
     case 'cas-other': { const st=UI.sheetStack; if(st[st.length-1]===casRunSheet) st.pop(); if(st[st.length-1]!==casSheet) st.push(casSheet); paintSheet(); break; }
     case 'cas-hint': { const u=UI.cas; if(!u) break; u.hint[u.i]=true; paintSheet(true); break; }
-    case 'cas-check': { const u=UI.cas; if(!u) break; if(u.rec){ recStop(); u.rec=false; } const st=CAS_BY[u.id].s[u.i]; u.res[u.i]=gradeAnswer({type:'qa', back:st.a}, u.texts[u.i])||{els:[], frac:0, empty:true}; paintSheet(true); break; }
-    case 'cas-next': { const u=UI.cas; if(!u) break; u.i++; if(u.i>=CAS_BY[u.id].s.length) casSave(); paintSheet(true); break; }
+    case 'cas-check': { const u=UI.cas; if(!u) break; if(u.rec){ recStop(); u.rec=false; } const k=u.i, st=CAS_BY[u.id].s[k]; const base=gradeAnswer({type:'qa', back:st.a}, u.texts[k]);
+      u.base=u.base||[]; u.ai=u.ai||[]; u.own=u.own||[]; u.base[k]=base; u.res[k]=base?combineEls(base, null, null):{els:[], frac:0, empty:true}; paintSheet(true); if(base && AI.sample) casAiGrade(k); break; }
+    case 'cas-el': { const u=UI.cas; if(!u) break; const k=+d.k, i=+d.i, r=u.res[k]; if(!r||!r.els[i]||!u.base[k]) break; (u.own[k]=u.own[k]||[])[i]=elNext(r.els[i].v); u.self[k]=null; u.res[k]=combineEls(u.base[k], u.ai[k], u.own[k]); if(u.saved) casSave(); paintSheet(true); break; }
+    case 'cas-next': { const u=UI.cas; if(!u) break; if(u.aiBusy===u.i){ toast('Claude corrige encore ta réponse…'); break; } if(u.res[u.i] && casPts(u.i)==null){ toast('Dis d\'abord si ta réponse était juste : touche les éléments « À vérifier », ou « J\'avais juste / J\'avais faux ».', 4600); break; } u.i++; if(u.i>=CAS_BY[u.id].s.length) casSave(); paintSheet(true); break; }
     case 'cas-self': { const u=UI.cas; if(!u) break; u.self[+d.k]=d.v==='1'; if(u.saved) casSave(); paintSheet(true); break; }
     case 'cas-mic': { const u=UI.cas; if(!u) break; if(u.rec){ recStop(); u.rec=false; paintSheet(true); break; } const i=u.i, pre=(u.texts[i]||'').trim();
       const ok=recStart('fr-FR', t=>{ u.texts[i]=(pre?pre+' ':'')+t; const el=$('#casText'); if(el) el.value=u.texts[i]; }, ()=>{ if(UI.cas===u&&u.rec){ u.rec=false; paintSheet(true); } });
@@ -4810,6 +4823,11 @@ document.addEventListener('click', async e=>{
       if(left) armConfirm(a, left+' sans réponse · terminer quand même ?', exrFinish); else exrFinish(); break; }
     case 'exr-key': { const r=exrItems()[+d.q], j=+d.j; r.answer=r.answer.includes(j)?r.answer.filter(x=>x!==j):r.answer.concat(j).sort((x,y)=>x-y); exrUpdate(); paintSheet(true); break; }
     case 'exr-self': EXR.self[+d.q]=d.v==='1'; exrUpdate(); paintSheet(true); break;
+    case 'exr-el': { const k=+d.k, i=+d.i, a=qAuto(k); if(!a||!a.els[i]) break; EXR.el=EXR.el||{}; (EXR.el[k]=EXR.el[k]||[])[i]=elNext(a.els[i].v); EXR.self[k]=null; exrUpdate(); paintSheet(true); break; }
+    case 'exr-ai': exrAiGrade(); break;
+    case 'exr-ai-copy': { const {items, keys}=exrAiItems(); if(!items.length){ toast('Pas de réponse rédigée à corriger.'); break; } UI.exrAiKeys=keys; await copyText(gradePrompt(items)); toast('Consigne copiée : colle-la dans Claude, puis colle sa réponse ici.', 3800); break; }
+    case 'exr-ai-apply': { const {items, keys}=exrAiItems(); const ks=UI.exrAiKeys&&UI.exrAiKeys.length===keys.length?UI.exrAiKeys:keys; const out=gradeParseText(UI.exrAiPaste, items);
+      if(!out){ toast("Je ne trouve pas la correction dans ce texte. Colle toute la réponse de Claude."); break; } const n=exrAiApply(out, ks); UI.exrAiPaste=''; toast(n?'Correction de Claude appliquée.':'Rien à appliquer.'); paintSheet(true); break; }
     case 'exr-close': closeSheet(); break;
     case 'exr-retry': { const w=exrWrong(); if(!w.length) break; if(UI.sheetStack[UI.sheetStack.length-1]===examResultSheet) UI.sheetStack.pop(); exrStart(EXR.examId, w); break; }
     case 'exr-cards': { const e=S.exams[EXR.examId]; if(e.kind==='blanc') blRequeue(e, exrWrong()); else examToCards(e, exrWrong()); break; }
@@ -4875,6 +4893,7 @@ document.addEventListener('input', e=>{
     case 'pref': { let v=el.value; if(el.type==='number'){ v=Math.max(+el.min||0, Math.min(+el.max||99999, parseInt(v||'0',10)||0)); } S.prefs[d.k]=v; savePrefs(); clearTimeout(UI.pt); UI.pt=setTimeout(updateDueDot, 300); break; }
     case 'exo-val': if(UI.exo) UI.exo.val=el.value; break;
     case 'ant-paste': ANT.paste=el.value; break;
+    case 'exr-ai-paste': UI.exrAiPaste=el.value; break;
     case 'ant-text': ANT.text=el.value; break;
     case 'pref-size': S.prefs.size=+el.value; $('#sizeVal').textContent=el.value+'px'; applyTheme(); savePrefs(); break;
     case 'accent': S.prefs.accent=el.value; applyTheme(); savePrefs(); break;
@@ -6535,10 +6554,11 @@ function ansBoxHTML(c, cur, am){
   return `<div class="ans-box">${am==='voice'?`<button class="btn btn-ghost" style="align-self:flex-start" data-act="say" data-l="fr-FR" data-t="${esc(ansQuestion(c))}">${I.ear} Réécouter la question</button>`:''}
     <label class="field">Ta réponse${c.eng?' en anglais':''}<textarea id="ansText" data-input="ans-text" rows="3" ${c.eng?'lang="en" autocapitalize="off" spellcheck="false"':''} placeholder="${am==='voice'?'Touche « Parler » et réponds à voix haute…':'Écris ta réponse…'}">${esc(cur.text||'')}</textarea></label>${mic}</div>`;
 }
-function ansResHTML(c, cur){ const r=cur.res; const n=r.els.length, got=r.els.reduce((a,e)=>a+e.v,0);
-  return `<div class="ans-res"><div class="spread"><p class="eyebrow">Ta réponse</p><span class="ans-score ${r.frac>=0.85?'ok':r.frac>=0.5?'mid':'ko'}">${r.alt?(r.frac?'Juste':'À revoir'):fmtPts(got)+' / '+n+' élément'+(n>1?'s':'')}</span></div>
-    <p class="ans-you">${esc(cur.text)}</p>${r.alt?'':ansElsHTML(r.els)}
-    <p class="small muted">Note conseillée encadrée. Si ta formulation est juste mais différente, choisis toi-même.</p></div>`; }
+function ansResHTML(c, cur){ const r=cur.res; const n=r.els.length, got=r.els.reduce((a,e)=>a+(e.v||0),0);
+  const lab=r.frac==null?'À vérifier':r.alt?(r.frac?'Juste':'À revoir'):fmtPts(got)+' / '+n+' élément'+(n>1?'s':'');
+  return `<div class="ans-res"><div class="spread"><p class="eyebrow">Ta réponse</p><span class="ans-score ${r.frac==null?'unk':r.frac>=0.85?'ok':r.frac>=0.5?'mid':'ko'}">${lab}</span></div>
+    <p class="ans-you">${esc(cur.text)}</p>${elsToggleHTML(r.els,'ans-el',0)}
+    <p class="small muted">${cur.aiBusy?'Claude corrige ta réponse…':elsNote(r)}${r.g?' La note conseillée est encadrée.':''}</p></div>`; }
 function ansSugg(html, cur){ const g=cur&&cur.res&&cur.res.g; return g?html.replace('class="grade g'+g+'"','class="grade g'+g+' sugg"'):html; }
 
 // ---------- Examen blanc : un sujet tiré de mes cartes, passé avec le moteur d'examen ----------
@@ -6582,20 +6602,22 @@ function blSheet(){
    ${past.length?`<section class="panel"><div class="section-title"><h3>Mes examens blancs</h3></div><div class="menu">${past.slice(0,8).map(e=>{ const a=(e.attempts||[]).slice(-1)[0];
      return `<button data-act="exam-open" data-id="${e.id}">${I.exam}<span><span class="t">${esc(e.title)}</span><span class="d">${fmtExamDate(e.date)} · ${plural(e.items.length,'question')}${exrLive(e.id)?' · en cours':a&&a.total?' · '+fmt20(a.score/a.total):''}</span></span>${I.chev}</button>`; }).join('')}</div></section>`:''}`;
 }
-function qAuto(k){ // correction automatique d'une question rédigée (examen blanc, ou corrigé avec des éléments en gras)
+function qAuto(k){ // correction d'une question rédigée : Claude, puis l'étudiant ; le repérage par mots ne fait que pré-cocher
   const e=S.exams[EXR.examId], r=exrItems()[k]; if(!e||r.type==='qcm') return null;
-  if(!(e.kind==='blanc' || /\*\*[^*]+\*\*/.test(r.back||''))) return null;
+  const ai=EXR.ai&&EXR.ai[k];
+  if(!(e.kind==='blanc' || /\*\*[^*]+\*\*/.test(r.back||'') || ai)) return null;
   const t=EXR.texts[k]; if(!t||!t.trim()) return {els:[], frac:0, empty:true};
-  return gradeAnswer({type:'qa', back:r.back, alt:r.alt}, t);
+  return combineEls(gradeAnswer({type:'qa', back:r.back, alt:r.alt}, t), ai, EXR.el&&EXR.el[k]);
 }
 function qPts(k){
   const r=exrItems()[k];
   if(r.type==='qcm'){ const st=qState(k); return st===null?null:(st?1:0); }
   if(EXR.self[k]===true||EXR.self[k]===false) return EXR.self[k]?1:0;
-  const a=qAuto(k); return a?Math.round(a.frac*100)/100:null;
+  const a=qAuto(k); return a&&a.frac!=null?Math.round(a.frac*100)/100:null;
 }
-function exrAutoHTML(k){ const a=qAuto(k); if(!a||a.empty||!a.els.length) return ''; const got=a.els.reduce((x,e)=>x+e.v,0);
-  return (a.alt?'':ansElsHTML(a.els))+`<p class="small muted">Correction automatique : ${a.alt?(a.frac?'juste':'faux'):fmtPts(got)+' élément'+(got>1?'s':'')+' sur '+a.els.length}${EXR.self[k]===true||EXR.self[k]===false?' · ta propre correction compte à la place':''}. Formulation juste mais différente ? Touche « J'avais juste ».</p>`; }
+function exrAutoHTML(k){ const a=qAuto(k); if(!a||a.empty||!a.els.length) return '';
+  const self=EXR.self[k]===true||EXR.self[k]===false;
+  return elsToggleHTML(a.els,'exr-el',k)+`<p class="small muted">${elsNote(a)}${self?' Ta correction « J\'avais juste / faux » compte à la place.':''}</p>`; }
 function exrByChap(){ const g={}; exrItems().forEach((r,k)=>{ const p=qPts(k); if(p===null) return; const key=r.chap||''; if(!g[key]) g[key]=[0,0]; g[key][0]+=p; g[key][1]++; }); return g; }
 function exrChapHTML(){ const e=S.exams[EXR.examId]; if(!e||e.kind!=='blanc') return '';
   const rows=Object.entries(exrByChap()).map(([ch,[p,n]])=>({ch, p:p/n, n})).sort((a,b)=>a.p-b.p); if(rows.length<2) return '';
@@ -6747,9 +6769,9 @@ function casSheet(){
      return `<button data-act="cas-start" data-id="${x.id}">${I.stetho||I.exam}<span><span class="t">${esc(x.n)}</span><span class="d">${plural(x.s.length,'étape')}${b>=0?' · meilleure note : '+fmt20(b):''}</span></span>${I.chev}</button>`; }).join('')}</div>`).join('')}`;
 }
 function casStart(id){ const x=CAS_BY[id]; if(!x) return; recStop();
-  UI.cas={id, i:0, texts:x.s.map(()=>''), res:x.s.map(()=>null), self:x.s.map(()=>null), hint:x.s.map(()=>false), t0:now(), saved:false, rec:false};
+  UI.cas={id, i:0, texts:x.s.map(()=>''), res:x.s.map(()=>null), base:x.s.map(()=>null), ai:x.s.map(()=>null), own:x.s.map(()=>null), self:x.s.map(()=>null), hint:x.s.map(()=>false), t0:now(), saved:false, rec:false, aiBusy:null};
   if(UI.sheetStack[UI.sheetStack.length-1]===casRunSheet) paintSheet(); else openSheet(casRunSheet); }
-function casPts(k){ const u=UI.cas; if(u.self[k]===true) return 1; if(u.self[k]===false) return 0; const r=u.res[k]; if(!r) return null; return Math.max(0, (r.frac||0)-(u.hint[k]?0.25:0)); }
+function casPts(k){ const u=UI.cas; if(u.self[k]===true) return 1; if(u.self[k]===false) return 0; const r=u.res[k]; if(!r||r.frac==null) return null; return Math.max(0, r.frac-(u.hint[k]?0.25:0)); }
 function casScore(){ const u=UI.cas, x=CAS_BY[u.id]; let s=0; x.s.forEach((_,k)=>{ s+=casPts(k)||0; }); return {s:Math.round(s*100)/100, t:x.s.length}; }
 function casSave(){ const u=UI.cas, x=CAS_BY[u.id]; const {s,t}=casScore(); const key='cas-'+u.id;
   const e=S.exams[key]||(S.exams[key]={id:key, kind:'cas', mod:'', title:'Cas clinique · '+x.n, date:'', dur:0, files:[], items:[], attempts:[], created:now(), t:now()});
@@ -6773,9 +6795,9 @@ function casRunSheet(){
        <button class="btn btn-primary btn-lg" data-act="cas-check">Valider cette étape</button>`;
     } else if(r){
       h+=`<p class="small" style="margin:0"><strong>Ta réponse :</strong> ${u.texts[k].trim()?esc(u.texts[k]):'<span class="muted">(vide)</span>'}</p>
-       ${r.els&&r.els.length?ansElsHTML(r.els):''}
+       ${r.els&&r.els.length?elsToggleHTML(r.els,'cas-el',k)+`<p class="small muted" style="margin:0">${u.aiBusy===k?'Claude corrige ta réponse…':elsNote(r)}</p>`:''}
        <div class="hintbox"><p class="eyebrow">Réponse attendue</p><div class="rt">${md(st.a)}</div>${st.x?`<p class="small" style="margin:6px 0 0">${esc(st.x)}</p>`:''}</div>
-       <div class="spread" style="flex-wrap:wrap;gap:6px"><span class="small"><strong>${fmtPts(casPts(k)||0)} / 1</strong>${u.hint[k]?' · indice utilisé':''}</span><span class="row" style="gap:6px"><button class="btn ${u.self[k]===true?'btn-primary':'btn-ghost'}" data-act="cas-self" data-k="${k}" data-v="1">J'avais juste</button><button class="btn ${u.self[k]===false?'btn-primary':'btn-ghost'}" data-act="cas-self" data-k="${k}" data-v="0">J'avais faux</button></span></div>
+       <div class="spread" style="flex-wrap:wrap;gap:6px"><span class="small"><strong>${casPts(k)==null?'À vérifier':fmtPts(casPts(k))+' / 1'}</strong>${u.hint[k]?' · indice utilisé':''}</span><span class="row" style="gap:6px"><button class="btn ${u.self[k]===true?'btn-primary':'btn-ghost'}" data-act="cas-self" data-k="${k}" data-v="1">J'avais juste</button><button class="btn ${u.self[k]===false?'btn-primary':'btn-ghost'}" data-act="cas-self" data-k="${k}" data-v="0">J'avais faux</button></span></div>
        ${k===u.i&&!end?`<button class="btn btn-primary btn-lg" data-act="cas-next">${k+1<n?'Étape suivante':'Voir mon résultat'}</button>`:''}`;
     }
     h+=`</section>`;
@@ -7362,6 +7384,97 @@ function dropAutoCards(){ // une seule fois : les cartes fabriquées automatique
   S.prefs.autoGone=1; savePrefs();
   if(n) setTimeout(()=>toast(n+' carte'+(n>1?'s':'')+' faite'+(n>1?'s':'')+' automatiquement retirée'+(n>1?'s':'')+'. Tes propres cartes sont gardées.', 5200), 600);
   return n;
+}
+// ---------- Correction des réponses rédigées : Claude corrige par le sens, l'étudiant a le dernier mot ----------
+// Le repérage par mots ne sert qu'à pré-cocher ce qu'il trouve ; ce qu'il ne trouve pas reste « à vérifier », jamais « faux » d'office.
+function combineEls(base, ai, own){
+  if(!base) return null;
+  const els=base.els.map((e,i)=>{ const o=own&&own[i]; if(o!=null) return {t:e.t, v:o, src:'toi'};
+    const a=ai&&ai.v?ai.v[i]:null; if(a!=null) return {t:e.t, v:a, src:'claude'};
+    return {t:e.t, v:e.v===1?1:null, src:'auto'}; });
+  const unk=els.some(e=>e.v==null), frac=unk?null:els.reduce((x,e)=>x+e.v,0)/Math.max(1,els.length);
+  return {els, frac, unk, g:frac==null?null:(frac>=0.85?3:frac>=0.5?2:1), alt:base.alt, ai:!!(ai&&ai.v), comment:(ai&&ai.c)||''};
+}
+const elNext = v => (v==null||v===0) ? 1 : v===1 ? 0.5 : 0;
+function elsToggleHTML(els, act, k){
+  return `<ul class="ans-els">${els.map((e,i)=>{ const st=e.v==null?'unk':e.v===1?'ok':e.v>0?'mid':'ko', lab={unk:'À vérifier', ok:'Trouvé', mid:'En partie', ko:'Absent'}[st];
+    return `<li class="${st}"><button class="el-tg" data-act="${act}" data-k="${k}" data-i="${i}" aria-label="${lab} : ${esc(e.t)}. Touche pour changer.">${lab}</button>${esc(e.t)}</li>`; }).join('')}</ul>`;
+}
+function elsNote(r){ return r.ai ? 'Corrigé par Claude'+(r.comment?' : '+esc(r.comment):'.')+' Touche un élément pour changer.'
+  : r.unk ? 'À vérifier : touche chaque élément pour dire si tu l\'avais, même avec d\'autres mots.' : 'Touche un élément pour changer la correction.'; }
+function gradePrompt(items){
+  return `${AI_GO}
+
+Tu corriges les réponses rédigées d'un étudiant en médecine (Faculté de médecine de l'UCAD, Dakar), comme un correcteur juste et bienveillant.
+Pour chaque question, regarde chaque élément attendu et dis s'il se trouve dans la réponse de l'étudiant :
+- 1 : l'idée y est, même dite autrement : synonyme, abréviation courante (HTA, IRC, PNN, AEG…), faute d'orthographe, autre ordre, formulation plus courte ou plus longue.
+- 0.5 : l'idée y est mais incomplète ou imprécise.
+- 0 : l'idée manque, ou l'étudiant dit autre chose, ou le contraire.
+Ne juge ni le style ni l'orthographe, et n'exige rien de plus que les éléments attendus. Si l'étudiant ajoute une erreur grave, dis-le dans le commentaire.
+
+${items.map((it,i)=>`Question ${i+1} : ${it.q}
+Réponse attendue : ${it.exp}
+Éléments attendus (${it.els.length}) : ${it.els.map((e,j)=>(j+1)+') '+e).join(' ; ')}
+Réponse de l'étudiant : ${it.ans}`).join('\n\n')}
+
+Réponds uniquement avec un tableau JSON valide, sans texte autour ni balises de code : un objet par question, dans le même ordre. "v" donne une note par élément attendu, dans l'ordre (1, 0.5 ou 0) ; "commentaire" est une phrase courte pour l'étudiant (ce qui manque ou ce qui est faux), ou "" si tout est juste.
+[{"v":[1,0.5,0],"commentaire":"…"}]`;
+}
+function gradeParseArr(arr, items){
+  if(arr && !Array.isArray(arr) && typeof arr==='object'){ const k=Object.keys(arr).find(k=>Array.isArray(arr[k])); arr=k?arr[k]:null; }
+  if(!Array.isArray(arr)) return null;
+  return items.map((it,i)=>{ const x=arr[i]; if(x==null) return null;
+    const v=Array.isArray(x)?x:Array.isArray(x.v)?x.v:Array.isArray(x.elements)?x.elements.map(e=>e&&typeof e==='object'?e.v:e):null; if(!v) return null;
+    return {v:it.els.map((_,j)=>{ const n=Number(v[j]); return v[j]==null||isNaN(n)?null:n>=0.75?1:n>=0.25?0.5:0; }), c:String((x&&(x.commentaire||x.comment))||'').trim().slice(0,240)}; });
+}
+function gradeParseText(text, items){ const m=String(text||'').match(/\[[\s\S]*\]/); if(!m) return null; try{ return gradeParseArr(JSON.parse(m[0]), items); }catch{ return null; } }
+async function aiGrade(items){
+  if(!AI.sample||!items.length) return null;
+  try{ return gradeParseArr(await AI.sample.json(gradePrompt(items), {modelTier:'default'}), items); }
+  catch(e){ return e&&e.text?gradeParseText(e.text, items):null; }
+}
+const gradeItem = (q, exp, base, ans) => ({q:plain(q).slice(0,900), exp:plain(exp).slice(0,900), els:base.els.map(e=>e.t), ans:String(ans||'').trim().slice(0,1500)});
+// examen blanc et annales : toutes les réponses rédigées en une fois
+function exrAiItems(){ const items=[], keys=[];
+  exrItems().forEach((r,k)=>{ if(r.type==='qcm'||!String(r.back||'').trim()) return; const t=EXR.texts[k]; if(!t||!t.trim()) return;
+    const base=gradeAnswer({type:'qa', back:r.back, alt:r.alt}, t); if(!base) return; items.push(gradeItem(r.front, r.back, base, t)); keys.push(k); });
+  return {items, keys}; }
+function exrAiApply(out, keys){ EXR.ai=EXR.ai||{}; let n=0; keys.forEach((k,i)=>{ if(out&&out[i]){ EXR.ai[k]=out[i]; n++; } }); if(n) exrUpdate(); return n; }
+async function exrAiGrade(){
+  if(!AI.sample||!EXR||EXR.aiBusy) return; const {items, keys}=exrAiItems(); if(!items.length) return;
+  EXR.aiBusy=true; if(UI.sheetStack[UI.sheetStack.length-1]===examResultSheet) paintSheet(true);
+  const out=[]; let ok=true; for(let i=0;i<items.length;i+=20){ const r=await aiGrade(items.slice(i,i+20)); if(!r){ ok=false; break; } out.push(...r); }
+  EXR.aiBusy=false; const n=ok?exrAiApply(out, keys):0;
+  toast(n?'Claude a corrigé tes réponses rédigées.':'Claude n\'a pas pu corriger. Vérifie toi-même les éléments, ou réessaie.', 4200);
+  if(UI.sheetStack[UI.sheetStack.length-1]===examResultSheet) paintSheet(true);
+}
+function exrAiPanelHTML(){
+  const {items}=exrAiItems(); if(!items.length) return '';
+  const done=items.length && Object.keys(EXR.ai||{}).length>=items.length;
+  if(AI.sample) return EXR.aiBusy?`<div class="notice">Claude corrige tes ${plural(items.length,'réponse rédigée','réponses rédigées')}…</div>`
+    :done?'':`<button class="btn btn-soft" data-act="exr-ai">Faire corriger mes réponses par Claude</button>`;
+  return `<section class="panel stack"><h3 style="margin:0">Faire corriger par Claude</h3>
+    <p class="small muted" style="margin:0">Claude corrige par le sens : synonymes, abréviations et fautes d'orthographe sont acceptés.</p>
+    <ol class="small" style="margin:0;padding-left:1.2em"><li>Copie la consigne.</li><li>Colle-la dans Claude.</li><li>Copie sa réponse et colle-la ici.</li></ol>
+    <button class="btn btn-soft" data-act="exr-ai-copy">Copier la consigne de correction</button>
+    <textarea data-input="exr-ai-paste" rows="3" placeholder="[{&quot;v&quot;:[1,0,1], …}]">${esc(UI.exrAiPaste||'')}</textarea>
+    <button class="btn btn-primary" data-act="exr-ai-apply">Appliquer la correction</button></section>`;
+}
+// séance « à l'écrit / à l'oral »
+async function sessAiGrade(cur, c){
+  cur.aiBusy=true;
+  const q=c.type==='cloze'?ansQuestion(c):c.front, exp=c.type==='cloze'?String(c.front).replace(/\{\{(.+?)\}\}/g,'$1')+(c.back?'\n'+c.back:''):c.back;
+  const r=await aiGrade([gradeItem(q, exp, cur.base, cur.text)]);
+  cur.aiBusy=false; if(r&&r[0]) cur.ai=r[0]; cur.res=combineEls(cur.base, cur.ai, cur.own);
+  if(SESS&&SESS.cur===cur&&cur.revealed) paintSession();
+}
+// cas cliniques
+async function casAiGrade(k){
+  const u=UI.cas, st=CAS_BY[u.id].s[k]; u.aiBusy=k; if(UI.sheetStack[UI.sheetStack.length-1]===casRunSheet) paintSheet(true);
+  const r=await aiGrade([gradeItem(st.d+'\n'+st.q, st.a, u.base[k], u.texts[k])]);
+  if(UI.cas!==u) return; u.aiBusy=null; if(r&&r[0]) u.ai[k]=r[0];
+  u.res[k]=combineEls(u.base[k], u.ai[k], u.own[k]); if(u.saved) casSave();
+  if(UI.sheetStack[UI.sheetStack.length-1]===casRunSheet) paintSheet(true);
 }
 // ---------- Démarrage ----------
 loadLocal(); exrLoad(); buildIndex(); itrLoad(); dropAutoCards(); applyTheme(); updateDueDot(); render();
