@@ -491,6 +491,9 @@ button.kpi:disabled{opacity:1;cursor:default}
   .exr-aside .qnav button{min-width:0}
   .exr-grid-m{display:none}
 }
+/* Page d'une leçon : notes longues repliées */
+.note-clip{max-height:16em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 60%,transparent);mask-image:linear-gradient(#000 60%,transparent)}
+.note-more{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
 /* Internat */
 .plan{display:flex;flex-direction:column}
 .pl{padding:3px 0;line-height:1.4}
@@ -1730,7 +1733,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 57; // à changer avec VERSION dans sw.js
+const APP_VER = 58; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -2105,28 +2108,40 @@ function chapterSheet(id){
   const c=CH[id]; if(!c) return sheetTop('Chapitre')+'<p>Chapitre introuvable.</p>';
   const s=SUBS[c.sub], st=statusOf(id), note=(S.notes[id]||{}).text||'';
   const cards=Object.values(S.cards).filter(x=>x.chap===id).sort((a,b)=>(a.created||0)-(b.created||0));
-  const cnt=counts('c:'+id);
+  const cnt=counts('c:'+id), long=noteLong(note);
+  const allCards=UI.chapAll===id || cards.length<=CARDS_SHOW+2;
   return sheetTop(s.name+' · '+c.n+'/'+s.all.length)+`
    <h2 style="font-size:1.5rem">${esc(c.title)}</h2>
    <div class="seg" role="group" aria-label="Où en es-tu ?">${STATUS.map((l,i)=>`<button data-act="set-status" data-id="${id}" data-s="${i}" aria-pressed="${st===i}">${l}</button>`).join('')}</div>
    <button class="btn btn-primary btn-lg" data-act="start" data-mode="${cnt.rev+cnt.lrn+cnt.nw?'srs':'cram'}" data-scope="c:${id}" ${cards.length?'':'disabled'}>${cards.length?'Réviser ce chapitre · '+plural(cards.length,'carte'):'Pas encore de carte à réviser'}</button>
-   ${readyPanel(id)}
-   ${exaChapPanel(id)}
-   ${trainChapPanel(id)}
-   ${intChapPanel(id)}
-   ${docsSection(id)}
    <section class="panel"><div class="section-title"><h3>Mes notes</h3><div class="row" style="gap:4px"><button class="btn btn-ghost" data-act="imp-lesson" data-id="${id}">Importer</button><button class="btn btn-ghost" data-act="note-edit" data-id="${id}">${note?'Modifier':'Écrire'}</button></div></div>
-     <div id="noteView" class="rt">${note?md(note):'<p class="muted small">Écris ou colle ici ton résumé et les points clés du cours.</p>'}</div>
-     <textarea id="noteEdit" data-input="note" data-id="${id}" hidden placeholder="## Définition&#10;- …&#10;**Mot-clé** …" style="min-height:220px">${esc(note)}</textarea>
-   </section>
-   <section class="panel"><div class="section-title"><h3>Cartes</h3><div class="row" style="gap:4px">${cards.length?`<button class="btn btn-ghost" data-act="share-chap" data-id="${id}">Partager</button>`:''}<button class="btn btn-ghost" data-act="edit-card" data-chap="${id}">${I.plus} Ajouter</button></div></div>
-     ${cards.length?`<div class="clist">${cards.map(cardRow).join('')}</div>`:'<p class="muted small">Pas encore de carte pour ce chapitre.</p>'}
+     <div id="noteView" class="rt${long?' note-clip':''}">${note?md(note):'<p class="muted small">Écris ou colle ici ton résumé et les points clés du cours.</p>'}</div>
+     ${long?`<div class="note-more" id="noteMore"><button class="btn btn-soft" data-act="note-read" data-id="${id}">Lire toute la leçon</button><span class="small muted">${noteStats(note)}</span></div>`:''}
+     <textarea id="noteEdit" data-input="note" data-id="${id}" hidden placeholder="## Définition&#10;- …&#10;**Mot-clé** …" style="min-height:220px${long?';height:60vh':''}">${esc(note)}</textarea>
    </section>
    <section class="panel"><div class="section-title"><h3>Avec Claude</h3><span class="small muted">facultatif</span></div>
      <p class="small muted" id="lessonHelp">Tu viens d'apprendre la leçon ? <strong>Teste-toi</strong> avec des cartes tirées de ton cours, sans rien enregistrer. Pour garder des cartes dans tes révisions : <strong>Préparer des cartes</strong>, elles sont rangées dans la leçon.</p>
      <div class="row" style="margin-top:10px"><button class="btn btn-soft" style="flex:1" data-act="ant-open" data-id="${id}">Me tester (sans enregistrer)</button><button class="btn btn-soft" style="flex:1" data-act="gen-for" data-id="${id}">Préparer des cartes</button></div>
    </section>
+   <section class="panel" id="chapCards"><div class="section-title"><h3>Cartes${cards.length?' <span class="small muted">· '+cards.length+'</span>':''}</h3><div class="row" style="gap:4px">${cards.length?`<button class="btn btn-ghost" data-act="share-chap" data-id="${id}">Partager</button>`:''}<button class="btn btn-ghost" data-act="edit-card" data-chap="${id}">${I.plus} Ajouter</button></div></div>
+     ${cards.length?`<div class="clist">${(allCards?cards:cards.slice(0,CARDS_SHOW)).map(cardRow).join('')}</div>${cards.length>CARDS_SHOW+2?`<button class="btn btn-ghost" style="width:100%;margin-top:8px" data-act="chap-cards" data-id="${id}">${allCards?'Réduire la liste':'Voir les '+cards.length+' cartes'}</button>`:''}`:'<p class="muted small">Pas encore de carte pour ce chapitre.</p>'}
+   </section>
+   ${readyPanel(id)}
+   ${exaChapPanel(id)}
+   ${trainChapPanel(id)}
+   ${intChapPanel(id)}
+   ${docsSection(id)}
    ${c.custom?`<button class="btn danger" data-act="del-chap" data-id="${id}">Supprimer ce chapitre</button>`:''}`;
+}
+const CARDS_SHOW=6;
+function noteLong(t){ return !!t && (t.length>1200 || t.split('\n').length>18); }
+function noteStats(t){ const n=(String(t||'').match(/\S+/g)||[]).length; return n.toLocaleString('fr-FR')+' mots · environ '+Math.max(1,Math.round(n/200))+' min de lecture'; }
+function noteReadSheet(){
+  const id=UI.chapId, c=CH[id], note=(S.notes[id]||{}).text||'';
+  return sheetTop('Ma leçon')+`<div class="stack" style="gap:4px"><h2 style="font-size:1.375rem;margin:0">${esc(c?c.title:'')}</h2><p class="small muted" style="margin:0">${noteStats(note)}</p></div>
+   <article class="panel rt">${note?md(note):'<p class="muted small">Pas de notes.</p>'}</article>
+   <div class="row"><button class="btn btn-soft" style="flex:1" data-act="ant-open" data-id="${id}">Me tester</button><button class="btn btn-soft" style="flex:1" data-act="gen-for" data-id="${id}">Préparer des cartes</button></div>
+   <div class="row"><button class="btn btn-ghost" style="flex:1" data-act="note-top">Revenir en haut</button><button class="btn btn-primary" style="flex:1" data-act="sheet-back">Fermer</button></div>`;
 }
 function cardRow(c){
   const s=c.srs; let when;
@@ -4749,7 +4764,10 @@ document.addEventListener('click', async e=>{
       Object.values(S.cards).filter(x=>x.chap===d.id).forEach(x=>{ x.chap=''; saveCard(x); }); saveLocal(); cloudPut('progress'); buildIndex(); closeSheet(); toast('Chapitre supprimé (ses cartes sont gardées sans chapitre)'); }); break;
     case 'set-status': { const old=statusOf(d.id), s=+d.s; setStatus(d.id, s);
       updateDueDot(); paintSheet(true); rerender(); break; }
-    case 'note-edit': { const v=$('#noteView'), ta=$('#noteEdit'); if(ta.hidden){ ta.hidden=false; v.hidden=true; a.textContent='Terminé'; ta.focus(); } else { ta.hidden=true; v.hidden=false; v.innerHTML=ta.value?md(ta.value):'<p class="muted small">Pas de notes.</p>'; a.textContent=ta.value?'Modifier':'Écrire'; } break; }
+    case 'note-edit': { const v=$('#noteView'), ta=$('#noteEdit'), mo=$('#noteMore'); if(ta.hidden){ ta.hidden=false; v.hidden=true; if(mo) mo.hidden=true; a.textContent='Terminé'; ta.focus(); } else paintSheet(true); break; }
+    case 'note-read': UI.chapId=d.id; openSheet(noteReadSheet); break;
+    case 'note-top': { const sh=$('#sheet'); if(sh) sh.scrollTop=0; break; }
+    case 'chap-cards': { const open=UI.chapAll===d.id; UI.chapAll=open?null:d.id; paintSheet(true); if(open){ const sc=$('#chapCards'); if(sc) sc.scrollIntoView({block:'nearest'}); } break; }
     case 'lesson': {
       const id=d.id; const out=$('#lessonOut'); const prompt=buildLessonPrompt(id);
       if(!AI.sample){ await copyText(prompt); out.hidden=false; out.innerHTML='<p class="small">Consigne copiée. Colle-la dans une conversation avec ton IA (Claude, ChatGPT, Gemini…).</p>'; break; }
