@@ -407,6 +407,13 @@ button.kpi:disabled{opacity:1;cursor:default}
 .rs-t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
 .rs-t strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rs-go{flex:none;font-weight:700;color:var(--link)}
+.learn-list{display:flex;flex-direction:column;gap:8px}
+.learn-row{display:flex;align-items:center;gap:8px;min-width:0}
+.learn-row .rs-row{flex:1 1 auto;min-width:0}
+.learn-row .rs-row svg{flex:none;width:18px;height:18px;color:var(--muted)}
+.learn-row .btn-sm{flex:none}
+.learn-row .rs-t strong{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}
+@media (min-width:1100px){.learn-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}}
 .wk-list{display:flex;flex-direction:column;gap:14px}
 .wk-row{display:flex;align-items:center;gap:12px}
 .wk-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px}
@@ -1176,7 +1183,7 @@ const FONTS = {
  serif:{name:'Livre', css:"'Source Serif 4',Georgia,'Times New Roman',serif"},
  system:{name:'Système', css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"}
 };
-const HOME_SECTIONS = {today:'Révisions du jour', countdown:'Prochain examen', stats:'Objectif, série et semaine', plan:'Programme du jour', resume:'Reprendre', weak:'Points faibles à travailler', train:"S'entraîner", exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', cas:'Cas cliniques', img:"Analyse d'images", exo:'Exercices de calcul', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité"};
+const HOME_SECTIONS = {today:'Révisions du jour', countdown:'Prochain examen', learn:'Leçons à apprendre', stats:'Objectif, série et semaine', plan:'Programme du jour', resume:'Reprendre', weak:'Points faibles à travailler', train:"S'entraîner", exams:'Mes examens', internat:'Internat', syn:'Fiches syndromes', tri:'Triades', exa:'Examen clinique', eng:'Anglais médical', cas:'Cas cliniques', img:"Analyse d'images", exo:'Exercices de calcul', edt:'Cours du jour', progress:'Progression par module', heatmap:"Calendrier d'activité"};
 const DEFAULT_PREFS = {t:0, name:'', theme:'cahier', mode:'auto', accent:'', font:'atkinson', heads:'expressive', size:17, radius:'round', density:'normal', anim:'flip', buttons:4,
   semStart:'2026-11-19', examDate:'', newPerDay:25, maxRev:300, capExam:true, quick:10, lastExport:0,
   home:[['today',1],['exams',1],['internat',1],['syn',1],['tri',1],['countdown',1],['edt',1],['progress',1],['heatmap',1],['plan',1]]};
@@ -1674,11 +1681,11 @@ function weakSpot(){
 }
 function ensureHome(){
   const h=Array.isArray(S.prefs.home)?S.prefs.home:[];
-  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='eng'?Math.max(i,h.findIndex(r=>r[0]==='exa'))+1:k==='cas'?Math.max(i,h.findIndex(r=>r[0]==='eng'))+1:k==='img'?Math.max(i,h.findIndex(r=>r[0]==='cas'))+1:k==='exo'?Math.max(i,h.findIndex(r=>r[0]==='img'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
+  for(const k of Object.keys(HOME_SECTIONS)){ if(!h.some(r=>r[0]===k)){ const i=h.findIndex(r=>r[0]==='today'); h.splice(k==='learn'?Math.max(i,h.findIndex(r=>r[0]==='countdown'))+1:k==='tri'?Math.max(i,h.findIndex(r=>r[0]==='syn'))+1:k==='exa'?Math.max(i,h.findIndex(r=>r[0]==='tri'))+1:k==='eng'?Math.max(i,h.findIndex(r=>r[0]==='exa'))+1:k==='cas'?Math.max(i,h.findIndex(r=>r[0]==='eng'))+1:k==='img'?Math.max(i,h.findIndex(r=>r[0]==='cas'))+1:k==='exo'?Math.max(i,h.findIndex(r=>r[0]==='img'))+1:k==='syn'||k==='exams'?i+1:k==='internat'?Math.max(i,h.findIndex(r=>r[0]==='exams'))+1:h.length, 0, [k,1]); } }
   if(!S.prefs.planV){ const j=h.findIndex(r=>r[0]==='plan'); if(j>=0){ const [row]=h.splice(j,1); h.splice(h.findIndex(r=>r[0]==='today')+1,0,row); } S.prefs.planV=1; }
   if((S.prefs.homeV||0)<2){ // une fois : l'accueil prend la forme du tableau de bord des maquettes
     const vis={}; h.forEach(r=>{ vis[r[0]]=r[1]; });
-    const order=['today','countdown','stats','plan','resume','weak','train','edt','progress','heatmap','exams','internat','syn','tri','exa','eng','cas','img','exo'];
+    const order=['today','countdown','learn','stats','plan','resume','weak','train','edt','progress','heatmap','exams','internat','syn','tri','exa','eng','cas','img','exo'];
     const moved=new Set(['exams','internat','syn','tri','exa','eng','cas','img','exo']); // rangés dans « S'entraîner » et l'onglet Examens
     h.length=0; order.forEach(k=>h.push([k, moved.has(k)?0:(vis[k]===0?0:1)])); S.prefs.homeV=2; }
   S.prefs.home=h.filter(r=>HOME_SECTIONS[r[0]]);
@@ -1736,7 +1743,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 59; // à changer avec VERSION dans sw.js
+const APP_VER = 60; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1962,7 +1969,7 @@ function viewHome(){
   return html;
 }
 function homeSection(k){
-  const dash={today:dashToday, countdown:dashExam, stats:dashStats, resume:dashResume, weak:dashWeak, train:dashTrain}[k]; if(dash) return dash();
+  const dash={today:dashToday, countdown:dashExam, learn:dashLearn, stats:dashStats, resume:dashResume, weak:dashWeak, train:dashTrain}[k]; if(dash) return dash();
   if(k==='today'){
     const c=counts('all'); const total=Object.keys(S.cards).length;
     if(!total) return `<section class="today"><p class="eyebrow">Pour commencer</p><h2>Ouvre tes cours</h2>
@@ -4786,6 +4793,8 @@ document.addEventListener('click', async e=>{
       S.custom.push({id:uid('x'), sub:UI.addSub, title:t.trim(), created:now(), t:now()}); saveLocal(); cloudPut('progress'); buildIndex(); closeSheet(); toast('Chapitre ajouté'); break; }
     case 'del-chap': armConfirm(a,'Confirmer la suppression',()=>{ const c=S.custom.find(x=>x.id===d.id); if(c){ c.del=true; c.t=now(); }
       Object.values(S.cards).filter(x=>x.chap===d.id).forEach(x=>{ x.chap=''; saveCard(x); }); saveLocal(); cloudPut('progress'); buildIndex(); closeSheet(); toast('Chapitre supprimé (ses cartes sont gardées sans chapitre)'); }); break;
+    case 'learn-done': { if(!CH[d.id]) break; setStatus(d.id, 2); updateDueDot(); rerender(); toast('« '+CH[d.id].title+' » : marquée « Appris ».', 2800); break; }
+    case 'learn-all': UI.learnAll=!UI.learnAll; rerender(); break;
     case 'set-status': { const old=statusOf(d.id), s=+d.s; setStatus(d.id, s);
       updateDueDot(); paintSheet(true); rerender(); break; }
     case 'note-edit': { const v=$('#noteView'), ta=$('#noteEdit'), mo=$('#noteMore'); if(ta.hidden){ ta.hidden=false; v.hidden=true; if(mo) mo.hidden=true; a.textContent='Terminé'; ta.focus(); } else paintSheet(true); break; }
@@ -7325,6 +7334,21 @@ function dashToday(){
     ${n?`<button class="btn-link" data-act="aud-start" data-scope="all">${I.ear} Écouter mes cartes, mains libres</button>`:''}
     ${gsMini()}
   </div>${art}</section>`;
+}
+function learnList(){ // leçons marquées « Vu en cours » et pas encore « Appris » : les plus anciennes d'abord
+  return Object.keys(S.progress).filter(id=>CH[id] && statusOf(id)===1).sort((a,b)=>((S.progress[a]||{}).t||0)-((S.progress[b]||{}).t||0));
+}
+function seenAgo(t){ if(!t) return ''; const d=Math.round((new Date().setHours(0,0,0,0)-new Date(t).setHours(0,0,0,0))/DAY); return d<=0?"vue aujourd'hui":d===1?'vue hier':'vue il y a '+d+' jours'; }
+function dashLearn(){
+  const ids=learnList(), show=UI.learnAll?ids:ids.slice(0,5);
+  const head=`<h3 style="margin:0">À apprendre${ids.length?` <span class="small muted">· ${plural(ids.length,'leçon')}</span>`:''}</h3>`;
+  if(!ids.length) return `<section class="panel stack">${head}<p class="small muted" style="margin:0">Aucune leçon en attente. Quand tu marques une leçon « Vu en cours », elle s'affiche ici jusqu'à ce que tu la marques « Appris ».</p></section>`;
+  const rows=show.map(id=>{ const c=CH[id], m=MODS[c.mod], n=Object.values(S.cards).filter(x=>x.chap===id && !x.tmp).length;
+    const meta=[m?(m.short||m.name):'', seenAgo((S.progress[id]||{}).t), n?plural(n,'carte'):''].filter(Boolean).join(' · ');
+    return `<div class="learn-row"><button class="rs-row" data-act="chap" data-id="${id}"><span class="rs-t"><strong>${esc(c.title)}</strong><span class="small muted">${esc(meta)}</span></span>${I.chev}</button><button class="btn btn-soft btn-sm" data-act="learn-done" data-id="${id}" aria-label="Marquer « ${esc(c.title)} » comme apprise">Appris</button></div>`; }).join('');
+  return `<section class="panel stack"><div class="stack" style="gap:4px">${head}<p class="small muted" style="margin:0">Vues en cours, pas encore apprises${ids.length>1?" : les plus anciennes d'abord":''}. Touche une leçon pour l'ouvrir, ou « Appris » quand c'est fait.</p></div>
+    <div class="learn-list">${rows}</div>
+    ${ids.length>5?`<button class="btn btn-ghost" data-act="learn-all">${UI.learnAll?'Réduire la liste':'Voir les '+ids.length+' leçons'}</button>`:''}</section>`;
 }
 function dashExam(){
   const ex=examDate(), dEx=daysUntil(ex.date), dSem=daysUntil(semStart()), pr=progOf(modsOf(myLvl(),mySem()).flatMap(modChaps));
