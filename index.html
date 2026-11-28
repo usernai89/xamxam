@@ -461,6 +461,9 @@ button.kpi:disabled{opacity:1;cursor:default}
   .flash .front{font-size:1.4375rem}
 }
 .gen-saved{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px;font-size:.9375rem}
+.obj-groups{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:12px}
+.obj-groups ul{margin:6px 0 0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px;font-size:.9375rem}
+.obj-miss{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
 .ans-els li{align-items:center}
 .el-tg{flex:none;min-width:86px;min-height:30px;padding:2px 10px;border:0;border-radius:999px;font:inherit;font-size:0.75rem;font-weight:700;text-align:center;cursor:pointer;background:var(--surface);color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line2)}
 .ans-els li.ok>.el-tg{background:var(--good);color:var(--bg);box-shadow:none}
@@ -1733,7 +1736,7 @@ try{ new MutationObserver(applyTheme).observe(document.documentElement,{attribut
 
 // ---------- Claude (IA) ----------
 const PWA = !!window.XAMXAM_PWA;
-const APP_VER = 58; // à changer avec VERSION dans sw.js
+const APP_VER = 59; // à changer avec VERSION dans sw.js
 let installEvt=null;
 const AI = { sample:null, images:null, ready:false };
 async function aiInit(){
@@ -1790,15 +1793,16 @@ ${ctx.title?'Leçon : '+ctx.title:''}
 
 Voici la leçon (le cours de l'étudiant) :
 """
-${String(o.text||'').trim().slice(0,14000)}
+${String(o.text||'').trim().slice(0,30000)}
 """
 
-Écris jusqu'à ${o.n} cartes, ${o.level==='internat'?"niveau concours de l'internat (les détails, les diagnostics différentiels et les pièges que contient la leçon)":"niveau examen (l'essentiel de la leçon, solide et précis)"}. Types à utiliser, en les mélangeant : ${types}.
+Le nombre de cartes n'est pas fixé à l'avance : il dépend seulement des objectifs du cours. Niveau : ${o.level==='internat'?"concours de l'internat (les détails, les diagnostics différentiels et les pièges que contient la leçon)":"examen (l'essentiel de la leçon, solide et précis)"}. Types à utiliser, en les mélangeant : ${types}.
 
 Méthode, dans cet ordre :
 1. Lis la leçon et relève ses objectifs de cours : ceux qui sont écrits (« Objectifs », « À la fin de ce cours, l'étudiant doit… ») ou, s'il n'y en a pas, ceux qui découlent de ses titres et de ses parties.
-2. Les cartes répondent à ces objectifs, en les couvrant tous. Reprends les définitions, les classifications, les chiffres et les formulations de la leçon mot pour mot, ou de très près si une reformulation est nécessaire. Ne contredis jamais la leçon et n'en change pas les valeurs.
-3. Utilise SEULEMENT ce qui est écrit dans la leçon : aucune notion, aucun chiffre, aucun nom, aucun exemple ni aucune recommandation qui n'y figure pas, même si tu le sais exact. Chaque réponse doit pouvoir se retrouver dans la leçon. Si la leçon ne permet pas d'écrire ${o.n} bonnes cartes, écris-en moins.
+2. Pour chaque objectif, dans l'ordre du cours, écris toutes les cartes nécessaires pour l'atteindre, et seulement celles-là : une carte par notion à retenir (définition, classification, signe, mécanisme, valeur, étiologie, conduite à tenir). Un objectif simple donne 1 ou 2 cartes, un objectif riche en donne davantage. Tous les objectifs sont couverts ; pas de doublon, pas de carte de remplissage, rien en dehors des objectifs. Reprends les définitions, les classifications, les chiffres et les formulations de la leçon mot pour mot, ou de très près si une reformulation est nécessaire. Ne contredis jamais la leçon et n'en change pas les valeurs.
+3. Utilise SEULEMENT ce qui est écrit dans la leçon : aucune notion, aucun chiffre, aucun nom, aucun exemple ni aucune recommandation qui n'y figure pas, même si tu le sais exact. Chaque réponse doit pouvoir se retrouver dans la leçon. Si la leçon ne traite pas un objectif, ne l'invente pas : passe-le.
+4. Dans chaque carte, "obj" rappelle l'objectif qu'elle sert : son numéro puis quelques mots, par exemple « 2. Décrire les signes du syndrome pyramidal ». Toutes les cartes d'un même objectif portent exactement le même "obj".
 
 Règles :
 - Une seule idée par carte, formulée précisément ; pas de question à réponse oui/non.
@@ -1818,7 +1822,7 @@ Mise en forme des réponses ("back") : JAMAIS un bloc de texte. L'étudiant doit
 Exemple de "back" bien présenté : "**Mot-clé 1**, **mot-clé 2** et **mot-clé 3**\\n\\n- détail tiré de la leçon\\n- autre détail".
 
 Réponds uniquement avec un tableau JSON, sans texte autour ni balises de code, de cette forme. ${AI_JSON}
-[{"type":"qa","front":"…","back":"**…** …\\n\\n- …\\n- …","hint":"…"},{"type":"cloze","front":"… {{mot-clé}} …","back":"…","hint":"…"},{"type":"qcm","front":"…","choices":["…","…","…","…"],"answer":[0,2],"back":"A. Vrai : …\\nB. Faux : …\\nC. Vrai : …\\nD. Faux : …","hint":"…"}]`;
+[{"obj":"1. …","type":"qa","front":"…","back":"**…** …\\n\\n- …\\n- …","hint":"…"},{"obj":"1. …","type":"cloze","front":"… {{mot-clé}} …","back":"…","hint":"…"},{"obj":"2. …","type":"qcm","front":"…","choices":["…","…","…","…"],"answer":[0,2],"back":"A. Vrai : …\\nB. Faux : …\\nC. Vrai : …\\nD. Faux : …","hint":"…"}]`;
 }
 function buildLessonPrompt(chapId){
   const ctx=chapCtx(chapId); const notes=(S.notes[chapId]||{}).text||'';
@@ -1867,7 +1871,7 @@ function normalizeGenerated(arr){
     const front=String(get(x,'front','question','recto','enonce','q')).trim(); if(!front) continue;
     let backV=get(x,'back','verso','explication','explanation','reponse','answer_text','correction');
     if(!backV && type!=='qcm' && typeof x.answer==='string') backV=x.answer;
-    const c={type, front, back:shapeBack(String(backV).trim()), hint:String(get(x,'hint','astuce','mnemo','mnemotechnique')).trim(), choices:[], answer:[]};
+    const c={type, front, back:shapeBack(String(backV).trim()), hint:String(get(x,'hint','astuce','mnemo','mnemotechnique')).trim(), obj:String(get(x,'obj','objectif','objective')).trim().slice(0,160), choices:[], answer:[]};
     if(type==='qcm'){
       c.choices=Array.isArray(choicesRaw)?choicesRaw.map(s=>String(s).replace(/^\s*[A-Fa-f][.)]\s+/,'').trim()).filter(Boolean).slice(0,6):[];
       let ans=get(x,'answer','answers','bonnes','correct','reponses');
@@ -1926,7 +1930,7 @@ function parseLoose(text){
 // ---------- UI état ----------
 const UI = { tab:(lsGet('xamxam.tab')||'home'), progFilter:'all', progQuery:'', open:new Set(['semio']),
   rev:{mode:'srs', scope:'all', q:''},
-  gen:{chap:'', source:'text', focus:'', text:'', photos:[], n:10, types:['qa','cloze','qcm'], level:'l3', hint:true, busy:false, err:'', stream:'', results:null, paste:''},
+  gen:{chap:'', source:'text', focus:'', text:'', photos:[], types:['qa','cloze','qcm'], level:'l3', hint:true, busy:false, err:'', stream:'', results:null, paste:''},
   imp:{target:'', mod:'', blobs:[], editId:null, title:'', date:'', kind:'lesson', chap:'', year:'', text:'', file:'', msg:'', err:'', busy:false, items:null, scanned:null, paste:'', aiOpen:false, aiBusy:false},
   newTab:'hand', sheetStack:[] };
 if(!['home','prog','rev','new','me'].includes(UI.tab)) UI.tab='home';
@@ -2238,7 +2242,7 @@ function aiPanel(){
    <label class="field">Chapitre<select id="genChap" data-input="gen-chap">${scopeOptions(g.chap,true)}</select></label>
    <label class="field">Ton cours <span class="field-hint">Les cartes viennent uniquement de ce texte. Colle un passage de ton polycopié ou de tes notes${canLoad||hasNotes?', ou reprends ce que XamXam a déjà pour ce chapitre':''}.</span><textarea id="genText" data-input="gen-text" placeholder="Colle ici le texte de ton cours…">${esc(g.text)}</textarea></label>
    ${canLoad||hasNotes?`<div class="row">${canLoad?'<button class="btn btn-soft" data-act="gen-load-chap">Charger la leçon de ce chapitre</button>':''}${hasNotes?'<button class="btn btn-ghost" data-act="gen-use-notes">Utiliser mes notes de ce chapitre</button>':''}</div>`:''}`;
-  html+=`<div class="field"><span>Nombre de cartes</span><div class="seg" role="group" aria-label="Nombre">${[5,10,15,20].map(n=>`<button data-act="gen-n" data-n="${n}" aria-pressed="${g.n===n}">${n}</button>`).join('')}</div></div>
+  html+=`<p class="small muted" style="margin:0"><strong>Nombre de cartes :</strong> selon les objectifs du cours. Claude relève les objectifs de la leçon et fait, pour chacun, les cartes qu'il faut.</p>
    <div class="field"><span>Types</span><div class="chips">${[['qa','Question / réponse'],['cloze','Texte à trous'],['qcm','QCM']].map(([k,l])=>`<button class="chip" data-act="gen-type" data-t="${k}" aria-pressed="${g.types.includes(k)}">${l}</button>`).join('')}</div></div>
    <div class="field"><span>Niveau</span><div class="seg" role="group" aria-label="Niveau"><button data-act="gen-level" data-l="l3" aria-pressed="${g.level==='l3'}">Examen L3</button><button data-act="gen-level" data-l="internat" aria-pressed="${g.level==='internat'}">Internat</button></div></div>
    <label class="row" style="justify-content:space-between;font-weight:700"><span>Astuce ou mini-histoire pour retenir</span><input type="checkbox" class="toggle" id="genHint" data-input="gen-hint" ${g.hint?'checked':''}></label>`;
@@ -2607,7 +2611,7 @@ async function generate(){
   g.busy=true; g.err=''; g.results=null; g.saved=null; rerender();
   aiCtl=new AbortController();
   try{
-    const opts={signal:aiCtl.signal, modelTier:'default', onText:({text})=>{ const n=(text.match(/"front"\s*:/g)||[]).length; const el=$('#genCount'); if(el) el.textContent=n?n+'/'+g.n:''; }};
+    const opts={signal:aiCtl.signal, modelTier:'default', onText:({text})=>{ const n=(text.match(/"front"\s*:/g)||[]).length; const el=$('#genCount'); if(el) el.textContent=n?plural(n,'carte'):''; }};
     const data=await AI.sample.json(prompt, opts);
     const res=normalizeGenerated(data);
     if(!res.length) g.err='Aucune carte exploitable. Vérifie le texte de ton cours (assez long et lisible), puis réessaie.';
@@ -2618,7 +2622,7 @@ async function generate(){
 }
 function saveGenerated(){ // les cartes de Claude vont directement dans la leçon, sans étape de relecture
   const g=UI.gen; const ids=[];
-  for(const r of (g.results||[])){ if(r.off) continue; const c=newCard({chap:g.chap, type:r.type, front:r.front, back:r.back, hint:r.hint||'', choices:r.choices||[], answer:r.answer||[]}); saveCard(c); ids.push(c.id); }
+  for(const r of (g.results||[])){ if(r.off) continue; const c=newCard({chap:g.chap, type:r.type, front:r.front, back:r.back, hint:r.hint||'', obj:r.obj||'', choices:r.choices||[], answer:r.answer||[]}); saveCard(c); ids.push(c.id); }
   if(g.chap && statusOf(g.chap)===0) setStatus(g.chap,1);
   g.results=null; g.saved=ids.length?{ids, chap:g.chap}:null; updateDueDot();
   toast(ids.length?plural(ids.length,'carte')+' ajoutée'+(ids.length>1?'s':'')+' à la leçon':'Aucune carte à ajouter.', 3200); rerender();
@@ -2629,9 +2633,30 @@ function savedPanel(){
   return `<section class="panel stack" id="genResults"><span class="tag-hl">Enregistré</span>
     <h2 style="margin:0">${plural(cs.length,'carte')} ajoutée${cs.length>1?'s':''}${ch?' à « '+esc(ch.title)+' »':''}</h2>
     <p class="small muted" style="margin:0">Faites à partir de la leçon et rangées dans ce chapitre, elles arrivent dans tes révisions. Pour en corriger une, ouvre la leçon puis la carte.</p>
-    <ol class="gen-saved">${cs.map(c=>`<li>${esc(plain(c.front).slice(0,160))}</li>`).join('')}</ol>
+    ${genSavedList(cs)}
     <div class="row"><button class="btn btn-primary" style="flex:1" data-act="gen-review">Les réviser maintenant</button>${ch?`<button class="btn btn-soft" style="flex:1" data-act="chap" data-id="${sv.chap}">Ouvrir la leçon</button>`:''}</div>
     <button class="btn-link" data-act="gen-undo">Annuler cet ajout</button></section>`;
+}
+function objGroups(cards){ // regroupe les cartes par objectif du cours (champ « obj » écrit par Claude)
+  const m=new Map();
+  for(const c of cards){ const o=String((c&&c.obj)||'').trim(); if(!o) continue;
+    const num=(o.match(/^(\d+)\s*[.)\-:]/)||[])[1], key=num?'#'+num:fold(o);
+    if(!m.has(key)) m.set(key,{t:o.replace(/^\d+\s*[.)\-:]\s*/,'')||o, cards:[]});
+    m.get(key).cards.push(c); }
+  return [...m.values()];
+}
+function genSavedList(cs){
+  const li=c=>`<li>${esc(plain(c.front).slice(0,160))}</li>`, gs=objGroups(cs);
+  if(!gs.length) return `<ol class="gen-saved">${cs.map(li).join('')}</ol>`;
+  const loose=cs.filter(c=>!String(c.obj||'').trim()); if(loose.length) gs.push({t:'Autres cartes', cards:loose});
+  return `<p class="eyebrow" style="margin:0">${plural(gs.length-(loose.length?1:0),'objectif')} du cours</p>
+    <ol class="obj-groups">${gs.map(g=>`<li><strong>${esc(g.t)}</strong> <span class="small muted">· ${plural(g.cards.length,'carte')}</span><ul>${g.cards.map(li).join('')}</ul></li>`).join('')}</ol>`;
+}
+function objDoneHTML(oAll, oMiss){ // fin du test : les objectifs à revoir
+  if(!oAll.length) return '';
+  if(!oMiss.length) return `<div class="notice">${oAll.length>1?'Les '+oAll.length+' objectifs du cours sont acquis.':'L\'objectif du cours est acquis.'}</div>`;
+  return `<section class="panel stack" style="text-align:left"><h3 style="margin:0">Objectifs à revoir · ${oMiss.length} sur ${oAll.length}</h3>
+    <ul class="obj-miss">${oMiss.map(g=>`<li><strong>${esc(g.t)}</strong> <span class="small muted">· ${plural(g.cards.length,'carte ratée','cartes ratées')}</span></li>`).join('')}</ul></section>`;
 }
 async function genFromLesson(id, types, text){ // depuis la page d'une leçon : la leçon est chargée et Claude lance tout de suite
   const txt=String(text||await chapCourseText(id)||'').trim();
@@ -4679,7 +4704,6 @@ document.addEventListener('click', async e=>{
     case 'exo-open': openSheet(exoSheet); break;
     case 'ant-open': antOpen(d.id); break;
     case 'ant-go': antGo(); break;
-    case 'ant-n': ANT.n=+d.n; paintSheet(true); break;
     case 'ant-copy': if(!ANT.text.trim()){ toast('Colle d\'abord le texte de ton cours.'); break; } await copyText(antPrompt()); toast('Consigne copiée : colle-la dans Claude, puis colle sa réponse ici.', 3600); break;
     case 'ant-parse': { const res=parseLoose(ANT.paste); if(!res.length){ toast("Je n'ai trouvé aucune carte dans ce texte. Colle toute la réponse de l'IA."); break; } ANT.cards=res; ANT.cardsFor=ANT.chap; ANT.paste=''; antStart(res); break; }
     case 'ant-replay': if(ANT.cards.length) antStart(ANT.cards); break;
@@ -4818,7 +4842,6 @@ document.addEventListener('click', async e=>{
     case 'explain': { UI.explainCard=S.cards[SESS.cur.id]; openSheet(explainSheet); streamTo($('#explainOut'), buildExplainPrompt(UI.explainCard)); break; }
     case 'new-tab': UI.newTab=d.t; rerender(); break;
     case 'gen-src': UI.gen.source=d.s; rerender(); break;
-    case 'gen-n': UI.gen.n=+d.n; rerender(); break;
     case 'gen-type': { const t=UI.gen.types; const i=t.indexOf(d.t); if(i>=0) t.splice(i,1); else t.push(d.t); rerender(); break; }
     case 'gen-level': UI.gen.level=d.l; rerender(); break;
     case 'gen-use-notes': UI.gen.text=(S.notes[UI.gen.chap]||{}).text||''; rerender(); break;
@@ -6903,9 +6926,10 @@ function trainChapPanel(id){ const cs=CASES.filter(x=>x.ch.includes(id));
    <button class="btn btn-soft" data-act="gen-qcm" data-id="${id}" style="justify-content:space-between;width:100%"><span>QCM sur cette leçon, préparés par Claude</span>${I.chev}</button>
    <p class="small muted">${AI.sample?'Claude prépare les QCM à partir du contenu de la leçon et les ajoute directement à la leçon.':'Ici, XamXam prépare un texte à copier dans Claude ; tu colles ensuite sa réponse et les QCM sont ajoutés à la leçon.'}</p></section>`; }
 async function chapCourseText(id){ // ce que XamXam a du cours de ce chapitre : notes de l'étudiant et leçon tirée de son polycopié
-  let txt=''; try{ if(READY[id]){ const r=await readyLoad(id);
-    txt=(r.obj||[]).map(o=>'Objectif : '+o).join('\n')+'\n\n'+(r.cards||[]).map(([t,f,b])=>t==='c'?String(f).replace(/\{\{(.+?)\}\}/g,'$1'):'Q : '+f+'\nR : '+b).join('\n\n'); } }catch{}
-  const note=(S.notes[id]||{}).text||''; if(note) txt=note+'\n\n'+txt; return txt.trim(); }
+  let obj='', rest=''; try{ if(READY[id]){ const r=await readyLoad(id);
+    obj=(r.obj||[]).map(o=>'Objectif : '+o).join('\n');
+    rest=(r.cards||[]).map(([t,f,b])=>t==='c'?String(f).replace(/\{\{(.+?)\}\}/g,'$1'):'Q : '+f+'\nR : '+b).join('\n\n'); } }catch{}
+  const note=(S.notes[id]||{}).text||''; return [obj, note, rest].map(x=>String(x||'').trim()).filter(Boolean).join('\n\n'); }
 async function genQcmFor(id){ return genFromLesson(id, ['qcm']); }
 
 // ---------- Exercices de calcul : valeurs tirées au hasard, correction pas à pas ----------
@@ -7378,9 +7402,9 @@ function sessAsideHTML(r){
 }
 // ---------- Me tester sur une leçon : cartes tirées du cours (objectifs et données), sans rien enregistrer ----------
 // Les cartes du test sont « temporaires » (tmp) : jamais sauvegardées, ni synchronisées, ni comptées dans les statistiques.
-const ANT={chap:'', text:'', loading:false, n:10, cards:[], cardsFor:'', paste:'', busy:false};
+const ANT={chap:'', text:'', loading:false, cards:[], cardsFor:'', paste:'', busy:false};
 function antPurge(){ for(const [k,c] of Object.entries(S.cards)) if(c&&c.tmp) delete S.cards[k]; }
-const antPrompt = () => buildCardPrompt({chap:ANT.chap, text:ANT.text, n:ANT.n, types:['qa','cloze','qcm'], level:'l3', hint:false});
+const antPrompt = () => buildCardPrompt({chap:ANT.chap, text:ANT.text, types:['qa','cloze','qcm'], level:'l3', hint:false});
 async function antOpen(id){
   if(ANT.chap!==id){ ANT.chap=id; ANT.cards=[]; ANT.cardsFor=id; ANT.text=''; } ANT.paste='';
   openSheet(antSheet);
@@ -7393,7 +7417,7 @@ function antSheet(){
    <div class="notice">Tu viens d'apprendre la leçon ? Teste-toi tout de suite. Claude prépare des cartes à partir des <strong>objectifs et des données de ton cours</strong>, sans rien y ajouter. <strong>Rien n'est enregistré</strong> : ni cartes, ni statistiques.</div>
    <section class="panel stack">
      <label class="field">Ton cours <span class="field-hint">${ANT.loading?'Chargement de la leçon…':'Le cours que XamXam a pour cette leçon (années précédentes) et tes notes. Tu peux le remplacer par le cours de ton prof.'}</span><textarea data-input="ant-text" rows="7" placeholder="Colle ici le texte de ton cours…">${esc(ANT.text)}</textarea></label>
-     <div class="field"><span>Nombre de cartes</span><div class="seg" role="group" aria-label="Nombre de cartes">${[5,10,15,20].map(n=>`<button data-act="ant-n" data-n="${n}" aria-pressed="${ANT.n===n}">${n}</button>`).join('')}</div></div>
+     <p class="small muted" style="margin:0"><strong>Nombre de cartes :</strong> autant que les objectifs du cours en demandent.</p>
      ${ANT.cards.length?`<button class="btn btn-soft" data-act="ant-replay">Refaire le même test (${ANT.cards.length} cartes)</button>`:''}
      ${AI.sample?`<button class="btn btn-primary btn-lg" data-act="ant-go" ${ANT.busy||ANT.loading?'disabled':''}>${ANT.busy?'Claude prépare le test…':ANT.cards.length?'Nouveau test':'Me tester maintenant'}</button>`
        :`<button class="btn btn-soft" data-act="ant-copy">Copier la consigne</button>
@@ -7416,7 +7440,7 @@ async function antGo(){
 function antStart(list){ // séance avec des cartes temporaires
   const stack=UI.sheetStack.length?UI.sheetStack.slice():((SESS&&SESS.stack)||[]);
   antPurge(); const ids=[];
-  for(const r of list){ const c=newCard({chap:ANT.chap, type:r.type, front:r.front, back:r.back||'', hint:r.hint||'', choices:r.choices||[], answer:r.answer||[], tmp:true}); S.cards[c.id]=c; ids.push(c.id); }
+  for(const r of list){ const c=newCard({chap:ANT.chap, type:r.type, front:r.front, back:r.back||'', hint:r.hint||'', obj:r.obj||'', choices:r.choices||[], answer:r.answer||[], tmp:true}); S.cards[c.id]=c; ids.push(c.id); }
   if(!ids.length) return;
   UI.sheetStack=[]; paintSheet(); if(SESS){ SESS=null; }
   SESS={mode:'list', scope:'all', tmp:true, stack, queue:shuffle(ids.slice()), later:[], done:0, ok:0, start:now(), shown:0, total:ids.length, missed:[], seen:new Set()};
@@ -7424,11 +7448,13 @@ function antStart(list){ // séance avec des cartes temporaires
 }
 function antDone(){
   const s=SESS, pct=s.done?Math.round(s.ok/s.done*100):0, missed=[...new Set(s.missed)].filter(id=>S.cards[id]);
-  s.antMissed=missed.map(id=>{ const c=S.cards[id]; return {type:c.type, front:c.front, back:c.back, hint:c.hint, choices:c.choices, answer:c.answer}; });
+  const oAll=objGroups(Object.values(S.cards).filter(c=>c.tmp)), oMiss=objGroups(missed.map(id=>S.cards[id]));
+  s.antMissed=missed.map(id=>{ const c=S.cards[id]; return {type:c.type, front:c.front, back:c.back, hint:c.hint, obj:c.obj||'', choices:c.choices, answer:c.answer}; });
   $('#sessIn').innerHTML=`<div class="layer-top"><button class="icon-btn" data-act="sess-close" aria-label="Fermer">${I.x}</button><div class="sess-bar"><i style="width:100%"></i></div></div>
    <div class="done"><h1>Entraînement terminé</h1>
    <div class="count-grid"><div class="count"><span class="eyebrow">Cartes</span><span class="num">${s.done}</span></div><div class="count"><span class="eyebrow">Réussite</span><span class="num">${pct}<small>%</small></span></div></div>
    <p class="muted">Rien n'a été enregistré : ni cartes, ni statistiques. Pour garder des cartes dans tes révisions, utilise « Préparer des cartes » sur la leçon.</p>
+   ${objDoneHTML(oAll, oMiss)}
    ${missed.length?`<button class="btn btn-primary btn-lg" data-act="ant-missed">Refaire ${missed.length>1?'les '+missed.length+' cartes ratées':'la carte ratée'}</button>`:''}
    <button class="btn ${missed.length?'':'btn-primary btn-lg'}" data-act="ant-replay">Refaire tout l'entraînement</button>
    <button class="btn btn-ghost" data-act="sess-close">Terminer</button></div>`;
